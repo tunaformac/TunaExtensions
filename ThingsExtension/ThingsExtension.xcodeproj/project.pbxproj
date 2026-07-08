@@ -1,0 +1,258 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		00064F76F8512CDB3BFE20A2 /* ThingsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF0B4E39BB6607602F40F305 /* ThingsCatalog.swift */; };
+		0295CEAE783039C246D18081 /* ThingsItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25942E358410C3B7FD458DA0 /* ThingsItems.swift */; };
+		03AD897B25C6DDA03EE739DB /* ThingsExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FCF31C413138F7C8A9D5F7F /* ThingsExtension.swift */; };
+		35963FD42698AFC677C35CF9 /* ThingsActionsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD871ACD517240434572E895 /* ThingsActionsCatalog.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		2066D340DF70F62EA5C16935 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		25942E358410C3B7FD458DA0 /* ThingsItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThingsItems.swift; sourceTree = "<group>"; };
+		9FCF31C413138F7C8A9D5F7F /* ThingsExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThingsExtension.swift; sourceTree = "<group>"; };
+		AF0B4E39BB6607602F40F305 /* ThingsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThingsCatalog.swift; sourceTree = "<group>"; };
+		BD871ACD517240434572E895 /* ThingsActionsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThingsActionsCatalog.swift; sourceTree = "<group>"; };
+		E7A6C48E02C18C2D209294CB /* TunaThings.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TunaThings.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		FF5C707677DA5DADDE1CCA7A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		219654EB288FDE022E1649E9 /* . */ = {
+			isa = PBXGroup;
+			children = (
+				9FCF31C413138F7C8A9D5F7F /* ThingsExtension.swift */,
+				AF0B4E39BB6607602F40F305 /* ThingsCatalog.swift */,
+				BD871ACD517240434572E895 /* ThingsActionsCatalog.swift */,
+				25942E358410C3B7FD458DA0 /* ThingsItems.swift */,
+				2066D340DF70F62EA5C16935 /* Info.plist */,
+			);
+			path = .;
+			sourceTree = "<group>";
+		};
+		948CB421ADCE79B8BC745F13 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E7A6C48E02C18C2D209294CB /* TunaThings.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A1F712DC8874D2AFD10A8395 = {
+			isa = PBXGroup;
+			children = (
+				219654EB288FDE022E1649E9 /* . */,
+				948CB421ADCE79B8BC745F13 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		50CB216D7DD69EA4956FD8DC /* ThingsExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6D9DF16A67315388D548D5CE /* Build configuration list for PBXNativeTarget "ThingsExtension" */;
+			buildPhases = (
+				834BC78BA579EDF6BDBAAC2A /* Sources */,
+				FF5C707677DA5DADDE1CCA7A /* Frameworks */,
+				96A8A430778C0442CD9EFD40 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ThingsExtension;
+			packageProductDependencies = (
+				F0CF1943C47554C559A34412 /* TunaKit */,
+			);
+			productName = TunaThings;
+			productReference = E7A6C48E02C18C2D209294CB /* TunaThings.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		6B5FD4D9B4329F0CE5A494E3 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					50CB216D7DD69EA4956FD8DC = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = F016CD0A7CBE8BAE9FF32608 /* Build configuration list for PBXProject "ThingsExtension" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = A1F712DC8874D2AFD10A8395;
+			packageReferences = (
+				8F46591947213F06B9078C03 /* XCRemoteSwiftPackageReference "TunaKit" */,
+			);
+			productRefGroup = 948CB421ADCE79B8BC745F13 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				50CB216D7DD69EA4956FD8DC /* ThingsExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		96A8A430778C0442CD9EFD40 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		834BC78BA579EDF6BDBAAC2A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				03AD897B25C6DDA03EE739DB /* ThingsExtension.swift in Sources */,
+				00064F76F8512CDB3BFE20A2 /* ThingsCatalog.swift in Sources */,
+				35963FD42698AFC677C35CF9 /* ThingsActionsCatalog.swift in Sources */,
+				0295CEAE783039C246D18081 /* ThingsItems.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		7160DD2C35CFE487A88B6BDD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TunaThings;
+			};
+			name = Debug;
+		};
+		7BDB0E872AA6369D6A0A16B6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TunaThings;
+			};
+			name = Release;
+		};
+		85BB0A62F8ACB58E9D044982 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.things;
+				PRODUCT_MODULE_NAME = TunaThings;
+				PRODUCT_NAME = TunaThings;
+				SKIP_INSTALL = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Debug;
+		};
+		D752B70C519803B0D9C207C6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.things;
+				PRODUCT_MODULE_NAME = TunaThings;
+				PRODUCT_NAME = TunaThings;
+				SKIP_INSTALL = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		6D9DF16A67315388D548D5CE /* Build configuration list for PBXNativeTarget "ThingsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				85BB0A62F8ACB58E9D044982 /* Debug */,
+				D752B70C519803B0D9C207C6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F016CD0A7CBE8BAE9FF32608 /* Build configuration list for PBXProject "ThingsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7160DD2C35CFE487A88B6BDD /* Debug */,
+				7BDB0E872AA6369D6A0A16B6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		8F46591947213F06B9078C03 /* XCRemoteSwiftPackageReference "TunaKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tunaformac/TunaKit";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 1.10.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F0CF1943C47554C559A34412 /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8F46591947213F06B9078C03 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 6B5FD4D9B4329F0CE5A494E3 /* Project object */;
+}

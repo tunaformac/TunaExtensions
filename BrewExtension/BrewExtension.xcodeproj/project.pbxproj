@@ -1,0 +1,262 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7D1F5EA12FB6B8F700C7A1D1 /* BrewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D1F5E9E2FB6B8F700C7A1D1 /* BrewExtension.swift */; };
+		7D1F5EA22FB6B8F700C7A1D1 /* BrewCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D1F5E9F2FB6B8F700C7A1D1 /* BrewCatalog.swift */; };
+		7D1F5EB02FB6BB0000C7A1D1 /* BrewItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D1F5EB12FB6BB0000C7A1D1 /* BrewItems.swift */; };
+		7D1F5EB22FB6BB0000C7A1D1 /* BrewActionsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D1F5EB32FB6BB0000C7A1D1 /* BrewActionsCatalog.swift */; };
+		7D1F5EB42FB6BB0000C7A1D1 /* BrewCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D1F5EB52FB6BB0000C7A1D1 /* BrewCLI.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		7D1F5E9B2FB6B85200C7A1D1 /* TunaBrew.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TunaBrew.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7D1F5E9E2FB6B8F700C7A1D1 /* BrewExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrewExtension.swift; sourceTree = "<group>"; };
+		7D1F5E9F2FB6B8F700C7A1D1 /* BrewCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrewCatalog.swift; sourceTree = "<group>"; };
+		7D1F5EA02FB6B8F700C7A1D1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7D1F5EB12FB6BB0000C7A1D1 /* BrewItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrewItems.swift; sourceTree = "<group>"; };
+		7D1F5EB32FB6BB0000C7A1D1 /* BrewActionsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrewActionsCatalog.swift; sourceTree = "<group>"; };
+		7D1F5EB52FB6BB0000C7A1D1 /* BrewCLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrewCLI.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7D1F5E7E2FB6B71E00C7A1D1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7D1F5E642FB6B6A100C7A1D1 = {
+			isa = PBXGroup;
+			children = (
+				7D1F5E9C2FB6B85200C7A1D1 /* . */,
+				7D1F5E9D2FB6B85200C7A1D1 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		7D1F5E9C2FB6B85200C7A1D1 /* . */ = {
+			isa = PBXGroup;
+			children = (
+				7D1F5E9E2FB6B8F700C7A1D1 /* BrewExtension.swift */,
+				7D1F5E9F2FB6B8F700C7A1D1 /* BrewCatalog.swift */,
+				7D1F5EB12FB6BB0000C7A1D1 /* BrewItems.swift */,
+				7D1F5EB32FB6BB0000C7A1D1 /* BrewActionsCatalog.swift */,
+				7D1F5EB52FB6BB0000C7A1D1 /* BrewCLI.swift */,
+				7D1F5EA02FB6B8F700C7A1D1 /* Info.plist */,
+			);
+			path = .;
+			sourceTree = "<group>";
+		};
+		7D1F5E9D2FB6B85200C7A1D1 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7D1F5E9B2FB6B85200C7A1D1 /* TunaBrew.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7D1F5E7A2FB6B6E500C7A1D1 /* BrewExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7D1F5E962FB6B7B600C7A1D1 /* Build configuration list for PBXNativeTarget "BrewExtension" */;
+			buildPhases = (
+				7D1F5E7D2FB6B71E00C7A1D1 /* Sources */,
+				7D1F5E7E2FB6B71E00C7A1D1 /* Frameworks */,
+				7D1F5E7F2FB6B71E00C7A1D1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BrewExtension;
+			packageProductDependencies = (
+				E28B2A1CBB922387BB6E0D19 /* TunaKit */,
+			);
+			productName = TunaBrew;
+			productReference = 7D1F5E9B2FB6B85200C7A1D1 /* TunaBrew.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		7D1F5E632FB6B6A100C7A1D1 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					7D1F5E7A2FB6B6E500C7A1D1 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 7D1F5E662FB6B6A100C7A1D1 /* Build configuration list for PBXProject "BrewExtension" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 7D1F5E642FB6B6A100C7A1D1;
+			packageReferences = (
+				EFDD8B617B1EC386A3DC13B9 /* XCRemoteSwiftPackageReference "TunaKit" */,
+			);
+			productRefGroup = 7D1F5E9D2FB6B85200C7A1D1 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				7D1F5E7A2FB6B6E500C7A1D1 /* BrewExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7D1F5E7F2FB6B71E00C7A1D1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7D1F5E7D2FB6B71E00C7A1D1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7D1F5EA12FB6B8F700C7A1D1 /* BrewExtension.swift in Sources */,
+				7D1F5EA22FB6B8F700C7A1D1 /* BrewCatalog.swift in Sources */,
+				7D1F5EB02FB6BB0000C7A1D1 /* BrewItems.swift in Sources */,
+				7D1F5EB22FB6BB0000C7A1D1 /* BrewActionsCatalog.swift in Sources */,
+				7D1F5EB42FB6BB0000C7A1D1 /* BrewCLI.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		7D1F5E672FB6B6A100C7A1D1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.brew;
+				PRODUCT_MODULE_NAME = TunaBrew;
+				PRODUCT_NAME = TunaBrew;
+				SKIP_INSTALL = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Debug;
+		};
+		7D1F5E682FB6B6A100C7A1D1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.brew;
+				PRODUCT_MODULE_NAME = TunaBrew;
+				PRODUCT_NAME = TunaBrew;
+				SKIP_INSTALL = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Release;
+		};
+		7D1F5E972FB6B7B600C7A1D1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TunaBrew;
+			};
+			name = Debug;
+		};
+		7D1F5E982FB6B7B600C7A1D1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TunaBrew;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7D1F5E662FB6B6A100C7A1D1 /* Build configuration list for PBXProject "BrewExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7D1F5E972FB6B7B600C7A1D1 /* Debug */,
+				7D1F5E982FB6B7B600C7A1D1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7D1F5E962FB6B7B600C7A1D1 /* Build configuration list for PBXNativeTarget "BrewExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7D1F5E672FB6B6A100C7A1D1 /* Debug */,
+				7D1F5E682FB6B6A100C7A1D1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		EFDD8B617B1EC386A3DC13B9 /* XCRemoteSwiftPackageReference "TunaKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tunaformac/TunaKit";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 1.10.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E28B2A1CBB922387BB6E0D19 /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EFDD8B617B1EC386A3DC13B9 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 7D1F5E632FB6B6A100C7A1D1 /* Project object */;
+}

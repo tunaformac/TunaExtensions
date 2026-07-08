@@ -1,0 +1,265 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		09F01CE4AE2C73E6F165372D /* RemindersActionsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD58315AA245B54F64BD0DA2 /* RemindersActionsCatalog.swift */; };
+		54C31747E3FDBBF7BD0C66FB /* EventKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 128CB41B5D84D7783EA0E130 /* EventKit.framework */; };
+		7A909811B1A6C6FEB1D7629E /* RemindersItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA65F793C4CEC2101DF44999 /* RemindersItems.swift */; };
+		8617641E42EC3B54B9C0A856 /* RemindersCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1144DF33032F0C70A260F10 /* RemindersCatalog.swift */; };
+		BCB49792DC88CE45E033BD6F /* RemindersExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B15355D5A0DFCE7A113A280 /* RemindersExtension.swift */; };
+		D5370FA0D755C4E428D8896F /* RemindersAuthorization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95DF75212558779898F1DA65 /* RemindersAuthorization.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		128CB41B5D84D7783EA0E130 /* EventKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = EventKit.framework; path = System/Library/Frameworks/EventKit.framework; sourceTree = SDKROOT; };
+		5B15355D5A0DFCE7A113A280 /* RemindersExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersExtension.swift; sourceTree = "<group>"; };
+		95DF75212558779898F1DA65 /* RemindersAuthorization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersAuthorization.swift; sourceTree = "<group>"; };
+		A1144DF33032F0C70A260F10 /* RemindersCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersCatalog.swift; sourceTree = "<group>"; };
+		AD58315AA245B54F64BD0DA2 /* RemindersActionsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersActionsCatalog.swift; sourceTree = "<group>"; };
+		B0FAAD1B28AE0F137E9C1BD6 /* TunaReminders.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TunaReminders.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		DA65F793C4CEC2101DF44999 /* RemindersItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersItems.swift; sourceTree = "<group>"; };
+		EAE83BF2E1A9B17B97DC2A89 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		842B9B032FF2A4A8C152E492 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				54C31747E3FDBBF7BD0C66FB /* EventKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		103053583D54760A05DCEF8F /* . */ = {
+			isa = PBXGroup;
+			children = (
+				5B15355D5A0DFCE7A113A280 /* RemindersExtension.swift */,
+				95DF75212558779898F1DA65 /* RemindersAuthorization.swift */,
+				A1144DF33032F0C70A260F10 /* RemindersCatalog.swift */,
+				DA65F793C4CEC2101DF44999 /* RemindersItems.swift */,
+				AD58315AA245B54F64BD0DA2 /* RemindersActionsCatalog.swift */,
+				EAE83BF2E1A9B17B97DC2A89 /* Info.plist */,
+			);
+			path = .;
+			sourceTree = "<group>";
+		};
+		201947FB599DF681C1C329B6 = {
+			isa = PBXGroup;
+			children = (
+				103053583D54760A05DCEF8F /* . */,
+				D09B1215F8ECDB1FFBA89A3F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D09B1215F8ECDB1FFBA89A3F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B0FAAD1B28AE0F137E9C1BD6 /* TunaReminders.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AD72AFF7EC258AA8D90124C9 /* RemindersExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 764C161D981561F5C7C0DDA4 /* Build configuration list for PBXNativeTarget "RemindersExtension" */;
+			buildPhases = (
+				ED1E9ADC2614674458627363 /* Sources */,
+				842B9B032FF2A4A8C152E492 /* Frameworks */,
+				9B1C147AE817769036119617 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = RemindersExtension;
+			packageProductDependencies = (
+				E107A6D067776260AE402D92 /* TunaKit */,
+			);
+			productName = TunaReminders;
+			productReference = B0FAAD1B28AE0F137E9C1BD6 /* TunaReminders.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C7D495B1F29E0D647818B71D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					AD72AFF7EC258AA8D90124C9 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 55E93F35C2826E7406F35F2E /* Build configuration list for PBXProject "RemindersExtension" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 201947FB599DF681C1C329B6;
+			packageReferences = (
+				47936F1FA2BC20FBDC4587A6 /* XCRemoteSwiftPackageReference "TunaKit" */,
+			);
+			productRefGroup = D09B1215F8ECDB1FFBA89A3F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AD72AFF7EC258AA8D90124C9 /* RemindersExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		9B1C147AE817769036119617 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		ED1E9ADC2614674458627363 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BCB49792DC88CE45E033BD6F /* RemindersExtension.swift in Sources */,
+				D5370FA0D755C4E428D8896F /* RemindersAuthorization.swift in Sources */,
+				8617641E42EC3B54B9C0A856 /* RemindersCatalog.swift in Sources */,
+				7A909811B1A6C6FEB1D7629E /* RemindersItems.swift in Sources */,
+				09F01CE4AE2C73E6F165372D /* RemindersActionsCatalog.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		16DA7885912087E759383291 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.reminders;
+				PRODUCT_MODULE_NAME = TunaReminders;
+				PRODUCT_NAME = TunaReminders;
+				SKIP_INSTALL = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Release;
+		};
+		27BD3DF6C55D511BD57C9D7B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.reminders;
+				PRODUCT_MODULE_NAME = TunaReminders;
+				PRODUCT_NAME = TunaReminders;
+				SKIP_INSTALL = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Debug;
+		};
+		5867FBA0FC5492CC14E25F5D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TunaReminders;
+			};
+			name = Debug;
+		};
+		BE2F55A7905A58A5E646E569 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TunaReminders;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		55E93F35C2826E7406F35F2E /* Build configuration list for PBXProject "RemindersExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5867FBA0FC5492CC14E25F5D /* Debug */,
+				BE2F55A7905A58A5E646E569 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		764C161D981561F5C7C0DDA4 /* Build configuration list for PBXNativeTarget "RemindersExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				27BD3DF6C55D511BD57C9D7B /* Debug */,
+				16DA7885912087E759383291 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		47936F1FA2BC20FBDC4587A6 /* XCRemoteSwiftPackageReference "TunaKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tunaformac/TunaKit";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 1.10.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E107A6D067776260AE402D92 /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 47936F1FA2BC20FBDC4587A6 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = C7D495B1F29E0D647818B71D /* Project object */;
+}

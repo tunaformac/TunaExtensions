@@ -1,0 +1,395 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		121DD9ED6A4666940DB2F983 /* SafariActionsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C82CA6A7765EC961A0A8DF6 /* SafariActionsCatalog.swift */; };
+		299D375E407A430741338937 /* SafariAppleScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAA5C32908E4B09ACD52C05A /* SafariAppleScript.swift */; };
+		53108662FF4ABC22AFDEBAEC /* SafariExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A014A5A94800AC3777C783A /* SafariExtension.swift */; };
+		B91D24F8174DE5E221C91CE2 /* TunaSafari.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FAD50EEFAF5C0BAFB75A3B5 /* TunaSafari.framework */; };
+		DC94FB5CBB538C9153F709FF /* SafariCurrentPageRuntimeResolutionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4C056F44E4C00C2B6D05452 /* SafariCurrentPageRuntimeResolutionTests.swift */; };
+		E8565A664EAE9597255FDD52 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4478B2A76A0AC733FBBA0E2B /* Cocoa.framework */; };
+		EFD0486D5DE8D58EC6CD1387 /* SafariMetaCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26AF0916FBDAACC712D54846 /* SafariMetaCatalog.swift */; };
+		FCB0F952B71552B19D392970 /* SafariBookmarksCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1156091F94646856F706AD8E /* SafariBookmarksCatalog.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		494BB3554F7F5F6F82814C4C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 09F66B6FFF7EC37B1388D0CE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B1E550F83790F1D12AC5BB45;
+			remoteInfo = SafariExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		1156091F94646856F706AD8E /* SafariBookmarksCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariBookmarksCatalog.swift; sourceTree = "<group>"; };
+		1C82CA6A7765EC961A0A8DF6 /* SafariActionsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariActionsCatalog.swift; sourceTree = "<group>"; };
+		26AF0916FBDAACC712D54846 /* SafariMetaCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariMetaCatalog.swift; sourceTree = "<group>"; };
+		3A014A5A94800AC3777C783A /* SafariExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariExtension.swift; sourceTree = "<group>"; };
+		4478B2A76A0AC733FBBA0E2B /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
+		4FAD50EEFAF5C0BAFB75A3B5 /* TunaSafari.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TunaSafari.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		ADAE1E12938EF40B4854A72B /* SafariExtensionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SafariExtensionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B4C056F44E4C00C2B6D05452 /* SafariCurrentPageRuntimeResolutionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SafariCurrentPageRuntimeResolutionTests.swift; sourceTree = "<group>"; };
+		BAA5C32908E4B09ACD52C05A /* SafariAppleScript.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariAppleScript.swift; sourceTree = "<group>"; };
+		DB10CB1F7A01C57B6D1AF3D5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		09FB3CB80C0B0F5EB5F4490A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E8565A664EAE9597255FDD52 /* Cocoa.framework in Frameworks */,
+				B91D24F8174DE5E221C91CE2 /* TunaSafari.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C6A077C6BD0A56358C174D0E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		3EA888F6A0EDAAEE1B843B0F /* OS X */ = {
+			isa = PBXGroup;
+			children = (
+				4478B2A76A0AC733FBBA0E2B /* Cocoa.framework */,
+			);
+			name = "OS X";
+			sourceTree = "<group>";
+		};
+		89BAA9440FF128BBB3F37F60 = {
+			isa = PBXGroup;
+			children = (
+				9F6B745E07F72A460DCB5C21 /* . */,
+				8E1BDFFD245C17E0A00A93FB /* Products */,
+				A268542CEDEF1278C6361A70 /* Frameworks */,
+				B4C056F44E4C00C2B6D05452 /* SafariCurrentPageRuntimeResolutionTests.swift */,
+			);
+			sourceTree = "<group>";
+		};
+		8E1BDFFD245C17E0A00A93FB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4FAD50EEFAF5C0BAFB75A3B5 /* TunaSafari.framework */,
+				ADAE1E12938EF40B4854A72B /* SafariExtensionTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		9F6B745E07F72A460DCB5C21 /* . */ = {
+			isa = PBXGroup;
+			children = (
+				3A014A5A94800AC3777C783A /* SafariExtension.swift */,
+				1156091F94646856F706AD8E /* SafariBookmarksCatalog.swift */,
+				26AF0916FBDAACC712D54846 /* SafariMetaCatalog.swift */,
+				1C82CA6A7765EC961A0A8DF6 /* SafariActionsCatalog.swift */,
+				BAA5C32908E4B09ACD52C05A /* SafariAppleScript.swift */,
+				DB10CB1F7A01C57B6D1AF3D5 /* Info.plist */,
+			);
+			path = .;
+			sourceTree = "<group>";
+		};
+		A268542CEDEF1278C6361A70 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3EA888F6A0EDAAEE1B843B0F /* OS X */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		4C6BF3A57E15C2071A657B8B /* SafariExtensionTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DF8FA1CD9922A72D28482200 /* Build configuration list for PBXNativeTarget "SafariExtensionTests" */;
+			buildPhases = (
+				AA1BCBC21581CE566518D974 /* Sources */,
+				09FB3CB80C0B0F5EB5F4490A /* Frameworks */,
+				462ABEA95AEA4E1BF7678A0E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7DAA6AE41FC223CC5452431C /* PBXTargetDependency */,
+			);
+			name = SafariExtensionTests;
+			packageProductDependencies = (
+				81CBCF5EB4231C22F3523D69 /* TunaKit */,
+			);
+			productName = SafariExtensionTests;
+			productReference = ADAE1E12938EF40B4854A72B /* SafariExtensionTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		B1E550F83790F1D12AC5BB45 /* SafariExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2849485F2A4556499E79E1CE /* Build configuration list for PBXNativeTarget "SafariExtension" */;
+			buildPhases = (
+				DC8AF2E8CD3BB9BD9B594CCD /* Sources */,
+				C6A077C6BD0A56358C174D0E /* Frameworks */,
+				14E49566D562FDAE6DAB8A8F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SafariExtension;
+			packageProductDependencies = (
+				F5FD2EDDC1D2A47DCCA61881 /* TunaKit */,
+			);
+			productName = TunaSafari;
+			productReference = 4FAD50EEFAF5C0BAFB75A3B5 /* TunaSafari.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		09F66B6FFF7EC37B1388D0CE /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					B1E550F83790F1D12AC5BB45 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 7372EE79DDE75103D56FAF9B /* Build configuration list for PBXProject "SafariExtension" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 89BAA9440FF128BBB3F37F60;
+			packageReferences = (
+				62E2420BFA9BFB0A341772E0 /* XCRemoteSwiftPackageReference "TunaKit" */,
+			);
+			productRefGroup = 8E1BDFFD245C17E0A00A93FB /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B1E550F83790F1D12AC5BB45 /* SafariExtension */,
+				4C6BF3A57E15C2071A657B8B /* SafariExtensionTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		14E49566D562FDAE6DAB8A8F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		462ABEA95AEA4E1BF7678A0E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AA1BCBC21581CE566518D974 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC94FB5CBB538C9153F709FF /* SafariCurrentPageRuntimeResolutionTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC8AF2E8CD3BB9BD9B594CCD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				53108662FF4ABC22AFDEBAEC /* SafariExtension.swift in Sources */,
+				FCB0F952B71552B19D392970 /* SafariBookmarksCatalog.swift in Sources */,
+				EFD0486D5DE8D58EC6CD1387 /* SafariMetaCatalog.swift in Sources */,
+				121DD9ED6A4666940DB2F983 /* SafariActionsCatalog.swift in Sources */,
+				299D375E407A430741338937 /* SafariAppleScript.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		7DAA6AE41FC223CC5452431C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = SafariExtension;
+			target = B1E550F83790F1D12AC5BB45 /* SafariExtension */;
+			targetProxy = 494BB3554F7F5F6F82814C4C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		328B49F9E220E3073C555577 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				ENABLE_TESTABILITY = YES;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.safari;
+				PRODUCT_MODULE_NAME = TunaSafari;
+				PRODUCT_NAME = TunaSafari;
+				SKIP_INSTALL = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Debug;
+		};
+		8DFF709AE88315041513AF4B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TunaSafari;
+			};
+			name = Debug;
+		};
+		93173DB6854C5248E97F25FC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TunaSafari;
+			};
+			name = Release;
+		};
+		A5C48A6823270265A152DEE5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.SafariExtensionTests;
+				PRODUCT_MODULE_NAME = SafariExtensionTests;
+				PRODUCT_NAME = SafariExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		EC8E83D4676FF7AA92274095 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.SafariExtensionTests;
+				PRODUCT_MODULE_NAME = SafariExtensionTests;
+				PRODUCT_NAME = SafariExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		F4B3DFF8A3D2D2F8D42F045E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.safari;
+				PRODUCT_MODULE_NAME = TunaSafari;
+				PRODUCT_NAME = TunaSafari;
+				SKIP_INSTALL = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2849485F2A4556499E79E1CE /* Build configuration list for PBXNativeTarget "SafariExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				328B49F9E220E3073C555577 /* Debug */,
+				F4B3DFF8A3D2D2F8D42F045E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7372EE79DDE75103D56FAF9B /* Build configuration list for PBXProject "SafariExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8DFF709AE88315041513AF4B /* Debug */,
+				93173DB6854C5248E97F25FC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DF8FA1CD9922A72D28482200 /* Build configuration list for PBXNativeTarget "SafariExtensionTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EC8E83D4676FF7AA92274095 /* Release */,
+				A5C48A6823270265A152DEE5 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		62E2420BFA9BFB0A341772E0 /* XCRemoteSwiftPackageReference "TunaKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tunaformac/TunaKit";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 1.10.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		81CBCF5EB4231C22F3523D69 /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 62E2420BFA9BFB0A341772E0 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
+		F5FD2EDDC1D2A47DCCA61881 /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 62E2420BFA9BFB0A341772E0 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 09F66B6FFF7EC37B1388D0CE /* Project object */;
+}

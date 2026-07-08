@@ -1,0 +1,250 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		36B799224280B6B6BDB87549 /* CleanShotExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 032596E9A8F94B1475F8DB6F /* CleanShotExtension.swift */; };
+		7BF993F7FA7D5F99C781E452 /* CleanShotCommandsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 701EFB8CAC77A97A47AE7A70 /* CleanShotCommandsCatalog.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		032596E9A8F94B1475F8DB6F /* CleanShotExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleanShotExtension.swift; sourceTree = "<group>"; };
+		701EFB8CAC77A97A47AE7A70 /* CleanShotCommandsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleanShotCommandsCatalog.swift; sourceTree = "<group>"; };
+		94E9CC95FDC6F00FA54AE9A4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E4534D7EFCF11A6A2F4CE813 /* TunaCleanShot.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TunaCleanShot.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		6FBDF6124694CFD0E198BBF9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7D0555713972449DBB62E7E7 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E4534D7EFCF11A6A2F4CE813 /* TunaCleanShot.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E4D285BC9E12E56BB4E9B04A = {
+			isa = PBXGroup;
+			children = (
+				F2F5E5F3CF185702B1C53513 /* . */,
+				7D0555713972449DBB62E7E7 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F2F5E5F3CF185702B1C53513 /* . */ = {
+			isa = PBXGroup;
+			children = (
+				032596E9A8F94B1475F8DB6F /* CleanShotExtension.swift */,
+				701EFB8CAC77A97A47AE7A70 /* CleanShotCommandsCatalog.swift */,
+				94E9CC95FDC6F00FA54AE9A4 /* Info.plist */,
+			);
+			path = .;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		314963BDBB510CF40C85F26A /* CleanShotExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F7A77ED72B406C57CCAFDD31 /* Build configuration list for PBXNativeTarget "CleanShotExtension" */;
+			buildPhases = (
+				10E1E2B7E0666C035C7C7953 /* Sources */,
+				6FBDF6124694CFD0E198BBF9 /* Frameworks */,
+				E043066F3860B9E173151210 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CleanShotExtension;
+			packageProductDependencies = (
+				B7C30B214865D6FA4270AF97 /* TunaKit */,
+			);
+			productName = TunaCleanShot;
+			productReference = E4534D7EFCF11A6A2F4CE813 /* TunaCleanShot.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		92049F0350BEE0C1709F1796 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					314963BDBB510CF40C85F26A = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = D8C813213D0FACDF7A3689DE /* Build configuration list for PBXProject "CleanShotExtension" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = E4D285BC9E12E56BB4E9B04A;
+			packageReferences = (
+				F1ADF1698C08079B30A8AA45 /* XCRemoteSwiftPackageReference "TunaKit" */,
+			);
+			productRefGroup = 7D0555713972449DBB62E7E7 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				314963BDBB510CF40C85F26A /* CleanShotExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E043066F3860B9E173151210 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		10E1E2B7E0666C035C7C7953 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				36B799224280B6B6BDB87549 /* CleanShotExtension.swift in Sources */,
+				7BF993F7FA7D5F99C781E452 /* CleanShotCommandsCatalog.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A202316C45A9765D965CD20C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TunaCleanShot;
+			};
+			name = Release;
+		};
+		E813F0608DA6CEC360A0FBF7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.cleanshot;
+				PRODUCT_MODULE_NAME = TunaCleanShot;
+				PRODUCT_NAME = TunaCleanShot;
+				SKIP_INSTALL = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Release;
+		};
+		E94F400E3BBF99456C36CB28 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.cleanshot;
+				PRODUCT_MODULE_NAME = TunaCleanShot;
+				PRODUCT_NAME = TunaCleanShot;
+				SKIP_INSTALL = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Debug;
+		};
+		FEEDECF3325DE6BF6099702D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TunaCleanShot;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D8C813213D0FACDF7A3689DE /* Build configuration list for PBXProject "CleanShotExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FEEDECF3325DE6BF6099702D /* Debug */,
+				A202316C45A9765D965CD20C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F7A77ED72B406C57CCAFDD31 /* Build configuration list for PBXNativeTarget "CleanShotExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E94F400E3BBF99456C36CB28 /* Debug */,
+				E813F0608DA6CEC360A0FBF7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		F1ADF1698C08079B30A8AA45 /* XCRemoteSwiftPackageReference "TunaKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tunaformac/TunaKit";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 1.10.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B7C30B214865D6FA4270AF97 /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F1ADF1698C08079B30A8AA45 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 92049F0350BEE0C1709F1796 /* Project object */;
+}

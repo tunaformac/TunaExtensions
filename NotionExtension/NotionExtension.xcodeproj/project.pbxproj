@@ -1,0 +1,257 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7D1120012FD0000100C7A1D1 /* NotionAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D1120002FD0000100C7A1D1 /* NotionAPIClient.swift */; };
+		7D1120032FD0000200C7A1D1 /* NotionCatalogSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D1120022FD0000200C7A1D1 /* NotionCatalogSupport.swift */; };
+		7D1120052FD0000300C7A1D1 /* NotionCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D1120042FD0000300C7A1D1 /* NotionCatalog.swift */; };
+		7D1120072FD0000400C7A1D1 /* NotionSearchCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D1120062FD0000400C7A1D1 /* NotionSearchCatalog.swift */; };
+		7D1F5EA12FB6B8F700C7A1D1 /* NotionExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D1F5E9E2FB6B8F700C7A1D1 /* NotionExtension.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		7D1120002FD0000100C7A1D1 /* NotionAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotionAPIClient.swift; sourceTree = "<group>"; };
+		7D1120022FD0000200C7A1D1 /* NotionCatalogSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotionCatalogSupport.swift; sourceTree = "<group>"; };
+		7D1120042FD0000300C7A1D1 /* NotionCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotionCatalog.swift; sourceTree = "<group>"; };
+		7D1120062FD0000400C7A1D1 /* NotionSearchCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotionSearchCatalog.swift; sourceTree = "<group>"; };
+		7D1F5E9B2FB6B85200C7A1D1 /* NotionExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NotionExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7D1F5E9E2FB6B8F700C7A1D1 /* NotionExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotionExtension.swift; sourceTree = "<group>"; };
+		7D1F5EA02FB6B8F700C7A1D1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7D1F5E7E2FB6B71E00C7A1D1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7D1F5E642FB6B6A100C7A1D1 = {
+			isa = PBXGroup;
+			children = (
+				7D1F5E9C2FB6B85200C7A1D1 /*  */,
+				7D1F5E9D2FB6B85200C7A1D1 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		7D1F5E9C2FB6B85200C7A1D1 /*  */ = {
+			isa = PBXGroup;
+			children = (
+				7D1120002FD0000100C7A1D1 /* NotionAPIClient.swift */,
+				7D1120022FD0000200C7A1D1 /* NotionCatalogSupport.swift */,
+				7D1120042FD0000300C7A1D1 /* NotionCatalog.swift */,
+				7D1120062FD0000400C7A1D1 /* NotionSearchCatalog.swift */,
+				7D1F5E9E2FB6B8F700C7A1D1 /* NotionExtension.swift */,
+				7D1F5EA02FB6B8F700C7A1D1 /* Info.plist */,
+			);
+			sourceTree = "<group>";
+		};
+		7D1F5E9D2FB6B85200C7A1D1 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7D1F5E9B2FB6B85200C7A1D1 /* NotionExtension.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7D1F5E7A2FB6B6E500C7A1D1 /* NotionExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7D1F5E962FB6B7B600C7A1D1 /* Build configuration list for PBXNativeTarget "NotionExtension" */;
+			buildPhases = (
+				7D1F5E7D2FB6B71E00C7A1D1 /* Sources */,
+				7D1F5E7E2FB6B71E00C7A1D1 /* Frameworks */,
+				7D1F5E7F2FB6B71E00C7A1D1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NotionExtension;
+			packageProductDependencies = (
+				20BC3AE86D2E951B0554E060 /* TunaKit */,
+			);
+			productName = NotionExtension;
+			productReference = 7D1F5E9B2FB6B85200C7A1D1 /* NotionExtension.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		7D1F5E632FB6B6A100C7A1D1 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					7D1F5E7A2FB6B6E500C7A1D1 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 7D1F5E662FB6B6A100C7A1D1 /* Build configuration list for PBXProject "NotionExtension" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 7D1F5E642FB6B6A100C7A1D1;
+			packageReferences = (
+				9A8C262B952A520FDE5DA2D5 /* XCRemoteSwiftPackageReference "TunaKit" */,
+			);
+			productRefGroup = 7D1F5E9D2FB6B85200C7A1D1 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				7D1F5E7A2FB6B6E500C7A1D1 /* NotionExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7D1F5E7F2FB6B71E00C7A1D1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7D1F5E7D2FB6B71E00C7A1D1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7D1120012FD0000100C7A1D1 /* NotionAPIClient.swift in Sources */,
+				7D1120032FD0000200C7A1D1 /* NotionCatalogSupport.swift in Sources */,
+				7D1120052FD0000300C7A1D1 /* NotionCatalog.swift in Sources */,
+				7D1120072FD0000400C7A1D1 /* NotionSearchCatalog.swift in Sources */,
+				7D1F5EA12FB6B8F700C7A1D1 /* NotionExtension.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		7D1F5E672FB6B6A100C7A1D1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.notion;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Debug;
+		};
+		7D1F5E682FB6B6A100C7A1D1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.notion;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Release;
+		};
+		7D1F5E972FB6B7B600C7A1D1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = NotionExtension;
+			};
+			name = Debug;
+		};
+		7D1F5E982FB6B7B600C7A1D1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = NotionExtension;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7D1F5E662FB6B6A100C7A1D1 /* Build configuration list for PBXProject "NotionExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7D1F5E972FB6B7B600C7A1D1 /* Debug */,
+				7D1F5E982FB6B7B600C7A1D1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7D1F5E962FB6B7B600C7A1D1 /* Build configuration list for PBXNativeTarget "NotionExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7D1F5E672FB6B6A100C7A1D1 /* Debug */,
+				7D1F5E682FB6B6A100C7A1D1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		9A8C262B952A520FDE5DA2D5 /* XCRemoteSwiftPackageReference "TunaKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tunaformac/TunaKit";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 1.10.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		20BC3AE86D2E951B0554E060 /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9A8C262B952A520FDE5DA2D5 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 7D1F5E632FB6B6A100C7A1D1 /* Project object */;
+}

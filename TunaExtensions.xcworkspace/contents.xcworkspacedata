@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:BrewExtension/BrewExtension.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:CleanShotExtension/CleanShotExtension.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:GitHubExtension/GitHubExtension.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:NotesExtension/NotesExtension.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:NotionExtension/NotionExtension.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:ObsidianExtension/ObsidianExtension.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:RemindersExtension/RemindersExtension.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:SafariExtension/SafariExtension.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:ThingsExtension/ThingsExtension.xcodeproj">
+   </FileRef>
+</Workspace>

@@ -1,0 +1,262 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0F1A398EDF2CFEE6CB5AE4E9 /* NotesActionsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF7365B11B8A2CE384BE739 /* NotesActionsCatalog.swift */; };
+		AD471D02B4A3CDFC3C2B6F40 /* NotesItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9BE300CD4B500B468759C89 /* NotesItems.swift */; };
+		AEDE6AD3358689549B09059B /* NotesDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3CEA25D025DD03221E3FFC /* NotesDatabase.swift */; };
+		D8C93D071A05447C3E76DE4E /* NotesCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F9EADDD1424F14CCCF8E41F /* NotesCatalog.swift */; };
+		F04FEC3C813543AA096B4EE7 /* NotesExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 324EA09FBC76F5CEDA473ED1 /* NotesExtension.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0F9EADDD1424F14CCCF8E41F /* NotesCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesCatalog.swift; sourceTree = "<group>"; };
+		324EA09FBC76F5CEDA473ED1 /* NotesExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesExtension.swift; sourceTree = "<group>"; };
+		69F68C55D1B0B811B0B1E201 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9B06F8960093F125A76EC4A7 /* TunaNotes.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TunaNotes.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		A9BE300CD4B500B468759C89 /* NotesItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesItems.swift; sourceTree = "<group>"; };
+		FA3CEA25D025DD03221E3FFC /* NotesDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesDatabase.swift; sourceTree = "<group>"; };
+		FBF7365B11B8A2CE384BE739 /* NotesActionsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesActionsCatalog.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		95A7DE8A7EA5CD38EEB49AEF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		3D24E071B5492E50FF0D4F65 = {
+			isa = PBXGroup;
+			children = (
+				4506798127FB89202C3C7876 /* . */,
+				B00B335B1AE11A2D2DF8C134 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		4506798127FB89202C3C7876 /* . */ = {
+			isa = PBXGroup;
+			children = (
+				324EA09FBC76F5CEDA473ED1 /* NotesExtension.swift */,
+				0F9EADDD1424F14CCCF8E41F /* NotesCatalog.swift */,
+				A9BE300CD4B500B468759C89 /* NotesItems.swift */,
+				FBF7365B11B8A2CE384BE739 /* NotesActionsCatalog.swift */,
+				FA3CEA25D025DD03221E3FFC /* NotesDatabase.swift */,
+				69F68C55D1B0B811B0B1E201 /* Info.plist */,
+			);
+			path = .;
+			sourceTree = "<group>";
+		};
+		B00B335B1AE11A2D2DF8C134 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9B06F8960093F125A76EC4A7 /* TunaNotes.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		CC62D399BDAD112BD7B8F673 /* NotesExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 062D547357922A1725B96FA3 /* Build configuration list for PBXNativeTarget "NotesExtension" */;
+			buildPhases = (
+				2395E05866B3A00DDE1DA6E2 /* Sources */,
+				95A7DE8A7EA5CD38EEB49AEF /* Frameworks */,
+				7B48AEAB21527C060F917C0E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NotesExtension;
+			packageProductDependencies = (
+				6DA4C9C032F339A4CF3FE469 /* TunaKit */,
+			);
+			productName = TunaNotes;
+			productReference = 9B06F8960093F125A76EC4A7 /* TunaNotes.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		6B2F46A99431FE023D9C3BDF /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					CC62D399BDAD112BD7B8F673 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = FB2AD8A6BA70FB0BA0FE088F /* Build configuration list for PBXProject "NotesExtension" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 3D24E071B5492E50FF0D4F65;
+			packageReferences = (
+				4C91AD5EABF43390E315CA4E /* XCRemoteSwiftPackageReference "TunaKit" */,
+			);
+			productRefGroup = B00B335B1AE11A2D2DF8C134 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				CC62D399BDAD112BD7B8F673 /* NotesExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7B48AEAB21527C060F917C0E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2395E05866B3A00DDE1DA6E2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F04FEC3C813543AA096B4EE7 /* NotesExtension.swift in Sources */,
+				D8C93D071A05447C3E76DE4E /* NotesCatalog.swift in Sources */,
+				AD471D02B4A3CDFC3C2B6F40 /* NotesItems.swift in Sources */,
+				0F1A398EDF2CFEE6CB5AE4E9 /* NotesActionsCatalog.swift in Sources */,
+				AEDE6AD3358689549B09059B /* NotesDatabase.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		0487BD0E495538891F60E959 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TunaNotes;
+			};
+			name = Release;
+		};
+		218F8E6EFAB4A6EA3A6DE0C2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TunaNotes;
+			};
+			name = Debug;
+		};
+		24F9066D4CD98F57C2C4CFE8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.notes;
+				PRODUCT_MODULE_NAME = TunaNotes;
+				PRODUCT_NAME = TunaNotes;
+				SKIP_INSTALL = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Release;
+		};
+		6983438EBC809321C9787CE4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.notes;
+				PRODUCT_MODULE_NAME = TunaNotes;
+				PRODUCT_NAME = TunaNotes;
+				SKIP_INSTALL = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		062D547357922A1725B96FA3 /* Build configuration list for PBXNativeTarget "NotesExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6983438EBC809321C9787CE4 /* Debug */,
+				24F9066D4CD98F57C2C4CFE8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FB2AD8A6BA70FB0BA0FE088F /* Build configuration list for PBXProject "NotesExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				218F8E6EFAB4A6EA3A6DE0C2 /* Debug */,
+				0487BD0E495538891F60E959 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		4C91AD5EABF43390E315CA4E /* XCRemoteSwiftPackageReference "TunaKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tunaformac/TunaKit";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 1.10.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		6DA4C9C032F339A4CF3FE469 /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4C91AD5EABF43390E315CA4E /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 6B2F46A99431FE023D9C3BDF /* Project object */;
+}
