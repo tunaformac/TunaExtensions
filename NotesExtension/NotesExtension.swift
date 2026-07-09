@@ -9,10 +9,9 @@ public final class NotesExtension: Extension {
         displayName: "Notes",
         author: "Tuna",
         description: "Search Apple Notes and create new notes.",
-        categories: ["Notes"],
         iconName: "note.text"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.65", minTunaKit: "1.5.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.65", minTunaKit: "1.11.0"),
       catalogs: [
         CatalogDeclaration(
           id: "notes", type: NotesCatalog.self, name: "Notes", enabledByDefault: true),

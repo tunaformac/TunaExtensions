@@ -9,10 +9,9 @@ public final class ThingsExtension: Extension {
         displayName: "Things",
         author: "Tuna",
         description: "Create Things to-dos and jump to lists.",
-        categories: ["Tasks", "Productivity"],
         iconName: "checklist"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.75", minTunaKit: "1.7.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.75", minTunaKit: "1.11.0"),
       settings: [
         CatalogSettingDefinition(
           key: "ShowThingsWhenAdding",

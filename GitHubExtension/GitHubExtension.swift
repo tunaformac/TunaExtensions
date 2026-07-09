@@ -9,10 +9,9 @@ public final class GitHubExtension: Extension {
         displayName: "GitHub",
         author: "Tuna",
         description: "GitHub notifications, pull requests, issues, and repositories.",
-        categories: ["Developer Tools", "Productivity"],
         iconName: "bell.badge"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.65"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.65", minTunaKit: "1.11.0"),
       catalogs: [
         CatalogDeclaration(
           id: "github.notifications",

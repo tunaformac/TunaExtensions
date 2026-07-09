@@ -9,10 +9,9 @@ public final class NotionExtension: Extension {
         displayName: "Notion",
         author: "Tuna",
         description: "Browse and search Notion, with optional top-level pages in global search.",
-        categories: ["Productivity"],
         iconName: "book.pages"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.65"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.65", minTunaKit: "1.11.0"),
       catalogs: [
         CatalogDeclaration(
           id: "notion", type: NotionCatalog.self, name: "Notion", enabledByDefault: true),

@@ -9,10 +9,9 @@ public final class BrewExtension: Extension {
         displayName: "Homebrew",
         author: "Tuna",
         description: "Search Homebrew formulae and casks.",
-        categories: ["Developer Tools", "System"],
         iconName: "mug"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTunaKit: "1.5.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTunaKit: "1.11.0"),
       settings: [
         CatalogSettingDefinition(
           key: "CustomBrewPath",
