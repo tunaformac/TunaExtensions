@@ -45,7 +45,7 @@ fi
 declare -a projects=()
 while IFS= read -r project; do
   projects+=("$project")
-done < <(find "$ROOT" -mindepth 2 -maxdepth 2 -name '*.xcodeproj' -print | sort)
+done < <(find "$ROOT" -mindepth 1 -maxdepth 2 -name '*.xcodeproj' -print | sort)
 
 for project in "${projects[@]}"; do
   schemes="$(list_schemes "$project" || true)"

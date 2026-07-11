@@ -26,11 +26,11 @@ exactly the setup a third-party extension uses.
 ```bash
 make                  # compile every extension (Release)
 make ext-all          # build + install all into Tuna's ExtensionsDev for local development
-make ext TARGET=ObsidianExtension   # one extension
+./scripts/tuna-extension install --scheme ObsidianExtension
 ```
 
-Open `TunaExtensions.xcworkspace` for Xcode work. After a dev install, restart
-Tuna (or run `tuna ext reload`) to pick up changes.
+Open `TunaExtensions.xcworkspace` for Xcode work. After a dev install, restart Tuna to load changed
+extension code.
 
 ## TunaKit dependency
 
@@ -42,8 +42,8 @@ Bump the pinned version deliberately, repo-wide, after reading the changelog.
 ## Packaging and releasing (maintainers)
 
 ```bash
-make ext-package TARGET=ObsidianExtension   # build a .tunaextension into dist/store
-make ext-release TARGET=ObsidianExtension   # package + upload to the store, tag the commit
+./scripts/tuna-extension package --scheme ObsidianExtension
+./scripts/tuna-extension release --scheme ObsidianExtension
 ```
 
 Packaging derives store metadata from the built bundle's Swift declaration,

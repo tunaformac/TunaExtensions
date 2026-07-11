@@ -16,27 +16,27 @@ endef
 
 # Compile every extension in Release.
 build-all:
-	@set -e; for SCHEME in $(EXTENSION_SCHEMES); do echo "=== $$SCHEME ==="; scripts/build-extension-product.sh "$$SCHEME" Release "$(DESTINATION)" "$(DERIVED_DATA)" >/dev/null; done; echo "All extensions build."
+	@set -e; for SCHEME in $(EXTENSION_SCHEMES); do echo "=== $$SCHEME ==="; ./scripts/tuna-extension build --scheme "$$SCHEME" --release >/dev/null; done; echo "All extensions build."
 
 # Build one extension and install it into Tuna's ExtensionsDev for local development.
 ext:
 	$(require_target)
-	@scripts/install-extension-product.sh "$(TARGET)" "$(INSTALL_DIR)" Debug "$(DEV_DESTINATION)" "$(DERIVED_DATA)"
+	@./scripts/tuna-extension install --scheme "$(TARGET)"
 
 # Dev-install every extension.
 ext-all:
-	@set -e; for SCHEME in $(EXTENSION_SCHEMES); do scripts/install-extension-product.sh "$$SCHEME" "$(INSTALL_DIR)" Debug "$(DEV_DESTINATION)" "$(DERIVED_DATA)"; done
+	@set -e; for SCHEME in $(EXTENSION_SCHEMES); do ./scripts/tuna-extension install --scheme "$$SCHEME"; done
 
 # Build + package one extension as a .tunaextension store artifact.
 # Needs a Tuna binary for the declaration dump: /Applications/Tuna.app or TUNA_BINARY.
 ext-package:
 	$(require_target)
-	@scripts/ext-package.sh "$(TARGET)" "$(DESTINATION)" "$(DERIVED_DATA)"
+	@./scripts/tuna-extension package --scheme "$(TARGET)"
 
 # Build + upload one extension to the store API.
 ext-upload:
 	$(require_target)
-	@scripts/upload-extension.sh "$(TARGET)"
+	@./scripts/tuna-extension upload --scheme "$(TARGET)"
 
 # Build + upload all extensions.
 ext-upload-all:
@@ -45,7 +45,7 @@ ext-upload-all:
 # Build + upload one extension, then tag the release commit.
 ext-release:
 	$(require_target)
-	@scripts/release-extension.sh "$(TARGET)"
+	@./scripts/tuna-extension release --scheme "$(TARGET)"
 
 clean:
 	rm -rf ./build/dd

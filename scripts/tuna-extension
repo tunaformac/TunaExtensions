@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ARCH="$(uname -m)"
+DERIVED_DATA="${TUNA_EXTENSION_DERIVED_DATA:-$ROOT/build/dd}"
+INSTALL_DIR="${TUNA_EXTENSIONS_DEV_DIR:-$HOME/Library/Application Support/Tuna/ExtensionsDev}"
+
+usage() {
+  cat <<'EOF'
+Usage: ./scripts/tuna-extension <command> [--scheme SCHEME] [options]
+
+Developer commands:
+  build       Build the extension in Debug
+  install     Build and install it for local development
+  logs        Stream Tuna extension logs
+  package     Build a Release .tunaextension package
+
+Maintainer commands:
+  upload      Package and upload an extension to the Tuna store
+  release     Package, upload, and tag an extension release
+
+Options:
+  --scheme SCHEME       Xcode scheme (inferred when the repo has only one)
+  --release             Use Release instead of Debug for build/install
+  --restart             Restart Tuna after install
+  --last DURATION       Show recent logs instead of streaming (for example 20m)
+EOF
+}
+
+die() {
+  echo "error: $*" >&2
+  exit 64
+}
+
+infer_scheme() {
+  local projects=()
+  while IFS= read -r project; do projects+=("$project"); done \
+    < <(find "$ROOT" -mindepth 1 -maxdepth 2 -type d -name '*.xcodeproj' | sort)
+
+  [[ ${#projects[@]} -eq 1 ]] || die "pass --scheme (found ${#projects[@]} Xcode projects)"
+  basename "${projects[0]}" .xcodeproj
+}
+
+command="${1:-help}"
+[[ $# -eq 0 ]] || shift
+scheme="${TUNA_EXTENSION_SCHEME:-}"
+configuration="Debug"
+restart="false"
+last=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --scheme) scheme="${2:?--scheme requires a value}"; shift 2 ;;
+    --release) configuration="Release"; shift ;;
+    --restart) restart="true"; shift ;;
+    --last) last="${2:?--last requires a duration}"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    *) die "unknown option: $1" ;;
+  esac
+done
+
+case "$command" in
+  help|-h|--help)
+    usage
+    ;;
+  logs)
+    predicate='subsystem == "com.brnbw.Tuna" AND (category == "Plugins" OR category == "ExtensionsHost")'
+    if [[ -n "$last" ]]; then
+      log show --style compact --last "$last" --predicate "$predicate"
+    else
+      log stream --style compact --predicate "$predicate"
+    fi
+    ;;
+  build)
+    scheme="${scheme:-$(infer_scheme)}"
+    destination="generic/platform=macOS"
+    [[ "$configuration" == "Release" ]] || destination="platform=macOS,arch=$ARCH"
+    "$ROOT/scripts/build-extension-product.sh" "$scheme" "$configuration" "$destination" "$DERIVED_DATA"
+    ;;
+  install)
+    scheme="${scheme:-$(infer_scheme)}"
+    "$ROOT/scripts/install-extension-product.sh" \
+      "$scheme" "$INSTALL_DIR" "$configuration" "platform=macOS,arch=$ARCH" "$DERIVED_DATA"
+    if [[ "$restart" == "true" ]]; then
+      osascript -e 'tell application "Tuna" to quit' >/dev/null 2>&1 || true
+      open -a Tuna
+      echo "Restarted Tuna."
+    else
+      echo "Installed for development. Restart Tuna to load changed extension code."
+    fi
+    ;;
+  package)
+    scheme="${scheme:-$(infer_scheme)}"
+    "$ROOT/scripts/ext-package.sh" "$scheme" "generic/platform=macOS" "$DERIVED_DATA"
+    ;;
+  upload)
+    scheme="${scheme:-$(infer_scheme)}"
+    EXTENSIONS_STORE_SIGNING_PRIVATE_KEY_OP="${EXTENSIONS_STORE_SIGNING_PRIVATE_KEY_OP:-op://Brainbow/Tuna/EXTENSIONS_STORE_SIGNING_PRIVATE_KEY}" \
+      "$ROOT/scripts/upload-extension.sh" "$scheme"
+    ;;
+  release)
+    scheme="${scheme:-$(infer_scheme)}"
+    EXTENSIONS_STORE_SIGNING_PRIVATE_KEY_OP="${EXTENSIONS_STORE_SIGNING_PRIVATE_KEY_OP:-op://Brainbow/Tuna/EXTENSIONS_STORE_SIGNING_PRIVATE_KEY}" \
+      "$ROOT/scripts/release-extension.sh" "$scheme"
+    ;;
+  *)
+    die "unknown command: $command"
+    ;;
+esac

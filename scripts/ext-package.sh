@@ -6,10 +6,9 @@ TARGET="${1:?Usage: ext-package.sh TARGET DESTINATION DERIVED_DATA}"
 DESTINATION="${2:?Usage: ext-package.sh TARGET DESTINATION DERIVED_DATA}"
 DERIVED_DATA="${3:?Usage: ext-package.sh TARGET DESTINATION DERIVED_DATA}"
 OUTDIR="$ROOT/dist/store"
-DEFAULT_TUNA_BINARY="/Applications/Tuna.app/Contents/MacOS/Tuna"
 TEMP_SIGNING_KEY=""
 TEMP_DECLARATION_JSON=""
-SIGNING_KEY_OP_REF="${EXTENSIONS_STORE_SIGNING_PRIVATE_KEY_OP:-op://Brainbow/Tuna/EXTENSIONS_STORE_SIGNING_PRIVATE_KEY}"
+SIGNING_KEY_OP_REF="${EXTENSIONS_STORE_SIGNING_PRIVATE_KEY_OP:-}"
 
 cleanup() {
   if [[ -n "$TEMP_SIGNING_KEY" && -f "$TEMP_SIGNING_KEY" ]]; then
@@ -52,6 +51,11 @@ resolve_signing_key() {
 
 SRC="$("$ROOT/scripts/build-extension-product.sh" "$TARGET" Release "$DESTINATION" "$DERIVED_DATA")"
 mkdir -p "$OUTDIR"
+
+if ! /usr/bin/codesign --verify --strict "$SRC" >/dev/null 2>&1; then
+  echo "The built extension is not signed. Select your development team in Xcode and rebuild." >&2
+  exit 1
+fi
 
 ARGS=()
 find_info_plist() {
@@ -98,10 +102,22 @@ PY
 }
 
 dump_extension_declaration() {
-  local tuna_binary="${TUNA_BINARY:-$DEFAULT_TUNA_BINARY}"
+  local tuna_binary="${TUNA_BINARY:-}"
+  if [[ -z "$tuna_binary" ]]; then
+    local candidate
+    for candidate in \
+      "/Applications/Tuna.app/Contents/MacOS/Tuna" \
+      "$HOME/Applications/Tuna.app/Contents/MacOS/Tuna"
+    do
+      if [[ -x "$candidate" ]]; then
+        tuna_binary="$candidate"
+        break
+      fi
+    done
+  fi
   if [[ ! -x "$tuna_binary" ]]; then
-    echo "Tuna binary not found or not executable: $tuna_binary" >&2
-    echo "Set TUNA_BINARY to a built Tuna executable or run 'just build'." >&2
+    echo "Tuna is required to read the extension declaration for packaging." >&2
+    echo "Install Tuna in /Applications or ~/Applications, or set TUNA_BINARY." >&2
     exit 1
   fi
 
