@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: test (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-26
+            build_all: true
+          - arch: x86_64
+            runner: macos-26-intel
+            build_all: false
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Verify toolchain
+        run: |
+          xcodebuild -version
+          xcrun swift --version
+          test "$(uname -m)" = "${{ matrix.arch }}"
+
+      - name: Install build tools
+        run: brew install openssl@3 ripgrep
+
+      - name: Disable certificate signing
+        run: |
+          printf '%s\n' \
+            'CODE_SIGNING_ALLOWED = NO' \
+            'CODE_SIGNING_REQUIRED = NO' \
+            'CODE_SIGN_IDENTITY = -' \
+            'DEVELOPMENT_TEAM =' \
+            > "$RUNNER_TEMP/ci-signing.xcconfig"
+          printf 'XCODE_XCCONFIG_FILE=%s\n' "$RUNNER_TEMP/ci-signing.xcconfig" \
+            >> "$GITHUB_ENV"
+
+      - name: Run extension tests
+        run: make test
+
+      - name: Build all extensions
+        if: matrix.build_all
+        run: make
