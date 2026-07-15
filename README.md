@@ -1,7 +1,7 @@
 # TunaExtensions
 
 First-party extensions for [Tuna](https://tunaformac.com), the macOS launcher.
-This repo is the source of truth for every extension distributed through the
+This repo is the source of truth for every first-party extension distributed through the
 Tuna store — and a set of real, working examples for building your own.
 
 Each extension is a folder with its own Xcode project, flat sources, and an
@@ -62,9 +62,12 @@ git push origin "refs/tags/$TAG:refs/tags/$TAG"
 Do not use `git push --tags`; each verified extension release is pushed independently.
 
 Packaging derives store metadata from the built bundle's Swift declaration,
-which requires a Tuna binary: `/Applications/Tuna.app` by default, or set
-`TUNA_BINARY` to another build. Store icons and screenshots must be tracked under `media/`;
-`dist/store/` is generated output and is never used as a listing-media source.
+which requires a Tuna binary. Local development falls back to `/Applications/Tuna.app`; releases
+must set `TUNA_BINARY` to the exact qualified candidate host. Store icons belong at
+`media/icons/<id-or-slug>.<extension>` and screenshots at
+`media/screenshots/<id-or-slug>/*`. Media supplied by this tooling must be tracked; curated server
+media need not be duplicated here. `dist/store/` is generated output and is never used as a
+listing-media source.
 
 `make ext-package`, `make ext-upload`, `make ext-upload-all`, and `make ext-release` sign packages
 with `op://Brainbow/Tuna/EXTENSIONS_STORE_SIGNING_PRIVATE_KEY` by default. Override that provider
@@ -76,8 +79,18 @@ are not copied from declarations.
 Uploads require the selected extension, `.gitignore`, `Makefile`, `scripts/`, and `media/` to remain
 clean before and after packaging, including staged and untracked files. A release also refuses an
 existing version tag that does not point to the captured release commit; a matching tag makes
-reruns safe. The uploader sends a private snapshot only after its size, SHA-256, and embedded store
-signature match the packager metadata; ignored `dist/store/` output is never uploaded directly.
+reruns safe. The uploader sends private snapshots of the validated package and tracked listing media;
+media bytes come from the captured release commit rather than mutable worktree paths, and ignored
+`dist/store/` output is never uploaded directly.
+
+Before uploading, the release command reads the public store item without authentication. An exact
+same-version release is accepted only when uploader-controlled metadata, expected listing media,
+and the public artifact's downloaded size and SHA-256 all match. Missing media, a missing artifact,
+or mismatched public bytes triggers a same-version recovery upload; controlled metadata drift still
+fails closed. After any upload, the response and a fresh public readback must match, and the public
+artifact is downloaded and verified again before a release tag can be created. Upload credentials
+are resolved only when a PUT is needed and are passed through a private curl configuration file;
+public metadata and artifact requests never receive the bearer header.
 
 For a non-interactive build with a contributor's Apple Development identity, pass both the team and
 the identity SHA-1 shown by `security find-identity -v -p codesigning`:
