@@ -25,6 +25,7 @@ exactly the setup a third-party extension uses.
 
 ```bash
 make                  # compile every extension (Release)
+make test             # discover and run every extension unit-test target
 make ext-all          # build + install all into Tuna's ExtensionsDev for local development
 ./scripts/tuna-extension install --scheme ObsidianExtension
 ```

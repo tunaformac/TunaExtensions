@@ -8,7 +8,7 @@ DERIVED_DATA := ./build/dd
 INSTALL_DIR := $(HOME)/Library/Application Support/Tuna/ExtensionsDev
 
 .DEFAULT_GOAL := build-all
-.PHONY: build-all ext ext-all ext-package ext-upload ext-upload-all ext-release clean
+.PHONY: build-all test ext ext-all ext-package ext-upload ext-upload-all ext-release clean
 
 define require_target
 	@test -n "$(TARGET)" || { echo "usage: make $@ TARGET=<Scheme>" >&2; exit 64; }
@@ -17,6 +17,23 @@ endef
 # Compile every extension in Release.
 build-all:
 	@set -e; for SCHEME in $(EXTENSION_SCHEMES); do echo "=== $$SCHEME ==="; ./scripts/tuna-extension build --scheme "$$SCHEME" --release >/dev/null; done; echo "All extensions build."
+
+# Discover every extension unit-test target and require its shared scheme to cover it.
+test:
+	@set -e; found_tests=""; \
+	for PBXPROJ in */*.xcodeproj/project.pbxproj; do \
+		grep -q 'com.apple.product-type.bundle.unit-test' "$$PBXPROJ" || continue; \
+		found_tests=1; \
+		PROJECT="$${PBXPROJ%/project.pbxproj}"; \
+		PROJECT_NAME="$$(basename "$$PROJECT" .xcodeproj)"; \
+		RESOLVED="$$(./scripts/resolve-extension-scheme.sh "$$PROJECT_NAME")"; \
+		SCHEME="$$(printf '%s\n' "$$RESOLVED" | cut -f2)"; \
+		./scripts/verify-test-scheme.sh "$$PBXPROJ" "$$PROJECT/xcshareddata/xcschemes/$$SCHEME.xcscheme"; \
+		echo "=== $$SCHEME tests ==="; \
+		xcodebuild test -project "$$PROJECT" -scheme "$$SCHEME" -configuration Debug -destination "$(DEV_DESTINATION)" -derivedDataPath "$(DERIVED_DATA)/tests/$$SCHEME" CODE_SIGNING_ALLOWED=NO; \
+	done; \
+	test -n "$$found_tests" || { echo "No extension unit-test targets found." >&2; exit 1; }; \
+	echo "All extension tests pass."
 
 # Build one extension and install it into Tuna's ExtensionsDev for local development.
 ext:
