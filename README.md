@@ -63,7 +63,8 @@ Do not use `git push --tags`; each verified extension release is pushed independ
 
 Packaging derives store metadata from the built bundle's Swift declaration,
 which requires a Tuna binary. Local development falls back to `/Applications/Tuna.app`; releases
-must set `TUNA_BINARY` to the exact qualified candidate host. Store icons belong at
+must set `TUNA_BINARY` to the Tuna executable from the exact extracted frozen signed/notarized
+candidate. Store icons belong at
 `media/icons/<id-or-slug>.<extension>` and screenshots at
 `media/screenshots/<id-or-slug>/*`. Media supplied by this tooling must be tracked; curated server
 media need not be duplicated here. `dist/store/` is generated output and is never used as a
@@ -79,9 +80,17 @@ are not copied from declarations.
 Uploads require the selected extension, `.gitignore`, `Makefile`, `scripts/`, and `media/` to remain
 clean before and after packaging, including staged and untracked files. A release also refuses an
 existing version tag that does not point to the captured release commit; a matching tag makes
-reruns safe. The uploader sends private snapshots of the validated package and tracked listing media;
-media bytes come from the captured release commit rather than mutable worktree paths, and ignored
-`dist/store/` output is never uploaded directly.
+reruns safe. Before its first public request, `make ext-release` freezes the validated package and
+metadata under `dist/release-state/<scheme>/<source-commit>/`. A retry at that exact commit reuses
+those bytes instead of rebuilding a timestamped package. Preserve that state until the public item
+and release tag are both verified and the exact tag is pushed; corrupt or mismatched state fails
+closed. Never delete it after an uncertain upload response just to force a rebuild. If packaging was
+killed before state was frozen, confirm that no release process is running before removing the empty
+lock directory reported by the next attempt.
+
+The uploader sends private snapshots of the frozen package and tracked listing media; media bytes
+come from the captured release commit rather than mutable worktree paths, and ignored `dist/store/`
+output is never uploaded directly.
 
 Before uploading, the release command reads the public store item without authentication. An exact
 same-version release is accepted only when uploader-controlled metadata, expected listing media,

@@ -398,6 +398,7 @@ mkdir -p \
   "$UPLOAD_TMP"
 cp "$ROOT/scripts/upload-extension.sh" "$UPLOAD_ROOT/scripts/"
 cp "$ROOT/scripts/release-extension.sh" "$UPLOAD_ROOT/scripts/"
+cp "$ROOT/scripts/extension-release-state.py" "$UPLOAD_ROOT/scripts/"
 cp "$ROOT/scripts/git-tag-helpers.sh" "$UPLOAD_ROOT/scripts/"
 cp "$ROOT/scripts/resolve-extension-scheme.sh" "$UPLOAD_ROOT/scripts/"
 
@@ -441,6 +442,7 @@ if [[ "${1:-}" == "-C" ]]; then
 fi
 [[ "${1:-}" == "ext-package" ]]
 pwd -P >"$MAKE_CWD_LOG"
+printf 'called\n' >>"$MAKE_COUNT_LOG"
 
 if [[ "${FAKE_MAKE_DIRTY:-0}" == "1" ]]; then
   printf 'changed during packaging\n' >>FixtureExtension/Info.plist
@@ -452,16 +454,30 @@ package_path="dist/store/com.example.fixture-${candidate_version}.tunaextension"
 mode="${FAKE_ARTIFACT_MODE:-signed}"
 
 emit_signed_item() {
-  python3 - "$FAKE_SIGNED_ITEM" "$candidate_version" "${FAKE_NULL_TUNAKIT:-0}" <<'PY'
+  python3 - \
+    "$FAKE_SIGNED_ITEM" \
+    "$package_path" \
+    "$candidate_version" \
+    "${FAKE_NULL_TUNAKIT:-0}" \
+    "${FAKE_CHANGING_PACKAGE:-0}" <<'PY'
+import hashlib
 import json
+import os
 import sys
 
-item_path, version, null_tunakit = sys.argv[1:]
+item_path, package_path, version, null_tunakit, changing_package = sys.argv[1:]
 with open(item_path, encoding="utf-8") as fh:
     item = json.load(fh)
 item["version"] = version
 if null_tunakit == "1":
     item["compatibility"]["min_tunakit"] = None
+if changing_package == "1":
+    digest = hashlib.sha256()
+    with open(package_path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+            digest.update(chunk)
+    item["download"]["size_bytes"] = os.path.getsize(package_path)
+    item["download"]["checksum_sha256"] = digest.hexdigest()
 print(json.dumps(item))
 PY
 }
@@ -471,6 +487,9 @@ case "$mode" in
     cp "$FAKE_SIGNED_PACKAGE" "$package_path"
     if [[ "$mode" == "mutated" ]]; then
       printf 'mutation\n' >>"$package_path"
+    fi
+    if [[ "${FAKE_CHANGING_PACKAGE:-0}" == "1" ]]; then
+      printf 'package-run-%s\n' "$(wc -l <"$MAKE_COUNT_LOG" | tr -d ' ')" >>"$package_path"
     fi
     emit_signed_item
     ;;
@@ -1124,6 +1143,7 @@ MEDIA_LOG="$TMP_ROOT/upload/media.log"
 MEDIA_HASH_LOG="$TMP_ROOT/upload/media-hash.log"
 ASSET_PATH_LOG="$TMP_ROOT/upload/asset-path.log"
 MAKE_CWD_LOG="$TMP_ROOT/upload/make-cwd.log"
+MAKE_COUNT_LOG="$TMP_ROOT/upload/make-count.log"
 OP_LOG="$TMP_ROOT/upload/op.log"
 curl_count() {
   if [[ -f "$CURL_LOG" ]]; then
@@ -1157,11 +1177,38 @@ op_count() {
   fi
 }
 
+make_count() {
+  if [[ -f "$MAKE_COUNT_LOG" ]]; then
+    wc -l <"$MAKE_COUNT_LOG" | tr -d ' '
+  else
+    echo 0
+  fi
+}
+
 run_release_tool() {
   local script="$1"
   (
-    store_state="$(mktemp -d "$UPLOAD_TMP/store-state.XXXXXX")"
-    trap 'rm -rf "$store_state"' EXIT
+    store_state_owned=0
+    release_state_owned=0
+    if [[ -n "${FAKE_PERSISTENT_STORE_STATE_DIR:-}" ]]; then
+      store_state="$FAKE_PERSISTENT_STORE_STATE_DIR"
+      mkdir -p "$store_state"
+    else
+      store_state="$(mktemp -d "$UPLOAD_TMP/store-state.XXXXXX")"
+      store_state_owned=1
+    fi
+    if [[ -n "${FAKE_PERSISTENT_RELEASE_STATE_DIR:-}" ]]; then
+      release_state="$FAKE_PERSISTENT_RELEASE_STATE_DIR"
+      mkdir -p "$release_state"
+    else
+      release_state="$(mktemp -d "$UPLOAD_TMP/release-state.XXXXXX")"
+      release_state_owned=1
+    fi
+    cleanup_fixture_state() {
+      [[ "$store_state_owned" == "0" ]] || rm -rf "$store_state"
+      [[ "$release_state_owned" == "0" ]] || rm -rf "$release_state"
+    }
+    trap cleanup_fixture_state EXIT
     cd "${RUN_DIRECTORY:-$UPLOAD_RUN_DIR}"
     env \
       PATH="$UPLOAD_BIN:$PATH" \
@@ -1173,6 +1220,7 @@ run_release_tool() {
       MEDIA_HASH_LOG="$MEDIA_HASH_LOG" \
       ASSET_PATH_LOG="$ASSET_PATH_LOG" \
       MAKE_CWD_LOG="$MAKE_CWD_LOG" \
+      MAKE_COUNT_LOG="$MAKE_COUNT_LOG" \
       OP_LOG="$OP_LOG" \
       EXPECTED_UPLOAD_ROOT="$UPLOAD_ROOT" \
       FAKE_SIGNED_ITEM="$SIGNED_ITEM" \
@@ -1190,11 +1238,13 @@ run_release_tool() {
       RELEASE_UPLOAD_TOKEN="${FAKE_UPLOAD_TOKEN-fake-token}" \
       RELEASE_UPLOAD_TOKEN_OP="${FAKE_TOKEN_OP_REF-fake://release-token}" \
       STORE_API_URL='https://invalid.example.test/api/v1/items' \
+      TUNA_EXTENSION_RELEASE_STATE_ROOT="$release_state" \
       TMPDIR="$UPLOAD_TMP" \
       FAKE_ARTIFACT_MODE="${FAKE_ARTIFACT_MODE:-signed}" \
+      FAKE_CHANGING_PACKAGE="${FAKE_CHANGING_PACKAGE:-0}" \
       FAKE_MAKE_DIRTY="${FAKE_MAKE_DIRTY:-0}" \
       FAKE_CURL_ADVANCE_HEAD="${FAKE_CURL_ADVANCE_HEAD:-0}" \
-      "$UPLOAD_ROOT/scripts/$script" FixtureExtension
+      "$UPLOAD_ROOT/scripts/$script" "${FAKE_RELEASE_TARGET:-FixtureExtension}"
   )
 }
 
@@ -1474,6 +1524,197 @@ for failure_mode in post-artifact-missing post-artifact-bad post-artifact-networ
   assert_tag_absent "$failure_mode"
 done
 
+LOCKED_RELEASE_STATE="$UPLOAD_TMP/locked-release-state"
+locked_state_parent="$LOCKED_RELEASE_STATE/FixtureExtension"
+locked_state_path="$locked_state_parent/.$(git -C "$UPLOAD_ROOT" rev-parse HEAD).lock"
+mkdir -p "$locked_state_path"
+before_put="$(curl_count)"
+before_get="$(get_count)"
+before_make="$(make_count)"
+FAKE_PERSISTENT_RELEASE_STATE_DIR="$LOCKED_RELEASE_STATE" \
+  expect_failure "locked release state" run_release
+assert_call_delta "$before_put" "$before_get" 0 0 "locked release state"
+[[ "$(make_count)" == "$before_make" ]] || fail "locked release state reached packaging"
+grep -q 'packaging is already in progress, or a stale lock remains' "$TMP_ROOT/failure.err" || \
+  fail "locked release state error was unclear"
+/bin/rmdir "$locked_state_path"
+
+RETRY_STORE_STATE="$UPLOAD_TMP/retry-store-state"
+RETRY_RELEASE_STATE="$UPLOAD_TMP/retry-release-state"
+mkdir -p "$RETRY_STORE_STATE" "$RETRY_RELEASE_STATE"
+delete_fixture_tag
+before_put="$(curl_count)"
+before_get="$(get_count)"
+before_download="$(download_count)"
+before_make="$(make_count)"
+FAKE_STORE_MODE=put-network-error \
+  FAKE_CHANGING_PACKAGE=1 \
+  FAKE_RELEASE_TARGET=TunaFixture \
+  FAKE_PERSISTENT_STORE_STATE_DIR="$RETRY_STORE_STATE" \
+  FAKE_PERSISTENT_RELEASE_STATE_DIR="$RETRY_RELEASE_STATE" \
+  expect_failure "failed release PUT" run_release
+assert_call_delta "$before_put" "$before_get" 1 1 "failed release PUT"
+assert_download_delta "$before_download" 0 "failed release PUT"
+[[ "$(make_count)" == "$((before_make + 1))" ]] || \
+  fail "failed release PUT did not package exactly once"
+assert_tag_absent "failed release PUT"
+
+retry_frozen_package="$(find "$RETRY_RELEASE_STATE" -name package.tunaextension -type f -print -quit)"
+[[ -n "$retry_frozen_package" ]] || fail "failed release PUT did not preserve frozen state"
+retry_frozen_checksum="$(shasum -a 256 "$retry_frozen_package" | awk '{print $1}')"
+
+before_put="$(curl_count)"
+before_get="$(get_count)"
+before_download="$(download_count)"
+before_make="$(make_count)"
+FAKE_STORE_MODE=greater \
+  FAKE_CHANGING_PACKAGE=1 \
+  FAKE_PERSISTENT_STORE_STATE_DIR="$RETRY_STORE_STATE" \
+  FAKE_PERSISTENT_RELEASE_STATE_DIR="$RETRY_RELEASE_STATE" \
+  run_release >"$TMP_ROOT/failed-put-retry.out"
+assert_call_delta "$before_put" "$before_get" 1 2 "failed release PUT retry"
+assert_download_delta "$before_download" 1 "failed release PUT retry"
+[[ "$(make_count)" == "$before_make" ]] || \
+  fail "failed release PUT retry rebuilt its frozen package"
+grep -q 'Reusing frozen release candidate' "$TMP_ROOT/failed-put-retry.out" || \
+  fail "failed release PUT retry did not report frozen-state reuse"
+grep -Fq ';filename=com.example.fixture-1.0.tunaextension;type=application/octet-stream' \
+  "$CURL_ARGS_LOG" || fail "failed release PUT retry changed the package filename"
+[[ "$retry_frozen_checksum" == "$(shasum -a 256 "$RETRY_STORE_STATE/artifact.tunaextension" | awk '{print $1}')" ]] || \
+  fail "failed release PUT retry did not upload its frozen bytes"
+git -C "$UPLOAD_ROOT" show-ref --verify --quiet "refs/tags/$TAG" || \
+  fail "failed release PUT retry did not tag the verified store bytes"
+delete_fixture_tag
+
+SYMLINK_RELEASE_STATE="$UPLOAD_TMP/symlink-release-state"
+symlink_state_parent="$SYMLINK_RELEASE_STATE/FixtureExtension"
+symlink_state_path="$symlink_state_parent/$(git -C "$UPLOAD_ROOT" rev-parse HEAD)"
+mkdir -p "$symlink_state_parent"
+/bin/ln -s "$(dirname "$retry_frozen_package")" "$symlink_state_path"
+before_put="$(curl_count)"
+before_get="$(get_count)"
+before_make="$(make_count)"
+FAKE_PERSISTENT_RELEASE_STATE_DIR="$SYMLINK_RELEASE_STATE" \
+  expect_failure "symlinked release state" run_release
+assert_call_delta "$before_put" "$before_get" 0 0 "symlinked release state"
+[[ "$(make_count)" == "$before_make" ]] || fail "symlinked release state reached packaging"
+grep -q 'state path is not a real directory' "$TMP_ROOT/failure.err" || \
+  fail "symlinked release state error was unclear"
+
+UNCERTAIN_STORE_STATE="$UPLOAD_TMP/uncertain-store-state"
+UNCERTAIN_RELEASE_STATE="$UPLOAD_TMP/uncertain-release-state"
+mkdir -p "$UNCERTAIN_STORE_STATE" "$UNCERTAIN_RELEASE_STATE"
+delete_fixture_tag
+before_put="$(curl_count)"
+before_get="$(get_count)"
+before_download="$(download_count)"
+before_make="$(make_count)"
+FAKE_STORE_MODE=readback-network-error \
+  FAKE_CHANGING_PACKAGE=1 \
+  FAKE_PERSISTENT_STORE_STATE_DIR="$UNCERTAIN_STORE_STATE" \
+  FAKE_PERSISTENT_RELEASE_STATE_DIR="$UNCERTAIN_RELEASE_STATE" \
+  expect_failure "uncertain release readback" run_release
+assert_call_delta "$before_put" "$before_get" 1 2 "uncertain release readback"
+assert_download_delta "$before_download" 0 "uncertain release readback"
+[[ "$(make_count)" == "$((before_make + 1))" ]] || \
+  fail "uncertain release did not package exactly once"
+assert_tag_absent "uncertain release readback"
+
+frozen_package="$(find "$UNCERTAIN_RELEASE_STATE" -name package.tunaextension -type f -print -quit)"
+frozen_state="$(find "$UNCERTAIN_RELEASE_STATE" -name state.json -type f -print -quit)"
+[[ -n "$frozen_package" && -n "$frozen_state" ]] || \
+  fail "uncertain release did not preserve frozen package state"
+frozen_checksum="$(shasum -a 256 "$frozen_package" | awk '{print $1}')"
+[[ "$frozen_checksum" == "$(shasum -a 256 "$UNCERTAIN_STORE_STATE/artifact.tunaextension" | awk '{print $1}')" ]] || \
+  fail "uncertain release state does not match the package accepted by the store"
+
+second_candidate_json="$TMP_ROOT/changed-second-candidate.json"
+env \
+  PATH="$UPLOAD_BIN:$PATH" \
+  MAKE_CWD_LOG="$MAKE_CWD_LOG" \
+  MAKE_COUNT_LOG="$MAKE_COUNT_LOG" \
+  FAKE_SIGNED_ITEM="$SIGNED_ITEM" \
+  FAKE_SIGNED_PACKAGE="$SIGNED_PACKAGE" \
+  FAKE_UNSIGNED_ITEM="$UNSIGNED_ITEM" \
+  FAKE_UNSIGNED_PACKAGE="$UNSIGNED_PACKAGE" \
+  FAKE_CANDIDATE_VERSION=1.0 \
+  FAKE_NULL_TUNAKIT=0 \
+  FAKE_ARTIFACT_MODE=signed \
+  FAKE_CHANGING_PACKAGE=1 \
+  TOKEN= \
+  RELEASE_UPLOAD_TOKEN= \
+  make -C "$UPLOAD_ROOT" ext-package >"$second_candidate_json"
+second_candidate_checksum="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["download"]["checksum_sha256"])' "$second_candidate_json")"
+[[ "$second_candidate_checksum" != "$frozen_checksum" ]] || \
+  fail "changing package fixture did not produce different retry bytes"
+
+before_put="$(curl_count)"
+before_get="$(get_count)"
+before_download="$(download_count)"
+before_make="$(make_count)"
+before_op="$(op_count)"
+FAKE_STORE_MODE=greater \
+  FAKE_CHANGING_PACKAGE=1 \
+  FAKE_PERSISTENT_STORE_STATE_DIR="$UNCERTAIN_STORE_STATE" \
+  FAKE_PERSISTENT_RELEASE_STATE_DIR="$UNCERTAIN_RELEASE_STATE" \
+  FAKE_OP_FAIL=1 \
+  run_release >"$TMP_ROOT/uncertain-retry.out"
+assert_call_delta "$before_put" "$before_get" 0 1 "uncertain release retry"
+assert_download_delta "$before_download" 1 "uncertain release retry"
+[[ "$(make_count)" == "$before_make" ]] || \
+  fail "uncertain release retry rebuilt its frozen package"
+[[ "$(op_count)" == "$before_op" ]] || \
+  fail "uncertain release retry resolved upload credentials"
+grep -q 'Reusing frozen release candidate' "$TMP_ROOT/uncertain-retry.out" || \
+  fail "uncertain release retry did not report frozen-state reuse"
+git -C "$UPLOAD_ROOT" show-ref --verify --quiet "refs/tags/$TAG" || \
+  fail "uncertain release retry did not converge by tagging the verified store bytes"
+delete_fixture_tag
+
+frozen_package_backup="$TMP_ROOT/frozen-package-backup.tunaextension"
+/bin/cp "$frozen_package" "$frozen_package_backup"
+/bin/chmod 600 "$frozen_package"
+printf 'corruption\n' >>"$frozen_package"
+before_put="$(curl_count)"
+before_get="$(get_count)"
+before_make="$(make_count)"
+FAKE_STORE_MODE=greater \
+  FAKE_PERSISTENT_STORE_STATE_DIR="$UNCERTAIN_STORE_STATE" \
+  FAKE_PERSISTENT_RELEASE_STATE_DIR="$UNCERTAIN_RELEASE_STATE" \
+  expect_failure "corrupt frozen package" run_release
+assert_call_delta "$before_put" "$before_get" 0 0 "corrupt frozen package"
+[[ "$(make_count)" == "$before_make" ]] || fail "corrupt frozen package triggered a rebuild"
+grep -q 'package size no longer matches state.json' "$TMP_ROOT/failure.err" || \
+  fail "corrupt frozen package error was unclear"
+/bin/cp "$frozen_package_backup" "$frozen_package"
+/bin/chmod 400 "$frozen_package"
+
+/bin/chmod 600 "$frozen_state"
+python3 - "$frozen_state" <<'PY'
+import json
+import sys
+
+path = sys.argv[1]
+with open(path, encoding="utf-8") as fh:
+    state = json.load(fh)
+state["source_commit"] = "0" * 40
+with open(path, "w", encoding="utf-8") as fh:
+    json.dump(state, fh, indent=2, sort_keys=True)
+    fh.write("\n")
+PY
+before_put="$(curl_count)"
+before_get="$(get_count)"
+before_make="$(make_count)"
+FAKE_STORE_MODE=greater \
+  FAKE_PERSISTENT_STORE_STATE_DIR="$UNCERTAIN_STORE_STATE" \
+  FAKE_PERSISTENT_RELEASE_STATE_DIR="$UNCERTAIN_RELEASE_STATE" \
+  expect_failure "mismatched frozen release state" run_release
+assert_call_delta "$before_put" "$before_get" 0 0 "mismatched frozen release state"
+[[ "$(make_count)" == "$before_make" ]] || \
+  fail "mismatched release state triggered a rebuild"
+grep -q 'Frozen release state is invalid: source_commit' "$TMP_ROOT/failure.err" || \
+  fail "mismatched release state error was unclear"
+
 before_put="$(curl_count)"
 before_get="$(get_count)"
 FAKE_STORE_MODE=invalid-json expect_failure "invalid preflight JSON" run_release
@@ -1689,8 +1930,15 @@ grep -Fq './scripts/tuna-extension upload --scheme "$$SCHEME"' "$ROOT/Makefile" 
   fail "ext-upload-all bypasses the signing wrapper"
 grep -q 'DEFAULT_SIGNING_KEY_OP_REF=' "$ROOT/scripts/tuna-extension" || \
   fail "the extension command has no default signing provider"
+[[ -x "$ROOT/scripts/extension-release-state.py" ]] || \
+  fail "the frozen release-state helper is not executable"
 if grep -Fq '  "$ROOT/dist/store"' "$ROOT/scripts/upload-extension.sh"; then
   fail "ignored dist/store remains a listing-media source"
+fi
+grep -Fq 'Tuna executable from the exact extracted frozen signed/notarized' "$ROOT/README.md" || \
+  fail "release host documentation does not identify the frozen signed/notarized candidate"
+if grep -Fq 'exact qualified candidate host' "$ROOT/README.md"; then
+  fail "release host documentation still waits for post-extension qualification"
 fi
 grep -q '/bin/rm -P' "$ROOT/scripts/ext-package.sh" || fail "temporary keys are not securely removed"
 

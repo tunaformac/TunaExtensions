@@ -14,6 +14,11 @@ TOKEN_OP_REF="${RELEASE_UPLOAD_TOKEN_OP:-op://Brainbow/Tuna/RELEASE_UPLOAD_TOKEN
 CREATE_GIT_TAG="${CREATE_GIT_TAG:-0}"
 RESPONSE_BODY=""
 UPLOAD_SNAPSHOT_DIR=""
+RELEASE_STATE_ROOT="${TUNA_EXTENSION_RELEASE_STATE_ROOT:-$ROOT/dist/release-state}"
+RELEASE_STATE_DIR=""
+RELEASE_STATE_LOCK=""
+RELEASE_STATE_LOCK_HELD=0
+RELEASE_STATE_TEMP_DIR=""
 
 source "$ROOT/scripts/git-tag-helpers.sh"
 
@@ -24,6 +29,12 @@ cleanup() {
   if [[ -n "$UPLOAD_SNAPSHOT_DIR" && -d "$UPLOAD_SNAPSHOT_DIR" ]]; then
     /bin/rm -rf "$UPLOAD_SNAPSHOT_DIR"
   fi
+  if [[ -n "$RELEASE_STATE_TEMP_DIR" && -d "$RELEASE_STATE_TEMP_DIR" ]]; then
+    /bin/rm -rf "$RELEASE_STATE_TEMP_DIR"
+  fi
+  if [[ "$RELEASE_STATE_LOCK_HELD" == "1" ]]; then
+    /bin/rmdir "$RELEASE_STATE_LOCK" 2>/dev/null || true
+  fi
 }
 
 trap cleanup EXIT
@@ -32,12 +43,81 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 
 RELEASE_COMMIT="$(git -C "$ROOT" rev-parse HEAD)"
-read -r PROJECT _RESOLVED_TARGET < <("$ROOT/scripts/resolve-extension-scheme.sh" "$TARGET")
+read -r PROJECT RESOLVED_TARGET < <("$ROOT/scripts/resolve-extension-scheme.sh" "$TARGET")
 PROJECT="${PROJECT#$ROOT/}"
 EXTENSION_DIR="$(dirname "$PROJECT")"
 RELEASE_INPUTS=("$EXTENSION_DIR" .gitignore Makefile scripts media)
 ensure_paths_committed "$ROOT" "${RELEASE_INPUTS[@]}"
 ensure_head_unchanged "$ROOT" "$RELEASE_COMMIT"
+
+if [[ "$CREATE_GIT_TAG" == "1" ]]; then
+  SAFE_RELEASE_TARGET="${RESOLVED_TARGET//[^A-Za-z0-9_.-]/-}"
+  [[ -n "$SAFE_RELEASE_TARGET" ]] || {
+    echo "Unable to derive a release-state name from target: $RESOLVED_TARGET" >&2
+    exit 1
+  }
+  RELEASE_STATE_PARENT="$RELEASE_STATE_ROOT/$SAFE_RELEASE_TARGET"
+  RELEASE_STATE_DIR="$RELEASE_STATE_PARENT/$RELEASE_COMMIT"
+  RELEASE_STATE_LOCK="$RELEASE_STATE_PARENT/.${RELEASE_COMMIT}.lock"
+fi
+
+release_state_lock_release() {
+  if [[ "$RELEASE_STATE_LOCK_HELD" == "1" ]]; then
+    /bin/rmdir "$RELEASE_STATE_LOCK"
+    RELEASE_STATE_LOCK_HELD=0
+  fi
+}
+
+load_release_state() {
+  local state_path="$RELEASE_STATE_DIR/state.json"
+  local package_path="$RELEASE_STATE_DIR/package.tunaextension"
+
+  ITEM_JSON="$("$ROOT/scripts/extension-release-state.py" load \
+    --state "$state_path" \
+    --package "$package_path" \
+    --resolved-target "$RESOLVED_TARGET" \
+    --project "$PROJECT" \
+    --source-commit "$RELEASE_COMMIT")" || return 1
+  PKG="$package_path"
+  echo "Reusing frozen release candidate: $RELEASE_STATE_DIR"
+}
+
+acquire_release_state_lock() {
+  /bin/mkdir -p "$RELEASE_STATE_PARENT"
+  if ! /bin/mkdir "$RELEASE_STATE_LOCK" 2>/dev/null; then
+    echo "Extension release packaging is already in progress, or a stale lock remains: $RELEASE_STATE_LOCK" >&2
+    return 1
+  fi
+  RELEASE_STATE_LOCK_HELD=1
+}
+
+freeze_release_state() {
+  local package_path="$1"
+  local item_path="$2"
+
+  RELEASE_STATE_TEMP_DIR="$(/usr/bin/mktemp -d "$RELEASE_STATE_PARENT/.candidate.XXXXXX")"
+  /bin/chmod 700 "$RELEASE_STATE_TEMP_DIR"
+  /bin/cp "$package_path" "$RELEASE_STATE_TEMP_DIR/package.tunaextension"
+  /bin/chmod 400 "$RELEASE_STATE_TEMP_DIR/package.tunaextension"
+
+  "$ROOT/scripts/extension-release-state.py" freeze \
+    --item "$item_path" \
+    --state "$RELEASE_STATE_TEMP_DIR/state.json" \
+    --package "$RELEASE_STATE_TEMP_DIR/package.tunaextension" \
+    --resolved-target "$RESOLVED_TARGET" \
+    --project "$PROJECT" \
+    --source-commit "$RELEASE_COMMIT"
+  /bin/chmod 400 "$RELEASE_STATE_TEMP_DIR/state.json"
+
+  if [[ -e "$RELEASE_STATE_DIR" || -L "$RELEASE_STATE_DIR" ]]; then
+    echo "Release state appeared while packaging; it was not replaced: $RELEASE_STATE_DIR" >&2
+    return 1
+  fi
+  /bin/mv "$RELEASE_STATE_TEMP_DIR" "$RELEASE_STATE_DIR"
+  RELEASE_STATE_TEMP_DIR=""
+  release_state_lock_release
+  echo "Frozen release candidate: $RELEASE_STATE_DIR"
+}
 
 resolve_upload_token() {
   if [[ -z "$TOKEN" && -n "$TOKEN_OP_REF" ]]; then
@@ -57,10 +137,22 @@ resolve_upload_token() {
   fi
 }
 
-RAW_OUTPUT="$(make -C "$ROOT" ext-package TARGET="$TARGET")"
-ensure_paths_committed "$ROOT" "${RELEASE_INPUTS[@]}"
-ensure_head_unchanged "$ROOT" "$RELEASE_COMMIT"
-ITEM_JSON="$(printf '%s\n' "$RAW_OUTPUT" | python3 -c "
+PKG=""
+if [[ "$CREATE_GIT_TAG" == "1" && ( -e "$RELEASE_STATE_DIR" || -L "$RELEASE_STATE_DIR" ) ]]; then
+  if [[ ! -d "$RELEASE_STATE_DIR" || -L "$RELEASE_STATE_DIR" ]]; then
+    echo "Frozen release state is invalid: state path is not a real directory: $RELEASE_STATE_DIR" >&2
+    exit 1
+  fi
+  load_release_state
+else
+  if [[ "$CREATE_GIT_TAG" == "1" ]]; then
+    acquire_release_state_lock
+  fi
+
+  RAW_OUTPUT="$(make -C "$ROOT" ext-package TARGET="$TARGET")"
+  ensure_paths_committed "$ROOT" "${RELEASE_INPUTS[@]}"
+  ensure_head_unchanged "$ROOT" "$RELEASE_COMMIT"
+  ITEM_JSON="$(printf '%s\n' "$RAW_OUTPUT" | python3 -c "
 import json
 import sys
 
@@ -85,6 +177,10 @@ if selected is None:
 
 print(json.dumps(selected))
 ")"
+fi
+
+ensure_paths_committed "$ROOT" "${RELEASE_INPUTS[@]}"
+ensure_head_unchanged "$ROOT" "$RELEASE_COMMIT"
 
 read_field() { printf '%s\n' "$ITEM_JSON" | python3 -c "import json,sys; d=json.load(sys.stdin); print($1)"; }
 
@@ -103,16 +199,19 @@ while IFS= read -r ARCH; do
 done < <(echo "$ITEM_JSON" | python3 -c "import json,sys; d=json.load(sys.stdin); [print(a) for a in d.get('compatibility', {}).get('arch', [])]")
 
 SAFE_ID="${ID//\//_}"
-PKG="$ROOT/dist/store/${SAFE_ID}-${VERSION}.tunaextension"
+PACKAGE_FILENAME="${SAFE_ID}-${VERSION}.tunaextension"
+if [[ -z "$PKG" ]]; then
+  PKG="$ROOT/dist/store/$PACKAGE_FILENAME"
+fi
 
-if [[ ! -f "$PKG" ]]; then
+if [[ ! -f "$PKG" || -L "$PKG" ]]; then
   echo "Package not found: $PKG" >&2
   exit 1
 fi
 
 UPLOAD_SNAPSHOT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/tuna-extension-upload.XXXXXX")"
 /bin/chmod 700 "$UPLOAD_SNAPSHOT_DIR"
-UPLOAD_PKG="$UPLOAD_SNAPSHOT_DIR/$(basename "$PKG")"
+UPLOAD_PKG="$UPLOAD_SNAPSHOT_DIR/$PACKAGE_FILENAME"
 ITEM_JSON_PATH="$UPLOAD_SNAPSHOT_DIR/item.json"
 PUBLIC_ARTIFACT_PATH="$UPLOAD_SNAPSHOT_DIR/public-artifact.tunaextension"
 AUTH_CURL_CONFIG="$UPLOAD_SNAPSHOT_DIR/upload-auth.conf"
@@ -185,6 +284,10 @@ if embedded_signature != signature:
         "Refusing to upload package: embedded store signature does not match packaging metadata."
     )
 PY
+
+if [[ "$CREATE_GIT_TAG" == "1" && "$RELEASE_STATE_LOCK_HELD" == "1" ]]; then
+  freeze_release_state "$UPLOAD_PKG" "$ITEM_JSON_PATH"
+fi
 
 inspect_store_item() {
   local MODE="$1"
@@ -451,12 +554,12 @@ add_media_key() {
 }
 
 MEDIA_KEYS=()
-for KEY in "$SAFE_ID" "$ID" "${ID##*.}" "$TARGET" "$(slugify "$TARGET")" "$NAME" "$(slugify "$NAME")"; do
+for KEY in "$SAFE_ID" "$ID" "${ID##*.}" "$RESOLVED_TARGET" "$(slugify "$RESOLVED_TARGET")" "$NAME" "$(slugify "$NAME")"; do
   add_media_key "$KEY"
 done
 
-if [[ "$TARGET" == Tuna* ]]; then
-  TARGET_SUFFIX="${TARGET#Tuna}"
+if [[ "$RESOLVED_TARGET" == Tuna* ]]; then
+  TARGET_SUFFIX="${RESOLVED_TARGET#Tuna}"
   add_media_key "$TARGET_SUFFIX"
   add_media_key "$(slugify "$TARGET_SUFFIX")"
 fi
@@ -829,7 +932,7 @@ if [[ "$RELEASE_ACTION" == "upload" || "$RELEASE_ACTION" == "recover" ]]; then
     done
   fi
 
-  CURL_ARGS+=(--form "$(form_file_arg "store_item[asset]" "$UPLOAD_PKG" "$(basename "$PKG")")")
+  CURL_ARGS+=(--form "$(form_file_arg "store_item[asset]" "$UPLOAD_PKG" "$PACKAGE_FILENAME")")
 
   ensure_paths_committed "$ROOT" "${RELEASE_INPUTS[@]}"
   ensure_head_unchanged "$ROOT" "$RELEASE_COMMIT"
