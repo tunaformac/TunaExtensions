@@ -111,3 +111,7 @@ TUNA_CODE_SIGN_IDENTITY=IDENTITY_SHA1 \
 ```
 
 Docs for the extension API live at https://tunaformac.com/docs.
+
+## License
+
+TunaExtensions is available under the [MIT License](LICENSE).
