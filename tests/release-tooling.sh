@@ -1799,6 +1799,15 @@ expect_failure "untracked media input" run_upload
   fail "untracked media input reached PUT"
 rm -rf "$UPLOAD_ROOT/media"
 
+git -C "$UPLOAD_ROOT" tag "$TAG"
+before_put="$(curl_count)"
+before_get="$(get_count)"
+expect_failure "lightweight existing tag" run_release
+grep -q 'is not annotated' "$TMP_ROOT/failure.err" || \
+  fail "lightweight existing tag error was unclear"
+assert_call_delta "$before_put" "$before_get" 0 0 "lightweight existing tag"
+git -C "$UPLOAD_ROOT" tag -d "$TAG" >/dev/null
+
 git -C "$UPLOAD_ROOT" tag -a "$TAG" -m 'Fixture Extension 1.0'
 printf 'new head\n' >"$UPLOAD_ROOT/history.txt"
 git -C "$UPLOAD_ROOT" add history.txt

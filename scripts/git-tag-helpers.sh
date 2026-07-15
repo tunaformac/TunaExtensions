@@ -44,6 +44,16 @@ ensure_tag_available_at_commit() {
     return 0
   fi
 
+  local tag_type
+  if ! tag_type="$(git -C "$root" cat-file -t "refs/tags/$tag" 2>/dev/null)"; then
+    echo "Existing tag cannot be inspected: $tag" >&2
+    return 1
+  fi
+  if [[ "$tag_type" != "tag" ]]; then
+    echo "Refusing to upload: existing tag $tag is not annotated." >&2
+    return 1
+  fi
+
   local tag_commit
   if ! tag_commit="$(git -C "$root" rev-parse "refs/tags/$tag^{commit}" 2>/dev/null)"; then
     echo "Existing tag does not resolve to a commit: $tag" >&2
