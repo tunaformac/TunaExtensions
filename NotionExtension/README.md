@@ -4,11 +4,11 @@ Standalone Tuna extension project for local Notion development.
 
 Useful commands from the repo root:
 
-- `(cd app/NotionExtension && ../../bin/tuna ext build NotionExtension.xcodeproj --scheme NotionExtension)`
-- `(cd app/NotionExtension && ../../bin/tuna ext install NotionExtension.xcodeproj --scheme NotionExtension)`
+- `./scripts/tuna-extension build --scheme NotionExtension`
+- `./scripts/tuna-extension install --scheme NotionExtension`
 
-Debug Tuna builds use `http://localhost:3038/api` for the extension OAuth broker, so this project
-is intended to be tested against the local Rails app first.
+Debug Tuna builds use `http://localhost:3038/api` for the extension OAuth broker, so OAuth testing
+also needs a local checkout of the Tuna Rails app running with `just web-dev`.
 
 Current scope:
 
