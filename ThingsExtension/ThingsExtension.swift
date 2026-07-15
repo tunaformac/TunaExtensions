@@ -11,7 +11,7 @@ public final class ThingsExtension: Extension {
         description: "Create Things to-dos and jump to lists.",
         iconName: "checklist"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.75", minTunaKit: "1.11.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.79", minTunaKit: "1.12.0"),
       settings: [
         CatalogSettingDefinition(
           key: "ShowThingsWhenAdding",
