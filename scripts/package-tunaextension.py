@@ -20,6 +20,8 @@ def openssl_binary() -> str:
     preferred = [
         "/opt/homebrew/opt/openssl@3/bin/openssl",
         "/opt/homebrew/bin/openssl",
+        "/usr/local/opt/openssl@3/bin/openssl",
+        "/usr/local/bin/openssl",
     ]
     for path in preferred:
         if os.path.isfile(path) and os.access(path, os.X_OK):
@@ -50,18 +52,22 @@ def find_info_plist(bundle_path: str) -> str:
     raise RuntimeError("Info.plist not found in bundle")
 
 
+def symlink_stays_within_bundle(bundle_root: str, path: str) -> bool:
+    resolved = os.path.realpath(path)
+    try:
+        common_root = os.path.commonpath((bundle_root, resolved))
+    except ValueError:
+        return False
+    return resolved != bundle_root and common_root == bundle_root
+
+
 def ensure_safe_symlinks(bundle_path: str) -> None:
     bundle_root = os.path.realpath(bundle_path)
     for root, dirs, files in os.walk(bundle_path):
-        dirs[:] = [d for d in dirs if not d.startswith(".")]
-        for name in files:
-            if name.startswith("."):
-                continue
+        for name in dirs + files:
             full = os.path.join(root, name)
-            if os.path.islink(full):
-                resolved = os.path.realpath(full)
-                if not resolved.startswith(bundle_root):
-                    raise RuntimeError("Symlink escapes bundle: %s" % full)
+            if os.path.islink(full) and not symlink_stays_within_bundle(bundle_root, full):
+                raise RuntimeError("Symlink escapes bundle: %s" % full)
 
 
 def compute_payload_hash(bundle_path: str) -> str:
@@ -74,8 +80,7 @@ def compute_payload_hash(bundle_path: str) -> str:
                 continue
             full = os.path.join(root, name)
             if os.path.islink(full):
-                resolved = os.path.realpath(full)
-                if not resolved.startswith(bundle_root):
+                if not symlink_stays_within_bundle(bundle_root, full):
                     raise RuntimeError("Symlink escapes bundle: %s" % full)
                 continue
             if not os.path.isfile(full):
@@ -312,11 +317,31 @@ def main() -> int:
         summary = description.splitlines()[0]
     else:
         summary = ""
-    categories = args.category or metadata.get("Categories") or metadata.get("categories") or []
+    # Extensions no longer declare categories; store categorization is curated
+    # web-side (admin or --category at packaging time).
+    categories = args.category
 
     declaration_compatibility = declaration.get("compatibility") or {}
-    min_tuna = args.min_tuna or declaration_compatibility.get("min_tuna") or "1.0"
-    min_tunakit = args.min_tunakit or declaration_compatibility.get("min_tunakit") or ""
+    min_tuna = str(args.min_tuna or declaration_compatibility.get("min_tuna") or "").strip()
+    min_tunakit = str(
+        args.min_tunakit or declaration_compatibility.get("min_tunakit") or ""
+    ).strip()
+
+    if manifest_type == "extension":
+        if not min_tuna:
+            print(
+                "Extension compatibility requires min_tuna in the declaration or --min-tuna.",
+                file=sys.stderr,
+            )
+            return 1
+        if not min_tunakit:
+            print(
+                "Extension compatibility requires min_tunakit in the declaration or --min-tunakit.",
+                file=sys.stderr,
+            )
+            return 1
+    elif not min_tuna:
+        min_tuna = "1.0"
 
     compatibility = {
         "min_tuna": min_tuna,
@@ -344,6 +369,7 @@ def main() -> int:
         bundle_dest = os.path.join(payload_dir, os.path.basename(bundle_path))
         shutil.copytree(bundle_path, bundle_dest, symlinks=True)
 
+        ensure_safe_symlinks(bundle_dest)
         payload_hash = compute_payload_hash(bundle_dest)
 
         manifest_path = os.path.join(staging_root, "tunaextension.json")

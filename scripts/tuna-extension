@@ -5,6 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ARCH="$(uname -m)"
 DERIVED_DATA="${TUNA_EXTENSION_DERIVED_DATA:-$ROOT/build/dd}"
 INSTALL_DIR="${TUNA_EXTENSIONS_DEV_DIR:-$HOME/Library/Application Support/Tuna/ExtensionsDev}"
+DEFAULT_SIGNING_KEY_OP_REF="op://Brainbow/Tuna/EXTENSIONS_STORE_SIGNING_PRIVATE_KEY"
 
 usage() {
   cat <<'EOF'
@@ -92,16 +93,17 @@ case "$command" in
     ;;
   package)
     scheme="${scheme:-$(infer_scheme)}"
-    "$ROOT/scripts/ext-package.sh" "$scheme" "generic/platform=macOS" "$DERIVED_DATA"
+    EXTENSIONS_STORE_SIGNING_PRIVATE_KEY_OP="${EXTENSIONS_STORE_SIGNING_PRIVATE_KEY_OP:-$DEFAULT_SIGNING_KEY_OP_REF}" \
+      "$ROOT/scripts/ext-package.sh" "$scheme" "generic/platform=macOS" "$DERIVED_DATA"
     ;;
   upload)
     scheme="${scheme:-$(infer_scheme)}"
-    EXTENSIONS_STORE_SIGNING_PRIVATE_KEY_OP="${EXTENSIONS_STORE_SIGNING_PRIVATE_KEY_OP:-op://Brainbow/Tuna/EXTENSIONS_STORE_SIGNING_PRIVATE_KEY}" \
+    EXTENSIONS_STORE_SIGNING_PRIVATE_KEY_OP="${EXTENSIONS_STORE_SIGNING_PRIVATE_KEY_OP:-$DEFAULT_SIGNING_KEY_OP_REF}" \
       "$ROOT/scripts/upload-extension.sh" "$scheme"
     ;;
   release)
     scheme="${scheme:-$(infer_scheme)}"
-    EXTENSIONS_STORE_SIGNING_PRIVATE_KEY_OP="${EXTENSIONS_STORE_SIGNING_PRIVATE_KEY_OP:-op://Brainbow/Tuna/EXTENSIONS_STORE_SIGNING_PRIVATE_KEY}" \
+    EXTENSIONS_STORE_SIGNING_PRIVATE_KEY_OP="${EXTENSIONS_STORE_SIGNING_PRIVATE_KEY_OP:-$DEFAULT_SIGNING_KEY_OP_REF}" \
       "$ROOT/scripts/release-extension.sh" "$scheme"
     ;;
   *)

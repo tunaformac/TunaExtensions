@@ -25,13 +25,14 @@ exactly the setup a third-party extension uses.
 
 ```bash
 make                  # compile every extension (Release)
-make test             # discover and run every extension unit-test target
+make test             # release-tooling checks plus every extension unit-test target
+make test-tooling     # release-tooling checks only
 make ext-all          # build + install all into Tuna's ExtensionsDev for local development
 ./scripts/tuna-extension install --scheme ObsidianExtension
 ```
 
 Open `TunaExtensions.xcworkspace` for Xcode work. After a dev install, restart Tuna to load changed
-extension code.
+extension code. The release-tooling tests require OpenSSL 3 (`brew install openssl@3`).
 
 ## TunaKit dependency
 
@@ -47,9 +48,44 @@ Bump the pinned version deliberately, repo-wide, after reading the changelog.
 ./scripts/tuna-extension release --scheme ObsidianExtension
 ```
 
+After a release succeeds, verify the store item and the exact tag and commit printed by the command.
+Then push that tag explicitly to the public repository (replace both example values with the printed
+ones):
+
+```bash
+TAG="extensions/com.example.extension/v1.0"
+RELEASE_COMMIT="0123456789abcdef0123456789abcdef01234567"
+test "$(git rev-parse "$TAG^{commit}")" = "$RELEASE_COMMIT"
+git push origin "refs/tags/$TAG:refs/tags/$TAG"
+```
+
+Do not use `git push --tags`; each verified extension release is pushed independently.
+
 Packaging derives store metadata from the built bundle's Swift declaration,
 which requires a Tuna binary: `/Applications/Tuna.app` by default, or set
-`TUNA_BINARY`. Until a Tuna release ships with `--dump-extension-declaration`,
-point `TUNA_BINARY` at a dev build. Store screenshots live under `media/`.
+`TUNA_BINARY` to another build. Store icons and screenshots must be tracked under `media/`;
+`dist/store/` is generated output and is never used as a listing-media source.
+
+`make ext-package`, `make ext-upload`, `make ext-upload-all`, and `make ext-release` sign packages
+with `op://Brainbow/Tuna/EXTENSIONS_STORE_SIGNING_PRIVATE_KEY` by default. Override that provider
+with `EXTENSIONS_STORE_SIGNING_PRIVATE_KEY_OP`, or set `SIGNING_KEY` to a PEM file directly.
+Packaging requires both `minTuna` and `minTunaKit` from the declaration or explicit `MIN_TUNA` and
+`MIN_TUNAKIT` overrides; it never invents either floor. Store categories are curated separately and
+are not copied from declarations.
+
+Uploads require the selected extension, `.gitignore`, `Makefile`, `scripts/`, and `media/` to remain
+clean before and after packaging, including staged and untracked files. A release also refuses an
+existing version tag that does not point to the captured release commit; a matching tag makes
+reruns safe. The uploader sends a private snapshot only after its size, SHA-256, and embedded store
+signature match the packager metadata; ignored `dist/store/` output is never uploaded directly.
+
+For a non-interactive build with a contributor's Apple Development identity, pass both the team and
+the identity SHA-1 shown by `security find-identity -v -p codesigning`:
+
+```bash
+TUNA_DEVELOPMENT_TEAM=YOURTEAMID \
+TUNA_CODE_SIGN_IDENTITY=IDENTITY_SHA1 \
+  ./scripts/tuna-extension build --scheme ObsidianExtension --release
+```
 
 Docs for the extension API live at https://tunaformac.com/docs.

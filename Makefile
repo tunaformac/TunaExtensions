@@ -8,7 +8,7 @@ DERIVED_DATA := ./build/dd
 INSTALL_DIR := $(HOME)/Library/Application Support/Tuna/ExtensionsDev
 
 .DEFAULT_GOAL := build-all
-.PHONY: build-all test ext ext-all ext-package ext-upload ext-upload-all ext-release clean
+.PHONY: build-all test test-tooling ext ext-all ext-package ext-upload ext-upload-all ext-release clean
 
 define require_target
 	@test -n "$(TARGET)" || { echo "usage: make $@ TARGET=<Scheme>" >&2; exit 64; }
@@ -18,8 +18,9 @@ endef
 build-all:
 	@set -e; for SCHEME in $(EXTENSION_SCHEMES); do echo "=== $$SCHEME ==="; ./scripts/tuna-extension build --scheme "$$SCHEME" --release >/dev/null; done; echo "All extensions build."
 
-# Discover every extension unit-test target and require its shared scheme to cover it.
-test:
+# Exercise release tooling, then discover every extension unit-test target.
+# Require each shared scheme to cover every test target in its project.
+test: test-tooling
 	@set -e; found_tests=""; \
 	for PBXPROJ in */*.xcodeproj/project.pbxproj; do \
 		grep -q 'com.apple.product-type.bundle.unit-test' "$$PBXPROJ" || continue; \
@@ -34,6 +35,9 @@ test:
 	done; \
 	test -n "$$found_tests" || { echo "No extension unit-test targets found." >&2; exit 1; }; \
 	echo "All extension tests pass."
+
+test-tooling:
+	@./tests/release-tooling.sh
 
 # Build one extension and install it into Tuna's ExtensionsDev for local development.
 ext:
@@ -57,7 +61,10 @@ ext-upload:
 
 # Build + upload all extensions.
 ext-upload-all:
-	@set -e; for SCHEME in $(EXTENSION_SCHEMES); do echo "=== $$SCHEME ==="; scripts/upload-extension.sh "$$SCHEME"; done
+	@set -e; for SCHEME in $(EXTENSION_SCHEMES); do \
+		echo "=== $$SCHEME ==="; \
+		./scripts/tuna-extension upload --scheme "$$SCHEME"; \
+	done
 
 # Build + upload one extension, then tag the release commit.
 ext-release:

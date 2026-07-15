@@ -7,8 +7,32 @@ API_URL="${STORE_API_URL:-https://tunaformac.com/api/v1/items}"
 TOKEN="${RELEASE_UPLOAD_TOKEN:-}"
 TOKEN_OP_REF="${RELEASE_UPLOAD_TOKEN_OP:-op://Brainbow/Tuna/RELEASE_UPLOAD_TOKEN}"
 CREATE_GIT_TAG="${CREATE_GIT_TAG:-0}"
+RESPONSE_BODY=""
+UPLOAD_SNAPSHOT_DIR=""
 
 source "$ROOT/scripts/git-tag-helpers.sh"
+
+cleanup() {
+  if [[ -n "$RESPONSE_BODY" && -f "$RESPONSE_BODY" ]]; then
+    /bin/rm -f "$RESPONSE_BODY"
+  fi
+  if [[ -n "$UPLOAD_SNAPSHOT_DIR" && -d "$UPLOAD_SNAPSHOT_DIR" ]]; then
+    /bin/rm -rf "$UPLOAD_SNAPSHOT_DIR"
+  fi
+}
+
+trap cleanup EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+RELEASE_COMMIT="$(git -C "$ROOT" rev-parse HEAD)"
+read -r PROJECT _RESOLVED_TARGET < <("$ROOT/scripts/resolve-extension-scheme.sh" "$TARGET")
+PROJECT="${PROJECT#$ROOT/}"
+EXTENSION_DIR="$(dirname "$PROJECT")"
+RELEASE_INPUTS=("$EXTENSION_DIR" .gitignore Makefile scripts media)
+ensure_paths_committed "$ROOT" "${RELEASE_INPUTS[@]}"
+ensure_head_unchanged "$ROOT" "$RELEASE_COMMIT"
 
 if [[ -z "$TOKEN" && -n "$TOKEN_OP_REF" ]]; then
   if command -v op >/dev/null 2>&1; then
@@ -22,20 +46,14 @@ if [[ -z "$TOKEN" && -n "$TOKEN_OP_REF" ]]; then
 fi
 
 if [[ -z "$TOKEN" ]]; then
-  echo "Set RELEASE_UPLOAD_TOKEN, provide RELEASE_UPLOAD_TOKEN_OP, or configure Creds.release_upload_token." >&2
+  echo "Set RELEASE_UPLOAD_TOKEN or provide RELEASE_UPLOAD_TOKEN_OP." >&2
   exit 1
 fi
 
-PROJECT_FILE=""
-if [[ "$CREATE_GIT_TAG" == "1" ]]; then
-  read -r PROJECT _RESOLVED_TARGET < <("$ROOT/scripts/resolve-extension-scheme.sh" "$TARGET")
-  PROJECT="${PROJECT#$ROOT/}"
-  PROJECT_FILE="$PROJECT/project.pbxproj"
-  ensure_paths_committed "$ROOT" "$PROJECT_FILE"
-fi
-
-RAW_OUTPUT="$(make ext-package TARGET="$TARGET")"
-ITEM_JSON="$(echo "$RAW_OUTPUT" | python3 -c "
+RAW_OUTPUT="$(make -C "$ROOT" ext-package TARGET="$TARGET")"
+ensure_paths_committed "$ROOT" "${RELEASE_INPUTS[@]}"
+ensure_head_unchanged "$ROOT" "$RELEASE_COMMIT"
+ITEM_JSON="$(printf '%s\n' "$RAW_OUTPUT" | python3 -c "
 import json
 import sys
 
@@ -61,7 +79,7 @@ if selected is None:
 print(json.dumps(selected))
 ")"
 
-read_field() { echo "$ITEM_JSON" | python3 -c "import json,sys; d=json.load(sys.stdin); print($1)"; }
+read_field() { printf '%s\n' "$ITEM_JSON" | python3 -c "import json,sys; d=json.load(sys.stdin); print($1)"; }
 
 ID="$(read_field "d['id']")"
 NAME="$(read_field "d['name']")"
@@ -84,6 +102,80 @@ if [[ ! -f "$PKG" ]]; then
   echo "Package not found: $PKG" >&2
   exit 1
 fi
+
+UPLOAD_SNAPSHOT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/tuna-extension-upload.XXXXXX")"
+/bin/chmod 700 "$UPLOAD_SNAPSHOT_DIR"
+UPLOAD_PKG="$UPLOAD_SNAPSHOT_DIR/$(basename "$PKG")"
+ITEM_JSON_PATH="$UPLOAD_SNAPSHOT_DIR/item.json"
+/bin/cp "$PKG" "$UPLOAD_PKG"
+printf '%s\n' "$ITEM_JSON" >"$ITEM_JSON_PATH"
+/bin/chmod 400 "$UPLOAD_PKG" "$ITEM_JSON_PATH"
+
+python3 - "$UPLOAD_PKG" "$ITEM_JSON_PATH" <<'PY'
+import hashlib
+import json
+import os
+import re
+import sys
+import zipfile
+
+package_path, item_path = sys.argv[1:]
+with open(item_path, encoding="utf-8") as fh:
+    item = json.load(fh)
+
+download = item.get("download")
+if not isinstance(download, dict):
+    raise SystemExit("Refusing to upload package without download metadata.")
+
+signature = download.get("signature")
+if not isinstance(signature, dict) or not str(signature.get("signature_base64", "")).strip():
+    raise SystemExit("Refusing to upload an unsigned package.")
+
+expected_size = download.get("size_bytes")
+if isinstance(expected_size, bool) or not isinstance(expected_size, int) or expected_size < 1:
+    raise SystemExit("Refusing to upload package with an invalid declared size.")
+
+expected_checksum = str(download.get("checksum_sha256", "")).strip().lower()
+if not re.fullmatch(r"[0-9a-f]{64}", expected_checksum):
+    raise SystemExit("Refusing to upload package with an invalid declared checksum.")
+
+actual_size = os.path.getsize(package_path)
+if actual_size != expected_size:
+    raise SystemExit(
+        f"Refusing to upload package: size is {actual_size}, expected {expected_size}."
+    )
+
+digest = hashlib.sha256()
+with open(package_path, "rb") as fh:
+    for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+        digest.update(chunk)
+actual_checksum = digest.hexdigest()
+if actual_checksum != expected_checksum:
+    raise SystemExit(
+        "Refusing to upload package: checksum does not match packaging metadata."
+    )
+
+try:
+    with zipfile.ZipFile(package_path) as archive:
+        signature_entries = [
+            name for name in archive.namelist()
+            if name in {"store-signature.json", "./store-signature.json"}
+        ]
+        if len(signature_entries) != 1:
+            raise SystemExit(
+                "Refusing to upload package without exactly one root store-signature.json."
+            )
+        embedded_signature = json.loads(archive.read(signature_entries[0]))
+except zipfile.BadZipFile as error:
+    raise SystemExit("Refusing to upload package: artifact is not a valid zip archive.") from error
+except (UnicodeDecodeError, json.JSONDecodeError) as error:
+    raise SystemExit("Refusing to upload package: store-signature.json is invalid.") from error
+
+if embedded_signature != signature:
+    raise SystemExit(
+        "Refusing to upload package: embedded store signature does not match packaging metadata."
+    )
+PY
 
 slugify() {
   printf "%s" "$1" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//'
@@ -111,7 +203,6 @@ if [[ "$TARGET" == Tuna* ]]; then
 fi
 
 MEDIA_ROOTS=(
-  "$ROOT/dist/store"
   "$ROOT/media"
 )
 
@@ -137,7 +228,19 @@ content_type_for_path() {
 form_file_arg() {
   local FIELD="$1"
   local PATH_VALUE="$2"
-  printf '%s=@%s;type=%s' "$FIELD" "$PATH_VALUE" "$(content_type_for_path "$PATH_VALUE")"
+  local FILENAME="${3:-}"
+  local VALUE="$FIELD=@$PATH_VALUE"
+  if [[ -n "$FILENAME" ]]; then
+    VALUE+=";filename=$FILENAME"
+  fi
+  printf '%s;type=%s' "$VALUE" "$(content_type_for_path "$PATH_VALUE")"
+}
+
+is_tracked_file() {
+  local PATH_VALUE="$1"
+  local RELATIVE_PATH="${PATH_VALUE#$ROOT/}"
+  [[ -f "$PATH_VALUE" && ! -L "$PATH_VALUE" ]] || return 1
+  git -C "$ROOT" ls-files --error-unmatch -- "$RELATIVE_PATH" >/dev/null 2>&1
 }
 
 find_icon_path() {
@@ -146,7 +249,7 @@ find_icon_path() {
     for ROOT_DIR in "${MEDIA_ROOTS[@]}"; do
       for KEY in "${MEDIA_KEYS[@]}"; do
         CANDIDATE="$ROOT_DIR/icons/$KEY.$EXT"
-        if [[ -f "$CANDIDATE" ]]; then
+        if [[ -f "$CANDIDATE" ]] && is_tracked_file "$CANDIDATE"; then
           echo "$CANDIDATE"
           return 0
         fi
@@ -177,13 +280,13 @@ collect_screenshot_paths() {
         DIR="$ROOT_DIR/screenshots/$KEY"
         if [[ -d "$DIR" ]]; then
           for CANDIDATE in "$DIR"/*."$EXT"; do
-            [[ -f "$CANDIDATE" ]] || continue
+            [[ -f "$CANDIDATE" ]] && is_tracked_file "$CANDIDATE" || continue
             add_screenshot_path "$CANDIDATE"
           done
         fi
 
         CANDIDATE="$ROOT_DIR/screenshots/$KEY.$EXT"
-        if [[ -f "$CANDIDATE" ]]; then
+        if [[ -f "$CANDIDATE" ]] && is_tracked_file "$CANDIDATE"; then
           add_screenshot_path "$CANDIDATE"
         fi
       done
@@ -202,45 +305,62 @@ CURL_ARGS=(
   --show-error
   -X PUT "$API_URL/$ID"
   -H "Authorization: Bearer $TOKEN"
-  -F "store_item[name]=$NAME"
-  -F "store_item[summary]=$SUMMARY"
-  -F "store_item[item_type]=$TYPE"
-  -F "store_item[version]=$VERSION"
-  -F "store_item[developer_name]=$DEV_NAME"
-  -F "store_item[compatibility_min_tuna]=$MIN_TUNA"
-  -F "store_item[compatibility_min_macos]=$MIN_MACOS"
+  --form-string "store_item[name]=$NAME"
+  --form-string "store_item[summary]=$SUMMARY"
+  --form-string "store_item[item_type]=$TYPE"
+  --form-string "store_item[version]=$VERSION"
+  --form-string "store_item[developer_name]=$DEV_NAME"
+  --form-string "store_item[compatibility_min_tuna]=$MIN_TUNA"
+  --form-string "store_item[compatibility_min_macos]=$MIN_MACOS"
 )
 
 if [[ -n "$MIN_TUNAKIT" ]]; then
-  CURL_ARGS+=(-F "store_item[compatibility_min_tunakit]=$MIN_TUNAKIT")
+  CURL_ARGS+=(--form-string "store_item[compatibility_min_tunakit]=$MIN_TUNAKIT")
 fi
 
 for ARCH in "${ARCHES[@]}"; do
-  CURL_ARGS+=(-F "store_item[compatibility_arch][]=$ARCH")
+  CURL_ARGS+=(--form-string "store_item[compatibility_arch][]=$ARCH")
 done
 
 if ICON_PATH="$(find_icon_path)"; then
   echo "Using icon: $ICON_PATH"
-  CURL_ARGS+=(-F "$(form_file_arg "store_item[icon]" "$ICON_PATH")")
+  CURL_ARGS+=(--form "$(form_file_arg "store_item[icon]" "$ICON_PATH")")
 fi
 
 collect_screenshot_paths
 if [[ ${#SCREENSHOT_PATHS[@]} -gt 0 ]]; then
   echo "Using ${#SCREENSHOT_PATHS[@]} screenshot(s)"
   for SCREENSHOT_PATH in "${SCREENSHOT_PATHS[@]}"; do
-    CURL_ARGS+=(-F "$(form_file_arg "store_item[screenshots][]" "$SCREENSHOT_PATH")")
+    CURL_ARGS+=(--form "$(form_file_arg "store_item[screenshots][]" "$SCREENSHOT_PATH")")
   done
 fi
 
-CURL_ARGS+=(-F "$(form_file_arg "store_item[asset]" "$PKG")")
+CURL_ARGS+=(--form "$(form_file_arg "store_item[asset]" "$UPLOAD_PKG" "$(basename "$PKG")")")
 
-RESPONSE_BODY="$(mktemp)"
-trap 'rm -f "$RESPONSE_BODY"' EXIT
+TAG=""
+if [[ "$CREATE_GIT_TAG" == "1" ]]; then
+  case "$TYPE" in
+    extension) TAG="extensions/$ID/v$VERSION" ;;
+    theme) TAG="themes/$ID/v$VERSION" ;;
+    *)
+      echo "Unknown packaged item type for tagging: $TYPE" >&2
+      exit 1
+      ;;
+  esac
+fi
+
+RESPONSE_BODY="$(mktemp "${TMPDIR:-/tmp}/tuna-extension-upload-response.XXXXXX")"
 print_response_body() {
   if [[ -s "$RESPONSE_BODY" ]]; then
     cat "$RESPONSE_BODY" >&2
   fi
 }
+
+ensure_paths_committed "$ROOT" "${RELEASE_INPUTS[@]}"
+ensure_head_unchanged "$ROOT" "$RELEASE_COMMIT"
+if [[ -n "$TAG" ]]; then
+  ensure_tag_available_at_commit "$ROOT" "$TAG" "$RELEASE_COMMIT"
+fi
 
 if ! HTTP_CODE="$(curl "${CURL_ARGS[@]}" -o "$RESPONSE_BODY" -w "%{http_code}")"; then
   echo "Upload failed before receiving an HTTP response." >&2
@@ -258,17 +378,8 @@ if ! python3 -m json.tool < "$RESPONSE_BODY"; then
   cat "$RESPONSE_BODY"
 fi
 
-if [[ "$CREATE_GIT_TAG" == "1" ]]; then
-  case "$TYPE" in
-    extension) TAG="extensions/$ID/v$VERSION" ;;
-    theme) TAG="themes/$ID/v$VERSION" ;;
-    *)
-      echo "Unknown packaged item type for tagging: $TYPE" >&2
-      exit 1
-      ;;
-  esac
-
-  create_annotated_tag "$ROOT" "$TAG" "$NAME $VERSION"
+if [[ -n "$TAG" ]]; then
+  create_annotated_tag "$ROOT" "$TAG" "$NAME $VERSION" "$RELEASE_COMMIT"
 fi
 
 echo "Done: $NAME $VERSION"

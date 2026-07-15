@@ -8,22 +8,35 @@ DERIVED_DATA="${3:?Usage: ext-package.sh TARGET DESTINATION DERIVED_DATA}"
 OUTDIR="$ROOT/dist/store"
 TEMP_SIGNING_KEY=""
 TEMP_DECLARATION_JSON=""
+SIGNING_KEY_PATH=""
 SIGNING_KEY_OP_REF="${EXTENSIONS_STORE_SIGNING_PRIVATE_KEY_OP:-}"
+
+secure_remove() {
+  local path="$1"
+  if ! /bin/rm -P -f "$path" 2>/dev/null; then
+    /bin/rm -f "$path"
+  fi
+}
 
 cleanup() {
   if [[ -n "$TEMP_SIGNING_KEY" && -f "$TEMP_SIGNING_KEY" ]]; then
-    rm -f "$TEMP_SIGNING_KEY"
+    secure_remove "$TEMP_SIGNING_KEY"
   fi
   if [[ -n "$TEMP_DECLARATION_JSON" && -f "$TEMP_DECLARATION_JSON" ]]; then
-    rm -f "$TEMP_DECLARATION_JSON"
+    /bin/rm -f "$TEMP_DECLARATION_JSON"
   fi
 }
 
 trap cleanup EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 resolve_signing_key() {
+  SIGNING_KEY_PATH=""
+
   if [[ -n "${SIGNING_KEY:-}" ]]; then
-    printf '%s\n' "$SIGNING_KEY"
+    SIGNING_KEY_PATH="$SIGNING_KEY"
     return
   fi
 
@@ -36,17 +49,16 @@ resolve_signing_key() {
     exit 1
   fi
 
-  local pem
-  if ! pem="$(op read "$SIGNING_KEY_OP_REF" 2>/dev/null)"; then
+  local safe_target="${TARGET//[^A-Za-z0-9_.-]/-}"
+  TEMP_SIGNING_KEY="$(umask 077 && mktemp "${TMPDIR:-/tmp}/extensions-store-signing-key.${safe_target}.XXXXXX")"
+  chmod 600 "$TEMP_SIGNING_KEY"
+
+  if ! op read "$SIGNING_KEY_OP_REF" >"$TEMP_SIGNING_KEY" 2>/dev/null; then
     echo "Failed to read extensions store signing key from 1Password ($SIGNING_KEY_OP_REF)." >&2
     exit 1
   fi
 
-  local safe_target="${TARGET//[^A-Za-z0-9_.-]/-}"
-  TEMP_SIGNING_KEY="$(mktemp "${TMPDIR:-/tmp}/extensions-store-signing-key.${safe_target}.XXXXXX")"
-  chmod 600 "$TEMP_SIGNING_KEY"
-  printf '%s\n' "$pem" > "$TEMP_SIGNING_KEY"
-  printf '%s\n' "$TEMP_SIGNING_KEY"
+  SIGNING_KEY_PATH="$TEMP_SIGNING_KEY"
 }
 
 SRC="$("$ROOT/scripts/build-extension-product.sh" "$TARGET" Release "$DESTINATION" "$DERIVED_DATA")"
@@ -123,7 +135,7 @@ dump_extension_declaration() {
 
   # Assigned in the caller's shell (not a command substitution) so the EXIT
   # trap can clean it up.
-  TEMP_DECLARATION_JSON="$(mktemp "${TMPDIR:-/tmp}/tuna-extension-declaration.XXXXXX.json")"
+  TEMP_DECLARATION_JSON="$(mktemp "${TMPDIR:-/tmp}/tuna-extension-declaration.XXXXXX")"
   "$tuna_binary" --dump-extension-declaration "$SRC" >"$TEMP_DECLARATION_JSON"
 }
 
@@ -170,9 +182,7 @@ if [[ -z "$MIN_TUNA_VALUE" ]]; then
   echo "No min Tuna version: declare compatibility.minTuna in the extension or set MIN_TUNA." >&2
   exit 1
 fi
-if [[ -n "$MIN_TUNA_VALUE" ]]; then
-  ARGS+=(--min-tuna "$MIN_TUNA_VALUE")
-fi
+ARGS+=(--min-tuna "$MIN_TUNA_VALUE")
 
 MIN_TUNAKIT_VALUE="${MIN_TUNAKIT:-}"
 if [[ -z "$MIN_TUNAKIT_VALUE" ]]; then
@@ -186,9 +196,7 @@ if [[ -z "$MIN_TUNAKIT_VALUE" ]]; then
   echo "No min TunaKit version: declare compatibility.minTunaKit in the extension or set MIN_TUNAKIT." >&2
   exit 1
 fi
-if [[ -n "$MIN_TUNAKIT_VALUE" ]]; then
-  ARGS+=(--min-tunakit "$MIN_TUNAKIT_VALUE")
-fi
+ARGS+=(--min-tunakit "$MIN_TUNAKIT_VALUE")
 if [[ -n "${MIN_MACOS:-}" ]]; then
   ARGS+=(--min-macos "$MIN_MACOS")
 fi
@@ -198,7 +206,7 @@ if [[ -n "${ARCH:-}" ]]; then
   done
 fi
 
-SIGNING_KEY_PATH="$(resolve_signing_key)"
+resolve_signing_key
 if [[ -n "$SIGNING_KEY_PATH" ]]; then
   ARGS+=(--signing-key "$SIGNING_KEY_PATH")
 fi
