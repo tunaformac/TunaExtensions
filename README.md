@@ -1,5 +1,10 @@
 # TunaExtensions
 
+> [!IMPORTANT]
+> This repository describes the extension platform planned for Tuna 0.79. Tuna 0.79 has not been
+> released yet; the current public app is Tuna 0.78, so treat the instructions, compatibility
+> versions, and examples below as a release preview.
+
 First-party extensions for [Tuna](https://tunaformac.com), the macOS launcher.
 This repo is the source of truth for every first-party extension distributed through the
 Tuna store — and a set of real, working examples for building your own.
