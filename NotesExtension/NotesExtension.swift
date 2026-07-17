@@ -16,8 +16,6 @@ public final class NotesExtension: Extension {
         CatalogDeclaration(
           id: "notes", type: NotesCatalog.self, name: "Notes", enabledByDefault: true),
         CatalogDeclaration(
-          id: "notes.search", type: NotesSearchCatalog.self, name: "Notes", enabledByDefault: true),
-        CatalogDeclaration(
           id: "notes.actions", type: NotesActionsCatalog.self, name: "Notes Actions",
           enabledByDefault: true),
       ],
@@ -30,7 +28,7 @@ public final class NotesExtension: Extension {
         DefaultActionRankingDefinition(
           typeID: TypeID("com.tuna.type.note"),
           actions: [
-            DefaultActionIdentifier(catalogIdentifier: "notes.search", actionID: "open-in-notes")
+            DefaultActionIdentifier(catalogIdentifier: "notes.actions", actionID: "open-in-notes")
           ]
         )
       ],

@@ -19,15 +19,10 @@ enum NotesDatabase {
     let modifiedAt: Date
   }
 
-  enum Tint: Sendable {
-    case orange
-  }
-
   struct LoadError: Error, Sendable {
     let title: String
     let message: String
     let symbolName: String
-    let tint: Tint
   }
 
   static func fetchNotes() -> Result<[Record], LoadError> {
@@ -36,8 +31,7 @@ enum NotesDatabase {
         LoadError(
           title: "Notes Unavailable",
           message: "Unable to locate your Notes database.",
-          symbolName: "note.text",
-          tint: .orange
+          symbolName: "note.text"
         )
       )
     }
@@ -47,8 +41,7 @@ enum NotesDatabase {
         LoadError(
           title: "Notes Unavailable",
           message: "Notes database not found at \(url.path).",
-          symbolName: "note.text",
-          tint: .orange
+          symbolName: "note.text"
         )
       )
     }
@@ -63,8 +56,7 @@ enum NotesDatabase {
         LoadError(
           title: "Notes Unavailable",
           message: error.localizedDescription,
-          symbolName: "exclamationmark.triangle.fill",
-          tint: .orange
+          symbolName: "exclamationmark.triangle.fill"
         )
       )
     }
@@ -88,8 +80,7 @@ enum NotesDatabase {
       throw LoadError(
         title: "Notes Access Needed",
         message: "Enable Full Disk Access for Tuna to read Notes.\n\(message)",
-        symbolName: "lock.fill",
-        tint: .orange
+        symbolName: "lock.fill"
       )
     }
     defer { sqlite3_close(db) }
@@ -99,8 +90,7 @@ enum NotesDatabase {
       throw LoadError(
         title: "Notes Unavailable",
         message: "Unsupported Notes database schema.",
-        symbolName: "exclamationmark.triangle.fill",
-        tint: .orange
+        symbolName: "exclamationmark.triangle.fill"
       )
     }
 
@@ -138,8 +128,7 @@ enum NotesDatabase {
       throw LoadError(
         title: "Notes Unavailable",
         message: "Unsupported Notes database schema.",
-        symbolName: "exclamationmark.triangle.fill",
-        tint: .orange
+        symbolName: "exclamationmark.triangle.fill"
       )
     }
 
@@ -152,8 +141,7 @@ enum NotesDatabase {
       throw LoadError(
         title: "Notes Unavailable",
         message: "Unsupported Notes database schema.",
-        symbolName: "exclamationmark.triangle.fill",
-        tint: .orange
+        symbolName: "exclamationmark.triangle.fill"
       )
     }
     let noteTitleColumn = preferredColumn(from: noteTitleCandidates, available: cloudColumns)
@@ -218,8 +206,7 @@ enum NotesDatabase {
       throw LoadError(
         title: "Notes Unavailable",
         message: "Unsupported Notes database schema.",
-        symbolName: "exclamationmark.triangle.fill",
-        tint: .orange
+        symbolName: "exclamationmark.triangle.fill"
       )
     }
     let noteTitleColumn = preferredColumn(from: noteTitleCandidates, available: cloudColumns)
@@ -290,8 +277,7 @@ enum NotesDatabase {
       throw LoadError(
         title: "Notes Unavailable",
         message: message,
-        symbolName: "exclamationmark.triangle.fill",
-        tint: .orange
+        symbolName: "exclamationmark.triangle.fill"
       )
     }
     defer { sqlite3_finalize(statement) }
@@ -335,8 +321,7 @@ enum NotesDatabase {
       throw LoadError(
         title: "Notes Unavailable",
         message: "Unable to read Notes database schema.",
-        symbolName: "exclamationmark.triangle.fill",
-        tint: .orange
+        symbolName: "exclamationmark.triangle.fill"
       )
     }
     defer { sqlite3_finalize(statement) }
@@ -356,8 +341,7 @@ enum NotesDatabase {
       throw LoadError(
         title: "Notes Unavailable",
         message: "Unable to inspect Notes database schema.",
-        symbolName: "exclamationmark.triangle.fill",
-        tint: .orange
+        symbolName: "exclamationmark.triangle.fill"
       )
     }
     defer { sqlite3_finalize(statement) }

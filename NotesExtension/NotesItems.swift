@@ -82,7 +82,7 @@ final class NotesNewNoteItem: CatalogEntity, @unchecked Sendable {
 extension NotesNewNoteItem: ActionFilteringProviding {
   func allowsAction(_ action: CatalogAction, catalogIdentifier: String?) -> Bool {
     guard let catalogIdentifier else { return false }
-    guard catalogIdentifier == "notes.search" else { return false }
+    guard catalogIdentifier == "notes.actions" else { return false }
     return action.id == "to"
   }
 }
