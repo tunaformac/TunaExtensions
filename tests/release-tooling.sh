@@ -1937,6 +1937,17 @@ assert_tag_absent "missing readback icon URL"
 
 grep -Fq './scripts/tuna-extension upload --scheme "$$SCHEME"' "$ROOT/Makefile" || \
   fail "ext-upload-all bypasses the signing wrapper"
+grep -Fq 'ext-local:' "$ROOT/Makefile" || fail "the local TunaKit install task is missing"
+grep -Fq 'ext-all-local:' "$ROOT/Makefile" || fail "the all-extension local TunaKit task is missing"
+grep -Fq 'prepare-local-tunakit-package.sh' "$ROOT/Makefile" || \
+  fail "local extension tasks do not prepare TunaKit from source"
+if rg -n 'TUNA_LOCAL_TUNAKIT_PACKAGE' \
+  "$ROOT/scripts/tuna-extension" \
+  "$ROOT/scripts/ext-package.sh" \
+  "$ROOT/scripts/upload-extension.sh" \
+  "$ROOT/scripts/release-extension.sh" >/dev/null; then
+  fail "release-backed commands can select the local TunaKit package"
+fi
 grep -q 'DEFAULT_SIGNING_KEY_OP_REF=' "$ROOT/scripts/tuna-extension" || \
   fail "the extension command has no default signing provider"
 [[ -x "$ROOT/scripts/extension-release-state.py" ]] || \

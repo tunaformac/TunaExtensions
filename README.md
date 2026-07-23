@@ -33,11 +33,16 @@ make                  # compile every extension (Release)
 make test             # release-tooling checks plus every extension unit-test target
 make test-tooling     # release-tooling checks only
 make ext-all          # build + install all into Tuna's ExtensionsDev for local development
+make ext-all-local    # build + install all against ../Tuna's current local TunaKit
+make ext-local TARGET=SafariExtension TUNA_ROOT=../Tuna
 ./scripts/tuna-extension install --scheme ObsidianExtension
 ```
 
 Open `TunaExtensions.xcworkspace` for Xcode work. After a dev install, restart Tuna to load changed
-extension code. The release-tooling tests require OpenSSL 3 (`brew install openssl@3`).
+extension code. `ext-local` and `ext-all-local` create an ignored, temporary binary package from
+the selected Tuna checkout without changing the projects or their checked-in package resolutions.
+The release-backed `ext`, build, test, package, upload, and release commands continue to use the
+published TunaKit package. The release-tooling tests require OpenSSL 3 (`brew install openssl@3`).
 
 ## TunaKit dependency
 
