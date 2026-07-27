@@ -68,8 +68,7 @@ final class RemindersNewReminderItem: CatalogEntity, @unchecked Sendable {
 
 extension RemindersNewReminderItem: ActionFilteringProviding {
   func allowsAction(_ action: CatalogAction, catalogIdentifier: String?) -> Bool {
-    guard let catalogIdentifier else { return false }
-    guard catalogIdentifier == "reminders.search" else { return false }
+    guard catalogIdentifier == "reminders.actions" else { return false }
     return action.id == "to"
   }
 }

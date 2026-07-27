@@ -2,43 +2,26 @@ import AppKit
 import Foundation
 import TunaKit
 
-public final class ThingsActionsCatalog: NSObject, Catalog {
+/// One catalog for every Things verb. The app-scoped ones used to live in a
+/// second catalog to dodge the old app-action-enrichment gate; they scope
+/// themselves through `ThingsActions.isThingsApplication` and never needed it
+/// (ADR 0006).
+public final class ThingsActionsCatalog: NSObject, ActionCatalog {
   public let identifier: String
   public let name: String
 
-  private lazy var actions: [CatalogItem] = Self.actions()
+  public private(set) lazy var actions: [CatalogAction] = Self.actions() + Self.appActions()
 
-  public var objects: [CatalogItem] { actions }
-
-  public required init(definition: CatalogDefinition) {
+  public required init(definition: ActionCatalogDefinition) {
     self.identifier = definition.identifier
     self.name = definition.name
     super.init()
   }
-
-  public func scan() async {}
-}
-
-public final class ThingsAppActionsCatalog: NSObject, Catalog {
-  public let identifier: String
-  public let name: String
-
-  private lazy var actions: [CatalogItem] = ThingsActionsCatalog.appActions()
-
-  public var objects: [CatalogItem] { actions }
-
-  public required init(definition: CatalogDefinition) {
-    self.identifier = definition.identifier
-    self.name = definition.name
-    super.init()
-  }
-
-  public func scan() async {}
 }
 
 extension ThingsActionsCatalog {
-  static func actions() -> [CatalogItem] {
-    var items: [CatalogItem] = []
+  static func actions() -> [CatalogAction] {
+    var items: [CatalogAction] = []
 
     let showList = PredicateAwareAction(
       id: "show-in-things", title: "Show in Things", type: .action
@@ -135,7 +118,7 @@ extension ThingsActionsCatalog {
     return items
   }
 
-  static func appActions() -> [CatalogItem] {
+  static func appActions() -> [CatalogAction] {
     [
       makeAppTextAction(
         id: "create-task",

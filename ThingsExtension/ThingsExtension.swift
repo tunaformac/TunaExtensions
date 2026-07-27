@@ -24,12 +24,10 @@ public final class ThingsExtension: Extension {
       catalogs: [
         CatalogDeclaration(
           id: "things", type: ThingsCatalog.self, name: "Things Items", enabledByDefault: true),
-        CatalogDeclaration(
-          id: "things.actions", type: ThingsActionsCatalog.self, name: "Things Actions",
-          enabledByDefault: true),
-        CatalogDeclaration(
-          id: "things.app-actions", type: ThingsAppActionsCatalog.self, name: "Things App Actions",
-          enabledByDefault: true),
+      ],
+      actionCatalogs: [
+        ActionCatalogDeclaration(
+          id: "things.actions", type: ThingsActionsCatalog.self, name: "Things Actions"),
       ],
       typeRegistrations: [
         TypeRegistrationDefinition(
@@ -53,7 +51,7 @@ public final class ThingsExtension: Extension {
       appActionEnrichments: [
         AppActionEnrichmentDefinition(
           bundleIdentifiers: ["com.culturedcode.ThingsMac"],
-          catalogIdentifiers: ["things.app-actions"]
+          catalogIdentifiers: ["things.actions"]
         )
       ]
     )

@@ -15,9 +15,10 @@ public final class NotesExtension: Extension {
       catalogs: [
         CatalogDeclaration(
           id: "notes", type: NotesCatalog.self, name: "Notes", enabledByDefault: true),
-        CatalogDeclaration(
-          id: "notes.actions", type: NotesActionsCatalog.self, name: "Notes Actions",
-          enabledByDefault: true),
+      ],
+      actionCatalogs: [
+        ActionCatalogDeclaration(
+          id: "notes.actions", type: NotesActionsCatalog.self, name: "Notes Actions"),
       ],
       typeRegistrations: [
         TypeRegistrationDefinition(

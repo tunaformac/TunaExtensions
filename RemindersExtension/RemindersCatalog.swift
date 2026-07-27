@@ -44,7 +44,7 @@ public class RemindersCatalogBase: NSObject, Catalog {
     case .all:
       return itemsStore.readValue { $0 }
     case .search:
-      return [newReminderItem] + RemindersActionsCatalog.actions()
+      return [newReminderItem]
     }
   }
 

@@ -132,9 +132,10 @@ final class ObsidianExtensionTests: XCTestCase {
     let declaration = try XCTUnwrap(ext.declaration)
 
     XCTAssertTrue(
-      declaration.catalogs.contains {
+      declaration.actionCatalogs.contains {
         $0.id == "obsidian.actions" && $0.type == ObsidianActionsCatalog.self
       })
+    XCTAssertFalse(declaration.catalogs.contains { $0.id == "obsidian.actions" })
 
     let noteRanking = try XCTUnwrap(
       declaration.defaultActionRankings.first {
@@ -153,7 +154,7 @@ final class ObsidianExtensionTests: XCTestCase {
     )
 
     let obsidianOpen = try XCTUnwrap(
-      ObsidianActionsCatalog.actions().first(where: { $0.title == "Open" }) as? CatalogAction
+      ObsidianActionsCatalog.actions().first(where: { $0.title == "Open" })
     )
 
     let genericOpen = PredicateAwareAction(id: "open", title: "Open", type: .action) { _, _ in
@@ -169,7 +170,6 @@ final class ObsidianExtensionTests: XCTestCase {
     let vault = ObsidianVaultItem(vaultName: "Vault", path: "/tmp/Vault")
     let openVault = try XCTUnwrap(
       ObsidianActionsCatalog.actions().first(where: { $0.title == "Open Vault in Obsidian" })
-        as? CatalogAction
     )
 
     XCTAssertTrue(

@@ -35,10 +35,7 @@ final class ObsidianVaultItem: CatalogEntity, @unchecked Sendable {
 extension ObsidianVaultItem: ActionFilteringProviding {
   func allowsAction(_ action: CatalogAction, catalogIdentifier: String?) -> Bool {
     guard let catalogIdentifier else { return false }
-    guard
-      catalogIdentifier == ObsidianCatalogIdentifiers.search
-        || catalogIdentifier == ObsidianCatalogIdentifiers.actions
-    else { return false }
+    guard catalogIdentifier == ObsidianCatalogIdentifiers.actions else { return false }
 
     switch action.id {
     case "open-vault-in-obsidian", "new-note", "new-note.from-app", "search-vault":
@@ -85,15 +82,6 @@ final class ObsidianNoteItem: CatalogEntity, TimestampedCatalogItem, @unchecked 
 
 extension ObsidianNoteItem: ActionFilteringProviding {
   func allowsAction(_ action: CatalogAction, catalogIdentifier: String?) -> Bool {
-    if catalogIdentifier == ObsidianCatalogIdentifiers.search {
-      switch action.id {
-      case ObsidianActionHierarchyIdentifiers.openNote, "copy-obsidian-uri":
-        return true
-      default:
-        return false
-      }
-    }
-
     // Obsidian's own Open action plus CommonActionsCatalog's generic Open action.
     let openActionIDs = [ObsidianActionHierarchyIdentifiers.openNote, "open"]
     guard openActionIDs.contains(action.id) else { return true }

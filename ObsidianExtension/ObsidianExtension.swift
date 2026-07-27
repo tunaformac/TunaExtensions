@@ -14,9 +14,6 @@ public final class ObsidianExtension: Extension {
       compatibility: ExtensionDeclarationCompatibility(minTuna: "0.79", minTunaKit: "1.12.0"),
       catalogs: [
         CatalogDeclaration(
-          id: "obsidian.actions", type: ObsidianActionsCatalog.self, name: "Actions",
-          enabledByDefault: true),
-        CatalogDeclaration(
           id: "obsidian", type: ObsidianVaultsCatalog.self, name: "Vaults", enabledByDefault: true),
         CatalogDeclaration(
           id: "obsidian.notes", type: ObsidianNotesCatalog.self, name: "Notes",
@@ -24,6 +21,10 @@ public final class ObsidianExtension: Extension {
         CatalogDeclaration(
           id: "obsidian.search", type: ObsidianSearchCatalog.self, name: "Notes",
           enabledByDefault: true),
+      ],
+      actionCatalogs: [
+        ActionCatalogDeclaration(
+          id: "obsidian.actions", type: ObsidianActionsCatalog.self, name: "Obsidian Actions"),
       ],
       typeRegistrations: [
         TypeRegistrationDefinition(

@@ -2,24 +2,21 @@ import AppKit
 import Foundation
 import TunaKit
 
-public final class NotesActionsCatalog: NSObject, Catalog {
+public final class NotesActionsCatalog: NSObject, ActionCatalog {
   public let identifier: String
   public let name: String
 
-  private lazy var actions: [CatalogItem] = Self.actions()
+  public private(set) lazy var actions: [CatalogAction] = Self.actions()
 
-  public var objects: [CatalogItem] { actions }
-
-  public required init(definition: CatalogDefinition) {
+  public required init(definition: ActionCatalogDefinition) {
     self.identifier = definition.identifier
     self.name = definition.name
     super.init()
   }
 
-  public func scan() async {}
 
-  static func actions() -> [CatalogItem] {
-    var items: [CatalogItem] = []
+  static func actions() -> [CatalogAction] {
+    var items: [CatalogAction] = []
 
     let openInNotes = PredicateAwareAction(
       id: "open-in-notes", title: "Open in Notes", type: .action

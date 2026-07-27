@@ -605,8 +605,19 @@ is_tracked_file() {
   git -C "$ROOT" ls-files --error-unmatch -- "$RELATIVE_PATH" >/dev/null 2>&1
 }
 
+# An extension's own icon lives beside its sources as <ExtensionDir>/icon.<ext>.
+# media/icons/<key>.<ext> stays supported for extensions whose icon is curated
+# outside the extension directory.
 find_icon_path() {
   local ROOT_DIR KEY EXT CANDIDATE
+  for EXT in "${RASTER_MEDIA_EXTS[@]}" "${VECTOR_MEDIA_EXTS[@]}"; do
+    CANDIDATE="$ROOT/$EXTENSION_DIR/icon.$EXT"
+    if [[ -f "$CANDIDATE" ]] && is_tracked_file "$CANDIDATE"; then
+      echo "$CANDIDATE"
+      return 0
+    fi
+  done
+
   for EXT in "${RASTER_MEDIA_EXTS[@]}" "${VECTOR_MEDIA_EXTS[@]}"; do
     for ROOT_DIR in "${MEDIA_ROOTS[@]}"; do
       for KEY in "${MEDIA_KEYS[@]}"; do

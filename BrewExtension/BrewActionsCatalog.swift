@@ -83,14 +83,14 @@ enum BrewActionsCatalog {
     ID.installCask,
   ]
 
-  static func packageActions() -> [CatalogItem] {
+  static func packageActions() -> [CatalogAction] {
     [
       packageInstallAction(), packageUninstallAction(), packageUpgradeAction(),
       packageOpenPageAction(),
     ]
   }
 
-  static func actions() -> [CatalogItem] {
+  static func actions() -> [CatalogAction] {
     [
       listInstalledAction(), listOutdatedAction(), updateAction(), upgradeAllAction(),
       cleanupAction(), installAction(), installCaskAction(), textSearchAction(),
@@ -441,5 +441,19 @@ extension BrewProcessOutput {
       .filter { !$0.isEmpty }
       .joined(separator: "\n")
     return output.isEmpty ? nil : output
+  }
+}
+
+/// Homebrew's verbs. The packages themselves are items in `BrewCatalog`.
+public final class BrewActionCatalog: NSObject, ActionCatalog {
+  public let identifier: String
+  public let name: String
+
+  public private(set) lazy var actions: [CatalogAction] = BrewActionsCatalog.actions()
+
+  public required init(definition: ActionCatalogDefinition) {
+    self.identifier = definition.identifier
+    self.name = definition.name
+    super.init()
   }
 }

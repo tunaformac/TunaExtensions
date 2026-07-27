@@ -18,14 +18,12 @@ final class SafariCurrentPageRuntimeResolutionTests: XCTestCase {
     }
 
     let action: CatalogAction? = await MainActor.run {
-      let definition = CatalogDefinition(
+      let definition = ActionCatalogDefinition(
         identifier: "safari.actions",
-        name: "Safari Actions",
-        enabledByDefault: true,
-        settings: []
+        name: "Safari Actions"
       )
       let catalog = SafariActionsCatalog(definition: definition)
-      return catalog.objects.first(where: { $0.title == "Copy URL" }) as? CatalogAction
+      return catalog.actions.first(where: { $0.title == "Copy URL" })
     }
 
     guard let action else {

@@ -18,9 +18,11 @@ public final class RemindersExtension: Extension {
         CatalogDeclaration(
           id: "reminders.search", type: RemindersSearchCatalog.self, name: "Reminders",
           enabledByDefault: true),
-        CatalogDeclaration(
-          id: "reminders.actions", type: RemindersActionsCatalog.self, name: "Reminders Actions",
-          enabledByDefault: true),
+      ],
+      actionCatalogs: [
+        ActionCatalogDeclaration(
+          id: "reminders.actions", type: RemindersActionsCatalog.self,
+          name: "Reminders Actions"),
       ],
       typeRegistrations: [
         TypeRegistrationDefinition(

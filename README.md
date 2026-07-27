@@ -74,8 +74,9 @@ Do not use `git push --tags`; each verified extension release is pushed independ
 Packaging derives store metadata from the built bundle's Swift declaration,
 which requires a Tuna binary. Local development falls back to `/Applications/Tuna.app`; releases
 must set `TUNA_BINARY` to the Tuna executable from the exact extracted frozen signed/notarized
-candidate. Store icons belong at
-`media/icons/<id-or-slug>.<extension>` and screenshots at
+candidate. A store icon belongs beside its sources at `<Extension>/icon.png` — every extension
+here has one. `media/icons/<id-or-slug>.<extension>` still works for icons curated outside an
+extension directory. Screenshots live at
 `media/screenshots/<id-or-slug>/*`. Media supplied by this tooling must be tracked; curated server
 media need not be duplicated here. `dist/store/` is generated output and is never used as a
 listing-media source.

@@ -34,9 +34,10 @@ public final class SafariExtension: Extension {
         CatalogDeclaration(
           id: "safari.app", type: SafariMetaCatalog.self, name: "Safari Meta",
           enabledByDefault: true),
-        CatalogDeclaration(
-          id: "safari.actions", type: SafariActionsCatalog.self, name: "Safari Actions",
-          enabledByDefault: true),
+      ],
+      actionCatalogs: [
+        ActionCatalogDeclaration(
+          id: "safari.actions", type: SafariActionsCatalog.self, name: "Safari Actions"),
       ],
       appBrowseEnrichments: [
         AppBrowseEnrichmentDefinition(

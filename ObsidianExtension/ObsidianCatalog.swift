@@ -110,7 +110,7 @@ public class ObsidianCatalogBase: NSObject, Catalog, RetainedCatalogStateReleasi
     case .all:
       return notesStore.readValue { $0 }
     case .search:
-      return [dailyNoteItem] + ObsidianActionsCatalog.actions()
+      return [dailyNoteItem]
     }
   }
 

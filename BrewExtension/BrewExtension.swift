@@ -35,6 +35,13 @@ public final class BrewExtension: Extension {
           enabledByDefault: true
         ),
       ],
+      actionCatalogs: [
+        ActionCatalogDeclaration(
+          id: "brew.actions",
+          type: BrewActionCatalog.self,
+          name: "Homebrew Actions"
+        )
+      ],
       typeRegistrations: [
         TypeRegistrationDefinition(
           typeID: TypeID("com.tuna.type.brew-meta"),

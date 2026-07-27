@@ -2,25 +2,20 @@ import AppKit
 import Foundation
 import TunaKit
 
-public final class SafariActionsCatalog: Catalog {
+public final class SafariActionsCatalog: ActionCatalog {
   public let identifier: String
   public let name: String
 
-  private lazy var actions: [CatalogItem] = Self.makeActions()
+  public private(set) lazy var actions: [CatalogAction] = Self.makeActions()
 
-  public var objects: [CatalogItem] {
-    actions
-  }
-
-  public required init(definition: CatalogDefinition) {
+  public required init(definition: ActionCatalogDefinition) {
     self.identifier = definition.identifier
     self.name = definition.name
   }
 
-  public func scan() async {}
 
-  private static func makeActions() -> [CatalogItem] {
-    var items: [CatalogItem] = []
+  private static func makeActions() -> [CatalogAction] {
+    var items: [CatalogAction] = []
 
     let openInSafari = PredicateAwareAction(
       id: "open-in-safari", title: "Open in Safari", type: .action

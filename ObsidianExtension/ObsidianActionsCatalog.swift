@@ -26,24 +26,20 @@ private final class ObsidianOpenNoteAction: CatalogAction, ActionPredicateProvid
   }
 }
 
-public final class ObsidianActionsCatalog: NSObject, Catalog {
+public final class ObsidianActionsCatalog: NSObject, ActionCatalog {
   public let identifier: String
   public let name: String
 
-  private lazy var actions: [CatalogItem] = Self.actions()
+  public private(set) lazy var actions: [CatalogAction] = Self.actions()
 
-  public var objects: [CatalogItem] { actions }
-
-  public required init(definition: CatalogDefinition) {
+  public required init(definition: ActionCatalogDefinition) {
     self.identifier = definition.identifier
     self.name = definition.name
     super.init()
   }
 
-  public func scan() async {}
-
-  static func actions() -> [CatalogItem] {
-    var items: [CatalogItem] = []
+  static func actions() -> [CatalogAction] {
+    var items: [CatalogAction] = []
 
     let openNote = ObsidianOpenNoteAction { subject, _ in
       guard let note = subject as? ObsidianNoteItem else {
