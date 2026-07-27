@@ -56,17 +56,17 @@ public final class BrewExtension: Extension {
           inheritsFrom: [TypeID("com.tuna.type.entity")]
         ),
         TypeRegistrationDefinition(
-          typeID: TypeID("com.tuna.type.brew-package.available"),
+          typeID: TypeID("com.tuna.type.brew-package-available"),
           displayName: "Available Homebrew Packages",
           inheritsFrom: [TypeID("com.tuna.type.brew-package")]
         ),
         TypeRegistrationDefinition(
-          typeID: TypeID("com.tuna.type.brew-package.installed"),
+          typeID: TypeID("com.tuna.type.brew-package-installed"),
           displayName: "Installed Homebrew Packages",
           inheritsFrom: [TypeID("com.tuna.type.brew-package")]
         ),
         TypeRegistrationDefinition(
-          typeID: TypeID("com.tuna.type.brew-package.outdated"),
+          typeID: TypeID("com.tuna.type.brew-package-outdated"),
           displayName: "Outdated Homebrew Packages",
           inheritsFrom: [TypeID("com.tuna.type.brew-package")]
         ),
@@ -75,36 +75,36 @@ public final class BrewExtension: Extension {
         DefaultActionRankingDefinition(
           typeID: TypeID("com.tuna.type.brew-meta"),
           actions: [
-            DefaultActionIdentifier(catalogIdentifier: "brew.search", actionID: "browse-installed"),
-            DefaultActionIdentifier(catalogIdentifier: "brew.search", actionID: "browse-outdated"),
+            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "browse-installed"),
+            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "browse-outdated"),
             DefaultActionIdentifier(
-              catalogIdentifier: "brew.search", actionID: "install.from-text"),
-            DefaultActionIdentifier(catalogIdentifier: "brew.search", actionID: "install-cask"),
-            DefaultActionIdentifier(catalogIdentifier: "brew.search", actionID: "update"),
-            DefaultActionIdentifier(catalogIdentifier: "brew.search", actionID: "upgrade-all"),
-            DefaultActionIdentifier(catalogIdentifier: "brew.search", actionID: "cleanup"),
+              catalogIdentifier: "brew.actions", actionID: "install-from-text"),
+            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "install-cask"),
+            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "update"),
+            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "upgrade-all"),
+            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "cleanup"),
           ]
         ),
         DefaultActionRankingDefinition(
-          typeID: TypeID("com.tuna.type.brew-package.available"),
+          typeID: TypeID("com.tuna.type.brew-package-available"),
           actions: [
-            DefaultActionIdentifier(catalogIdentifier: "brew.search", actionID: "install"),
-            DefaultActionIdentifier(catalogIdentifier: "brew.search", actionID: "open-info"),
+            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "install"),
+            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "open-info"),
           ]
         ),
         DefaultActionRankingDefinition(
-          typeID: TypeID("com.tuna.type.brew-package.installed"),
+          typeID: TypeID("com.tuna.type.brew-package-installed"),
           actions: [
-            DefaultActionIdentifier(catalogIdentifier: "brew.search", actionID: "uninstall"),
-            DefaultActionIdentifier(catalogIdentifier: "brew.search", actionID: "open-info"),
+            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "uninstall"),
+            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "open-info"),
           ]
         ),
         DefaultActionRankingDefinition(
-          typeID: TypeID("com.tuna.type.brew-package.outdated"),
+          typeID: TypeID("com.tuna.type.brew-package-outdated"),
           actions: [
-            DefaultActionIdentifier(catalogIdentifier: "brew.search", actionID: "upgrade"),
-            DefaultActionIdentifier(catalogIdentifier: "brew.search", actionID: "uninstall"),
-            DefaultActionIdentifier(catalogIdentifier: "brew.search", actionID: "open-info"),
+            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "upgrade"),
+            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "uninstall"),
+            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "open-info"),
           ]
         ),
       ]

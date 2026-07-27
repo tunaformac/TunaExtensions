@@ -32,7 +32,7 @@ public final class SafariExtension: Extension {
           id: "safari.favorites.search", type: SafariFavoritesSearchCatalog.self, name: "Favorites",
           enabledByDefault: true),
         CatalogDeclaration(
-          id: "safari.app", type: SafariMetaCatalog.self, name: "Safari Meta",
+          id: "safari.utilities", type: SafariMetaCatalog.self, name: "Safari Utilities",
           enabledByDefault: true),
       ],
       actionCatalogs: [

@@ -139,7 +139,7 @@ final class ObsidianExtensionTests: XCTestCase {
 
     let noteRanking = try XCTUnwrap(
       declaration.defaultActionRankings.first {
-        $0.typeID == TypeID("com.tuna.type.obsidian.note")
+        $0.typeID == TypeID("com.tuna.type.obsidian-note")
       })
     XCTAssertEqual(noteRanking.actions.first?.catalogIdentifier, "obsidian.actions")
   }

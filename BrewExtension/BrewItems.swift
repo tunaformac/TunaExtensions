@@ -133,7 +133,7 @@ final class BrewPackageItem: CatalogItem, ActionFilteringProviding, @unchecked S
 extension TypeID {
   static let brewMeta = TypeID("com.tuna.type.brew-meta")
   static let brewPackage = TypeID("com.tuna.type.brew-package")
-  static let brewPackageAvailable = TypeID("com.tuna.type.brew-package.available")
-  static let brewPackageInstalled = TypeID("com.tuna.type.brew-package.installed")
-  static let brewPackageOutdated = TypeID("com.tuna.type.brew-package.outdated")
+  static let brewPackageAvailable = TypeID("com.tuna.type.brew-package-available")
+  static let brewPackageInstalled = TypeID("com.tuna.type.brew-package-installed")
+  static let brewPackageOutdated = TypeID("com.tuna.type.brew-package-outdated")
 }

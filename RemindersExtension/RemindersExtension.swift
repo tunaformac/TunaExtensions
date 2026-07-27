@@ -8,7 +8,7 @@ public final class RemindersExtension: Extension {
       metadata: ExtensionMetadata(
         displayName: "Reminders",
         author: "Tuna",
-        description: "Search reminders and manage tasks.",
+        description: "Search and manage reminders.",
         iconName: "checklist"
       ),
       compatibility: ExtensionDeclarationCompatibility(minTuna: "0.79", minTunaKit: "1.12.0"),

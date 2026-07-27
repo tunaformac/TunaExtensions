@@ -48,7 +48,7 @@ enum BrewActionsCatalog {
     static let update = "update"
     static let upgradeAll = "upgrade-all"
     static let cleanup = "cleanup"
-    static let install = "install.from-text"
+    static let install = "install-from-text"
     static let installCask = "install-cask"
 
     static let packageInstall = "install"

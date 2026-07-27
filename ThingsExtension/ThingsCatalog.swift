@@ -65,7 +65,7 @@ extension ThingsCatalog {
         title: "Logbook",
         listID: "logbook",
         symbolName: "archivebox",
-        detail: "Completed tasks"
+        detail: "Completed to-dos"
       ),
       ListDefinition(
         title: "Tomorrow",
@@ -83,7 +83,7 @@ extension ThingsCatalog {
         title: "Repeating",
         listID: "repeating",
         symbolName: "repeat",
-        detail: "Repeating tasks"
+        detail: "Repeating to-dos"
       ),
       ListDefinition(
         title: "All Projects",

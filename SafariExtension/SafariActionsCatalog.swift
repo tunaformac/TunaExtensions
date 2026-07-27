@@ -81,7 +81,7 @@ public final class SafariActionsCatalog: ActionCatalog {
     items.append(copyURL)
 
     let copyTargetURL = PredicateAwareAction(
-      id: "copy-url.target", title: "Copy URL", type: .action
+      id: "copy-url-from-target", title: "Copy URL", type: .action
     ) { _, target in
       guard let url = SafariURLActions.url(from: target) else {
         return .failure("No URL to copy")

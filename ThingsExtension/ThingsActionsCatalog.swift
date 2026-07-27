@@ -121,18 +121,18 @@ extension ThingsActionsCatalog {
   static func appActions() -> [CatalogAction] {
     [
       makeAppTextAction(
-        id: "create-task",
-        title: "Create Task",
+        id: "create-to-do",
+        title: "Create To-Do",
         symbolName: "plus.circle",
-        failure: "Missing task title"
+        failure: "Missing to-do title"
       ) { title in
         ThingsURLBuilder.addURL(title: title, note: nil, when: nil)
       },
       makeAppTextAction(
-        id: "create-today-task",
-        title: "Create Today Task",
+        id: "create-today-to-do",
+        title: "Create Today To-Do",
         symbolName: "sun.max",
-        failure: "Missing task title"
+        failure: "Missing to-do title"
       ) { title in
         ThingsURLBuilder.addURL(title: title, note: nil, when: "today")
       },
@@ -140,7 +140,7 @@ extension ThingsActionsCatalog {
         id: "create-quick-entry",
         title: "Create Quick Entry",
         symbolName: "square.and.pencil",
-        failure: "Missing task title",
+        failure: "Missing to-do title",
         activates: true
       ) { title in
         ThingsURLBuilder.addURL(title: title, note: nil, when: nil, showQuickEntry: true)

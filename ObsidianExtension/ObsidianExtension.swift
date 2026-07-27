@@ -28,21 +28,21 @@ public final class ObsidianExtension: Extension {
       ],
       typeRegistrations: [
         TypeRegistrationDefinition(
-          typeID: TypeID("com.tuna.type.obsidian.note"), displayName: "Obsidian Notes",
+          typeID: TypeID("com.tuna.type.obsidian-note"), displayName: "Obsidian Notes",
           inheritsFrom: [TypeID("com.tuna.type.file")]),
         TypeRegistrationDefinition(
-          typeID: TypeID("com.tuna.type.obsidian.vault"), displayName: "Obsidian Vaults",
+          typeID: TypeID("com.tuna.type.obsidian-vault"), displayName: "Obsidian Vaults",
           inheritsFrom: [TypeID("com.tuna.type.directory")]),
       ],
       defaultActionRankings: [
         DefaultActionRankingDefinition(
-          typeID: TypeID("com.tuna.type.obsidian.note"),
+          typeID: TypeID("com.tuna.type.obsidian-note"),
           actions: [
             DefaultActionIdentifier(catalogIdentifier: "obsidian.actions", actionID: "open")
           ]
         ),
         DefaultActionRankingDefinition(
-          typeID: TypeID("com.tuna.type.obsidian.vault"),
+          typeID: TypeID("com.tuna.type.obsidian-vault"),
           actions: [
             DefaultActionIdentifier(
               catalogIdentifier: "obsidian.actions", actionID: "open-vault-in-obsidian")

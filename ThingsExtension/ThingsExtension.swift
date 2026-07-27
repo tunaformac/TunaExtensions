@@ -9,16 +9,16 @@ public final class ThingsExtension: Extension {
         displayName: "Things",
         author: "Tuna",
         description: "Create Things to-dos and jump to lists.",
-        iconName: "checklist"
+        iconName: "checkmark.circle"
       ),
       compatibility: ExtensionDeclarationCompatibility(minTuna: "0.79", minTunaKit: "1.12.0"),
       settings: [
         CatalogSettingDefinition(
           key: "ShowThingsWhenAdding",
           type: .bool,
-          label: "Show Things when adding tasks",
+          label: "Show Things when adding to-dos",
           defaultValue: "true",
-          description: "When off, Tuna will try to add tasks without activating Things."
+          description: "When off, Tuna will try to add to-dos without activating Things."
         )
       ],
       catalogs: [

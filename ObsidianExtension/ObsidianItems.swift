@@ -90,8 +90,8 @@ extension ObsidianNoteItem: ActionFilteringProviding {
 }
 
 extension TypeID {
-  static let obsidianNote = TypeID("com.tuna.type.obsidian.note")
-  static let obsidianVault = TypeID("com.tuna.type.obsidian.vault")
+  static let obsidianNote = TypeID("com.tuna.type.obsidian-note")
+  static let obsidianVault = TypeID("com.tuna.type.obsidian-vault")
 }
 
 final class ObsidianDailyNoteItem: CatalogEntity, Runnable, @unchecked Sendable {

@@ -90,7 +90,7 @@ public class RemindersCatalogBase: NSObject, Catalog {
       messageStore.value = [
         CatalogMessageItem(
           title: "Reminders Access Needed",
-          message: "Enable reminders permissions for Tuna to surface your tasks.",
+          message: "Enable reminders permissions for Tuna to surface your reminders.",
           symbolName: "checklist.unchecked",
           tintColor: .systemOrange
         )
