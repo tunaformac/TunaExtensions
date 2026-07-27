@@ -11,7 +11,7 @@ public final class ObsidianExtension: Extension {
         description: "Obsidian vaults, notes, and actions.",
         iconName: "square.stack.3d.up"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.79", minTunaKit: "1.12.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.79", minTunaKit: "1.13.0"),
       catalogs: [
         CatalogDeclaration(
           id: "obsidian", type: ObsidianVaultsCatalog.self, name: "Vaults", enabledByDefault: true),
