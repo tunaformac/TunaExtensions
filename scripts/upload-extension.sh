@@ -747,6 +747,38 @@ if package_entries(candidate_path) != package_entries(public_path):
 PY
 }
 
+verify_downloaded_artifact_against_store() {
+  local CONTEXT="$1"
+  python3 - "$RESPONSE_BODY" "$PUBLIC_ARTIFACT_PATH" "$CONTEXT" <<'PY'
+import hashlib
+import json
+import os
+import sys
+
+response_path, artifact_path, context = sys.argv[1:]
+with open(response_path, encoding="utf-8") as response_file:
+    download = json.load(response_file)["data"]["item"]["download"]
+
+actual_size = os.path.getsize(artifact_path)
+if actual_size != download["size_bytes"]:
+    raise SystemExit(f"{context} artifact size does not match the store response.")
+
+digest = hashlib.sha256()
+with open(artifact_path, "rb") as artifact_file:
+    for chunk in iter(lambda: artifact_file.read(1024 * 1024), b""):
+        digest.update(chunk)
+if digest.hexdigest() != download["checksum_sha256"].lower():
+    raise SystemExit(f"{context} artifact SHA-256 does not match the store response.")
+PY
+}
+
+extension_source_matches_release_tag() {
+  [[ -n "$TAG" ]] || return 1
+  git -C "$ROOT" show-ref --verify --quiet "refs/tags/$TAG" || return 1
+  [[ "$(git -C "$ROOT" cat-file -t "$TAG")" == "tag" ]] || return 1
+  git -C "$ROOT" diff --quiet "${TAG}^{commit}" HEAD -- "$EXTENSION_DIR"
+}
+
 write_upload_auth_config() {
   local ESCAPED_TOKEN
 
@@ -829,6 +861,9 @@ case "$PREFLIGHT_HTTP_CODE" in
           echo "Store already has the exact verified $ID $VERSION release; skipping PUT."
         elif verify_public_package_contents "Store preflight"; then
           echo "Store already has the same signed $ID $VERSION contents; skipping PUT."
+        elif extension_source_matches_release_tag \
+          && verify_downloaded_artifact_against_store "Store preflight"; then
+          echo "Store already has $ID $VERSION from its unchanged tagged source; skipping PUT."
         else
           echo "Store release $ID $VERSION differs from the candidate; bump its version." >&2
           exit 1
