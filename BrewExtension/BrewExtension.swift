@@ -75,36 +75,36 @@ public final class BrewExtension: Extension {
         DefaultActionRankingDefinition(
           typeID: TypeID("com.tuna.type.brew-meta"),
           actions: [
-            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "browse-installed"),
-            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "browse-outdated"),
-            DefaultActionIdentifier(
+            ActionReference(catalogIdentifier: "brew.actions", actionID: "browse-installed"),
+            ActionReference(catalogIdentifier: "brew.actions", actionID: "browse-outdated"),
+            ActionReference(
               catalogIdentifier: "brew.actions", actionID: "install-from-text"),
-            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "install-cask"),
-            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "update"),
-            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "upgrade-all"),
-            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "cleanup"),
+            ActionReference(catalogIdentifier: "brew.actions", actionID: "install-cask"),
+            ActionReference(catalogIdentifier: "brew.actions", actionID: "update"),
+            ActionReference(catalogIdentifier: "brew.actions", actionID: "upgrade-all"),
+            ActionReference(catalogIdentifier: "brew.actions", actionID: "cleanup"),
           ]
         ),
         DefaultActionRankingDefinition(
           typeID: TypeID("com.tuna.type.brew-package-available"),
           actions: [
-            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "install"),
-            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "open-info"),
+            ActionReference(catalogIdentifier: "brew.actions", actionID: "install"),
+            ActionReference(catalogIdentifier: "brew.actions", actionID: "open-info"),
           ]
         ),
         DefaultActionRankingDefinition(
           typeID: TypeID("com.tuna.type.brew-package-installed"),
           actions: [
-            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "uninstall"),
-            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "open-info"),
+            ActionReference(catalogIdentifier: "brew.actions", actionID: "uninstall"),
+            ActionReference(catalogIdentifier: "brew.actions", actionID: "open-info"),
           ]
         ),
         DefaultActionRankingDefinition(
           typeID: TypeID("com.tuna.type.brew-package-outdated"),
           actions: [
-            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "upgrade"),
-            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "uninstall"),
-            DefaultActionIdentifier(catalogIdentifier: "brew.actions", actionID: "open-info"),
+            ActionReference(catalogIdentifier: "brew.actions", actionID: "upgrade"),
+            ActionReference(catalogIdentifier: "brew.actions", actionID: "uninstall"),
+            ActionReference(catalogIdentifier: "brew.actions", actionID: "open-info"),
           ]
         ),
       ]

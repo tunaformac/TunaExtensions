@@ -33,10 +33,10 @@ public final class RemindersExtension: Extension {
         DefaultActionRankingDefinition(
           typeID: TypeID("com.tuna.type.reminder"),
           actions: [
-            DefaultActionIdentifier(
-              catalogIdentifier: "reminders.search", actionID: "mark-complete"),
-            DefaultActionIdentifier(
-              catalogIdentifier: "reminders.search", actionID: "open-in-reminders"),
+            ActionReference(
+              catalogIdentifier: "reminders.actions", actionID: "mark-complete"),
+            ActionReference(
+              catalogIdentifier: "reminders.actions", actionID: "open-in-reminders"),
           ]
         )
       ],

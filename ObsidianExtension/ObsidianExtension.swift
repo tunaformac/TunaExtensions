@@ -38,13 +38,15 @@ public final class ObsidianExtension: Extension {
         DefaultActionRankingDefinition(
           typeID: TypeID("com.tuna.type.obsidian-note"),
           actions: [
-            DefaultActionIdentifier(catalogIdentifier: "obsidian.actions", actionID: "open")
+            ActionReference(
+              catalogIdentifier: ObsidianCatalogIdentifiers.actions,
+              actionID: ObsidianActionHierarchyIdentifiers.openNote)
           ]
         ),
         DefaultActionRankingDefinition(
           typeID: TypeID("com.tuna.type.obsidian-vault"),
           actions: [
-            DefaultActionIdentifier(
+            ActionReference(
               catalogIdentifier: "obsidian.actions", actionID: "open-vault-in-obsidian")
           ]
         ),

@@ -38,7 +38,7 @@ public final class ThingsExtension: Extension {
         DefaultActionRankingDefinition(
           typeID: TypeID("com.tuna.type.things-list"),
           actions: [
-            DefaultActionIdentifier(catalogIdentifier: "things.actions", actionID: "show-in-things")
+            ActionReference(catalogIdentifier: "things.actions", actionID: "show-in-things")
           ]
         )
       ],

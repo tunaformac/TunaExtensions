@@ -142,6 +142,19 @@ final class ObsidianExtensionTests: XCTestCase {
         $0.typeID == TypeID("com.tuna.type.obsidian-note")
       })
     XCTAssertEqual(noteRanking.actions.first?.catalogIdentifier, "obsidian.actions")
+
+    let catalog = ObsidianActionsCatalog(
+      definition: ActionCatalogDefinition(
+        identifier: ObsidianCatalogIdentifiers.actions,
+        name: "Obsidian Actions"))
+    let actionIDs = Set(catalog.actions.map(\.id))
+    for ranking in declaration.defaultActionRankings {
+      for reference in ranking.actions {
+        XCTAssertTrue(
+          actionIDs.contains(reference.actionID),
+          "Missing declared default action \(reference.catalogIdentifier).\(reference.actionID)")
+      }
+    }
   }
 
   func testNoteFilteringKeepsObsidianOpenButHidesGenericOpen() throws {
