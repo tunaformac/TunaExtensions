@@ -327,7 +327,7 @@ def controlled_fields(item, label):
     }
 
 
-def exact_mismatches(candidate, remote):
+def exact_mismatches(candidate, remote, include_artifact=True):
     labels = {
         "id": "id",
         "type": "type",
@@ -342,9 +342,13 @@ def exact_mismatches(candidate, remote):
         "size": "package size",
         "checksum": "package SHA-256",
     }
+    keys = list(labels)
+    if not include_artifact:
+        keys.remove("size")
+        keys.remove("checksum")
     return [
         f"{labels[key]} is {remote[key]!r}, expected {candidate[key]!r}"
-        for key in labels
+        for key in keys
         if remote[key] != candidate[key]
     ]
 
@@ -415,7 +419,7 @@ if mode == "preflight":
         print(f"upload\t{remote['version']}")
         raise SystemExit(0)
 
-    mismatches = exact_mismatches(candidate, remote)
+    mismatches = exact_mismatches(candidate, remote, include_artifact=False)
     if mismatches:
         fail("equal-version release differs: " + "; ".join(mismatches) + ".")
 
@@ -708,6 +712,41 @@ if actual_checksum != expected_checksum:
 PY
 }
 
+verify_public_package_contents() {
+  local CONTEXT="$1"
+  python3 - "$UPLOAD_PKG" "$PUBLIC_ARTIFACT_PATH" "$CONTEXT" <<'PY'
+import json
+import sys
+import zipfile
+
+candidate_path, public_path, context = sys.argv[1:]
+
+
+def package_entries(path):
+    try:
+        with zipfile.ZipFile(path) as archive:
+            names = archive.namelist()
+            if len(names) != len(set(names)):
+                raise SystemExit(f"{context} package contains duplicate ZIP entries.")
+            entries = {name: archive.read(name) for name in names if not name.endswith("/")}
+    except zipfile.BadZipFile as error:
+        raise SystemExit(f"{context} package is not a valid ZIP archive.") from error
+
+    signature_name = "store-signature.json"
+    try:
+        signature = json.loads(entries[signature_name])
+    except (KeyError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise SystemExit(f"{context} package has an invalid store signature.") from error
+    signature.pop("signed_at", None)
+    entries[signature_name] = json.dumps(signature, sort_keys=True).encode("utf-8")
+    return entries
+
+
+if package_entries(candidate_path) != package_entries(public_path):
+    raise SystemExit(f"{context} package contents differ from the candidate.")
+PY
+}
+
 write_upload_auth_config() {
   local ESCAPED_TOKEN
 
@@ -788,9 +827,11 @@ case "$PREFLIGHT_HTTP_CODE" in
         REMOTE_DOWNLOAD_URL="$(store_download_url)"
         if verify_public_artifact "$REMOTE_DOWNLOAD_URL" "Store preflight"; then
           echo "Store already has the exact verified $ID $VERSION release; skipping PUT."
+        elif verify_public_package_contents "Store preflight"; then
+          echo "Store already has the same signed $ID $VERSION contents; skipping PUT."
         else
-          RELEASE_ACTION="recover"
-          echo "Store release $ID $VERSION has missing or mismatched public bytes; preparing recovery."
+          echo "Store release $ID $VERSION differs from the candidate; bump its version." >&2
+          exit 1
         fi
         ;;
       *)

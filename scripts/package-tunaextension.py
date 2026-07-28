@@ -7,9 +7,11 @@ import json
 import os
 import plistlib
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
+import zipfile
 
 
 def openssl_binary() -> str:
@@ -218,6 +220,40 @@ def utc_now_iso8601() -> str:
     return dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
+def signature_timestamp() -> str:
+    epoch = int(os.environ.get("SOURCE_DATE_EPOCH", "0"))
+    return (
+        dt.datetime.fromtimestamp(epoch, dt.timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
+
+
+def write_reproducible_zip(source: str, destination: str) -> None:
+    with zipfile.ZipFile(destination, "w") as archive:
+        for root, dirs, files in os.walk(source):
+            dirs.sort()
+            files.sort()
+            for name in dirs + files:
+                path = os.path.join(root, name)
+                relative = os.path.relpath(path, source)
+                mode = os.lstat(path).st_mode
+                info = zipfile.ZipInfo(relative, (1980, 1, 1, 0, 0, 0))
+                info.create_system = 3
+                info.external_attr = (mode & 0xFFFF) << 16
+                if stat.S_ISLNK(mode):
+                    archive.writestr(info, os.readlink(path).encode("utf-8"))
+                elif stat.S_ISDIR(mode):
+                    info.filename += "/"
+                    info.external_attr |= 0x10
+                    archive.writestr(info, b"")
+                else:
+                    info.compress_type = zipfile.ZIP_DEFLATED
+                    with open(path, "rb") as source_file:
+                        archive.writestr(info, source_file.read())
+
+
 def resolve_min_macos(requested: str, bundle_min_macos: str) -> str:
     value = requested.strip() if requested else ""
     if value:
@@ -398,7 +434,7 @@ def main() -> int:
             signature_doc = {
                 "algorithm": "ed25519",
                 "key_id": args.key_id,
-                "signed_at": utc_now_iso8601(),
+                "signed_at": signature_timestamp(),
                 "signature_base64": signature_b64,
             }
             signature_path = os.path.join(staging_root, "store-signature.json")
@@ -415,10 +451,7 @@ def main() -> int:
         if os.path.exists(package_path):
             os.remove(package_path)
 
-        subprocess.run(
-            ["/usr/bin/ditto", "-c", "-k", "--sequesterRsrc", staging_root, package_path],
-            check=True,
-        )
+        write_reproducible_zip(staging_root, package_path)
 
         package_checksum = sha256_file(package_path)
         package_size = os.path.getsize(package_path)

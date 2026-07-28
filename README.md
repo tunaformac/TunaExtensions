@@ -75,7 +75,9 @@ are not copied from declarations.
 Uploads require the selected extension, `.gitignore`, `Makefile`, `scripts/`, and `media/` to remain
 clean before and after packaging, including staged and untracked files. A release also refuses an
 existing version tag that does not point to the captured release commit; a matching tag makes
-reruns safe. Packages are deterministic, so rerunning from the same source produces the same bytes.
+reruns safe. Packages use fixed timestamps and sorted ZIP entries, so rerunning from the same source
+produces the same bytes. Releases made before deterministic packaging are compared by their signed
+manifest and payload contents when their outer ZIP bytes differ.
 
 The uploader sends private snapshots of the package and tracked listing media; media bytes
 come from the captured release commit rather than mutable worktree paths, and ignored `dist/store/`
