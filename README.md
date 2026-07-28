@@ -1,10 +1,5 @@
 # TunaExtensions
 
-> [!IMPORTANT]
-> This repository describes the extension platform planned for Tuna 0.80. Tuna 0.80 has not been
-> released yet; the current public app is Tuna 0.78, so treat the instructions, compatibility
-> versions, and examples below as a release preview.
-
 First-party extensions for [Tuna](https://tunaformac.com), the macOS launcher.
 This repo is the source of truth for every first-party extension distributed through the
 Tuna store — and a set of real, working examples for building your own.
@@ -30,8 +25,7 @@ exactly the setup a third-party extension uses.
 
 ```bash
 make                  # compile every extension (Release)
-make test             # release-tooling checks plus every extension unit-test target
-make test-tooling     # release-tooling checks only
+make test             # run every extension unit-test target
 make ext-all          # build + install all into Tuna's ExtensionsDev for local development
 make ext-all-local    # build + install all against ../Tuna's current local TunaKit
 make ext-local TARGET=SafariExtension TUNA_ROOT=../Tuna
@@ -42,7 +36,7 @@ Open `TunaExtensions.xcworkspace` for Xcode work. After a dev install, restart T
 extension code. `ext-local` and `ext-all-local` create an ignored, temporary binary package from
 the selected Tuna checkout without changing the projects or their checked-in package resolutions.
 The release-backed `ext`, build, test, package, upload, and release commands continue to use the
-published TunaKit package. The release-tooling tests require OpenSSL 3 (`brew install openssl@3`).
+published TunaKit package.
 
 ## TunaKit dependency
 
@@ -54,34 +48,24 @@ Bump the pinned version deliberately, repo-wide, after reading the changelog.
 ## Packaging and releasing (maintainers)
 
 ```bash
-./scripts/tuna-extension package --scheme ObsidianExtension
-./scripts/tuna-extension release --scheme ObsidianExtension
+make release TARGET=ObsidianExtension
+make release-all
 ```
 
-After a release succeeds, verify the store item and the exact tag and commit printed by the command.
-Then push that tag explicitly to the public repository (replace both example values with the printed
-ones):
-
-```bash
-TAG="extensions/com.example.extension/v1.0"
-RELEASE_COMMIT="0123456789abcdef0123456789abcdef01234567"
-test "$(git rev-parse "$TAG^{commit}")" = "$RELEASE_COMMIT"
-git push origin "refs/tags/$TAG:refs/tags/$TAG"
-```
-
-Do not use `git push --tags`; each verified extension release is pushed independently.
+The command tests, builds, signs, uploads, downloads and verifies the public package, then creates
+and pushes its annotated tag. `release-all` verifies already-published matching versions and only
+uploads versions that are newer or need their bytes repaired.
 
 Packaging derives store metadata from the built bundle's Swift declaration,
-which requires a Tuna binary. Local development falls back to `/Applications/Tuna.app`; releases
-must set `TUNA_BINARY` to the Tuna executable from the exact extracted frozen signed/notarized
-candidate. A store icon belongs beside its sources at `<Extension>/icon.png` — every extension
+which requires a Tuna binary. It uses `TUNA_BINARY` when provided and otherwise falls back to
+`/Applications/Tuna.app`. A store icon belongs beside its sources at `<Extension>/icon.png` — every extension
 here has one. `media/icons/<id-or-slug>.<extension>` still works for icons curated outside an
 extension directory. Screenshots live at
 `media/screenshots/<id-or-slug>/*`. Media supplied by this tooling must be tracked; curated server
 media need not be duplicated here. `dist/store/` is generated output and is never used as a
 listing-media source.
 
-`make ext-package`, `make ext-upload`, `make ext-upload-all`, and `make ext-release` sign packages
+`make ext-package`, `make ext-upload`, `make release`, and `make release-all` sign packages
 with `op://Brainbow/Tuna/EXTENSIONS_STORE_SIGNING_PRIVATE_KEY` by default. Override that provider
 with `EXTENSIONS_STORE_SIGNING_PRIVATE_KEY_OP`, or set `SIGNING_KEY` to a PEM file directly.
 Packaging requires both `minTuna` and `minTunaKit` from the declaration or explicit `MIN_TUNA` and
@@ -91,15 +75,9 @@ are not copied from declarations.
 Uploads require the selected extension, `.gitignore`, `Makefile`, `scripts/`, and `media/` to remain
 clean before and after packaging, including staged and untracked files. A release also refuses an
 existing version tag that does not point to the captured release commit; a matching tag makes
-reruns safe. Before its first public request, `make ext-release` freezes the validated package and
-metadata under `dist/release-state/<scheme>/<source-commit>/`. A retry at that exact commit reuses
-those bytes instead of rebuilding a timestamped package. Preserve that state until the public item
-and release tag are both verified and the exact tag is pushed; corrupt or mismatched state fails
-closed. Never delete it after an uncertain upload response just to force a rebuild. If packaging was
-killed before state was frozen, confirm that no release process is running before removing the empty
-lock directory reported by the next attempt.
+reruns safe. Packages are deterministic, so rerunning from the same source produces the same bytes.
 
-The uploader sends private snapshots of the frozen package and tracked listing media; media bytes
+The uploader sends private snapshots of the package and tracked listing media; media bytes
 come from the captured release commit rather than mutable worktree paths, and ignored `dist/store/`
 output is never uploaded directly.
 

@@ -14,11 +14,6 @@ TOKEN_OP_REF="${RELEASE_UPLOAD_TOKEN_OP:-op://Brainbow/Tuna/RELEASE_UPLOAD_TOKEN
 CREATE_GIT_TAG="${CREATE_GIT_TAG:-0}"
 RESPONSE_BODY=""
 UPLOAD_SNAPSHOT_DIR=""
-RELEASE_STATE_ROOT="${TUNA_EXTENSION_RELEASE_STATE_ROOT:-$ROOT/dist/release-state}"
-RELEASE_STATE_DIR=""
-RELEASE_STATE_LOCK=""
-RELEASE_STATE_LOCK_HELD=0
-RELEASE_STATE_TEMP_DIR=""
 
 source "$ROOT/scripts/git-tag-helpers.sh"
 
@@ -28,12 +23,6 @@ cleanup() {
   fi
   if [[ -n "$UPLOAD_SNAPSHOT_DIR" && -d "$UPLOAD_SNAPSHOT_DIR" ]]; then
     /bin/rm -rf "$UPLOAD_SNAPSHOT_DIR"
-  fi
-  if [[ -n "$RELEASE_STATE_TEMP_DIR" && -d "$RELEASE_STATE_TEMP_DIR" ]]; then
-    /bin/rm -rf "$RELEASE_STATE_TEMP_DIR"
-  fi
-  if [[ "$RELEASE_STATE_LOCK_HELD" == "1" ]]; then
-    /bin/rmdir "$RELEASE_STATE_LOCK" 2>/dev/null || true
   fi
 }
 
@@ -49,75 +38,6 @@ EXTENSION_DIR="$(dirname "$PROJECT")"
 RELEASE_INPUTS=("$EXTENSION_DIR" .gitignore Makefile scripts media)
 ensure_paths_committed "$ROOT" "${RELEASE_INPUTS[@]}"
 ensure_head_unchanged "$ROOT" "$RELEASE_COMMIT"
-
-if [[ "$CREATE_GIT_TAG" == "1" ]]; then
-  SAFE_RELEASE_TARGET="${RESOLVED_TARGET//[^A-Za-z0-9_.-]/-}"
-  [[ -n "$SAFE_RELEASE_TARGET" ]] || {
-    echo "Unable to derive a release-state name from target: $RESOLVED_TARGET" >&2
-    exit 1
-  }
-  RELEASE_STATE_PARENT="$RELEASE_STATE_ROOT/$SAFE_RELEASE_TARGET"
-  RELEASE_STATE_DIR="$RELEASE_STATE_PARENT/$RELEASE_COMMIT"
-  RELEASE_STATE_LOCK="$RELEASE_STATE_PARENT/.${RELEASE_COMMIT}.lock"
-fi
-
-release_state_lock_release() {
-  if [[ "$RELEASE_STATE_LOCK_HELD" == "1" ]]; then
-    /bin/rmdir "$RELEASE_STATE_LOCK"
-    RELEASE_STATE_LOCK_HELD=0
-  fi
-}
-
-load_release_state() {
-  local state_path="$RELEASE_STATE_DIR/state.json"
-  local package_path="$RELEASE_STATE_DIR/package.tunaextension"
-
-  ITEM_JSON="$("$ROOT/scripts/extension-release-state.py" load \
-    --state "$state_path" \
-    --package "$package_path" \
-    --resolved-target "$RESOLVED_TARGET" \
-    --project "$PROJECT" \
-    --source-commit "$RELEASE_COMMIT")" || return 1
-  PKG="$package_path"
-  echo "Reusing frozen release candidate: $RELEASE_STATE_DIR"
-}
-
-acquire_release_state_lock() {
-  /bin/mkdir -p "$RELEASE_STATE_PARENT"
-  if ! /bin/mkdir "$RELEASE_STATE_LOCK" 2>/dev/null; then
-    echo "Extension release packaging is already in progress, or a stale lock remains: $RELEASE_STATE_LOCK" >&2
-    return 1
-  fi
-  RELEASE_STATE_LOCK_HELD=1
-}
-
-freeze_release_state() {
-  local package_path="$1"
-  local item_path="$2"
-
-  RELEASE_STATE_TEMP_DIR="$(/usr/bin/mktemp -d "$RELEASE_STATE_PARENT/.candidate.XXXXXX")"
-  /bin/chmod 700 "$RELEASE_STATE_TEMP_DIR"
-  /bin/cp "$package_path" "$RELEASE_STATE_TEMP_DIR/package.tunaextension"
-  /bin/chmod 400 "$RELEASE_STATE_TEMP_DIR/package.tunaextension"
-
-  "$ROOT/scripts/extension-release-state.py" freeze \
-    --item "$item_path" \
-    --state "$RELEASE_STATE_TEMP_DIR/state.json" \
-    --package "$RELEASE_STATE_TEMP_DIR/package.tunaextension" \
-    --resolved-target "$RESOLVED_TARGET" \
-    --project "$PROJECT" \
-    --source-commit "$RELEASE_COMMIT"
-  /bin/chmod 400 "$RELEASE_STATE_TEMP_DIR/state.json"
-
-  if [[ -e "$RELEASE_STATE_DIR" || -L "$RELEASE_STATE_DIR" ]]; then
-    echo "Release state appeared while packaging; it was not replaced: $RELEASE_STATE_DIR" >&2
-    return 1
-  fi
-  /bin/mv "$RELEASE_STATE_TEMP_DIR" "$RELEASE_STATE_DIR"
-  RELEASE_STATE_TEMP_DIR=""
-  release_state_lock_release
-  echo "Frozen release candidate: $RELEASE_STATE_DIR"
-}
 
 resolve_upload_token() {
   if [[ -z "$TOKEN" && -n "$TOKEN_OP_REF" ]]; then
@@ -138,21 +58,10 @@ resolve_upload_token() {
 }
 
 PKG=""
-if [[ "$CREATE_GIT_TAG" == "1" && ( -e "$RELEASE_STATE_DIR" || -L "$RELEASE_STATE_DIR" ) ]]; then
-  if [[ ! -d "$RELEASE_STATE_DIR" || -L "$RELEASE_STATE_DIR" ]]; then
-    echo "Frozen release state is invalid: state path is not a real directory: $RELEASE_STATE_DIR" >&2
-    exit 1
-  fi
-  load_release_state
-else
-  if [[ "$CREATE_GIT_TAG" == "1" ]]; then
-    acquire_release_state_lock
-  fi
-
-  RAW_OUTPUT="$(make -C "$ROOT" ext-package TARGET="$TARGET")"
-  ensure_paths_committed "$ROOT" "${RELEASE_INPUTS[@]}"
-  ensure_head_unchanged "$ROOT" "$RELEASE_COMMIT"
-  ITEM_JSON="$(printf '%s\n' "$RAW_OUTPUT" | python3 -c "
+RAW_OUTPUT="$(make -C "$ROOT" ext-package TARGET="$TARGET")"
+ensure_paths_committed "$ROOT" "${RELEASE_INPUTS[@]}"
+ensure_head_unchanged "$ROOT" "$RELEASE_COMMIT"
+ITEM_JSON="$(printf '%s\n' "$RAW_OUTPUT" | python3 -c "
 import json
 import sys
 
@@ -177,7 +86,6 @@ if selected is None:
 
 print(json.dumps(selected))
 ")"
-fi
 
 ensure_paths_committed "$ROOT" "${RELEASE_INPUTS[@]}"
 ensure_head_unchanged "$ROOT" "$RELEASE_COMMIT"
@@ -284,10 +192,6 @@ if embedded_signature != signature:
         "Refusing to upload package: embedded store signature does not match packaging metadata."
     )
 PY
-
-if [[ "$CREATE_GIT_TAG" == "1" && "$RELEASE_STATE_LOCK_HELD" == "1" ]]; then
-  freeze_release_state "$UPLOAD_PKG" "$ITEM_JSON_PATH"
-fi
 
 inspect_store_item() {
   local MODE="$1"
@@ -852,9 +756,6 @@ fetch_public_item() {
 
 ensure_paths_committed "$ROOT" "${RELEASE_INPUTS[@]}"
 ensure_head_unchanged "$ROOT" "$RELEASE_COMMIT"
-if [[ -n "$TAG" ]]; then
-  ensure_tag_available_at_commit "$ROOT" "$TAG" "$RELEASE_COMMIT"
-fi
 
 if ! PREFLIGHT_HTTP_CODE="$(fetch_public_item "Store preflight")"; then
   exit 1
@@ -906,6 +807,9 @@ case "$PREFLIGHT_HTTP_CODE" in
 esac
 
 if [[ "$RELEASE_ACTION" == "upload" || "$RELEASE_ACTION" == "recover" ]]; then
+  if [[ -n "$TAG" ]]; then
+    ensure_tag_available_at_commit "$ROOT" "$TAG" "$RELEASE_COMMIT"
+  fi
   write_upload_auth_config
 
   CURL_ARGS=(
@@ -990,7 +894,18 @@ if [[ "$RELEASE_ACTION" == "upload" || "$RELEASE_ACTION" == "recover" ]]; then
 fi
 
 if [[ -n "$TAG" ]]; then
-  create_annotated_tag "$ROOT" "$TAG" "$NAME $VERSION" "$RELEASE_COMMIT"
+  if [[ "$RELEASE_ACTION" == "equal" ]] \
+    && git -C "$ROOT" show-ref --verify --quiet "refs/tags/$TAG"; then
+    [[ "$(git -C "$ROOT" cat-file -t "$TAG")" == "tag" ]] || {
+      echo "Existing release tag must be annotated: $TAG" >&2
+      exit 1
+    }
+    echo "Reusing existing release tag: $TAG"
+  else
+    create_annotated_tag "$ROOT" "$TAG" "$NAME $VERSION" "$RELEASE_COMMIT"
+  fi
+  git -C "$ROOT" push origin "refs/tags/${TAG}:refs/tags/${TAG}"
+  echo "Tagged and pushed release: $TAG"
 fi
 
 echo "Done: $NAME $VERSION"
