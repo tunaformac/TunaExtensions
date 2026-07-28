@@ -11,7 +11,7 @@ public final class SafariExtension: Extension {
         description: "Safari bookmarks, reading list, and actions.",
         iconName: "safari"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.79", minTunaKit: "1.13.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.80", minTunaKit: "1.14.0"),
       catalogs: [
         CatalogDeclaration(
           id: "safari.bookmarks", type: SafariBookmarksCatalog.self, name: "Bookmarks",

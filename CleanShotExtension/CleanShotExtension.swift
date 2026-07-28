@@ -16,7 +16,7 @@ public final class CleanShotExtension: Extension {
         description: "CleanShot X captures and utilities.",
         iconName: "camera.viewfinder"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.79", minTunaKit: "1.13.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.80", minTunaKit: "1.14.0"),
       catalogs: [
         CatalogDeclaration(
           id: "cleanshot.commands",
