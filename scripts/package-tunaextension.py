@@ -75,30 +75,36 @@ def compute_payload_hash(bundle_path: str) -> str:
     entries = []
     for root, dirs, files in os.walk(bundle_path):
         dirs[:] = [d for d in dirs if not d.startswith(".")]
-        for name in files:
+        for name in dirs + files:
             if name.startswith("."):
                 continue
             full = os.path.join(root, name)
             if os.path.islink(full):
                 if not symlink_stays_within_bundle(bundle_root, full):
                     raise RuntimeError("Symlink escapes bundle: %s" % full)
+                entries.append((os.path.relpath(full, bundle_path), "symlink", full))
                 continue
             if not os.path.isfile(full):
                 continue
             rel = os.path.relpath(full, bundle_path)
-            entries.append((rel, full))
+            entries.append((rel, "file", full))
 
     entries.sort(key=lambda x: x[0])
     h = hashlib.sha256()
-    for rel, full in entries:
+    for rel, entry_type, full in entries:
+        h.update(entry_type.encode("utf-8"))
+        h.update(b"\x00")
         h.update(rel.encode("utf-8"))
         h.update(b"\x00")
-        with open(full, "rb") as fh:
-            while True:
-                chunk = fh.read(1024 * 1024)
-                if not chunk:
-                    break
-                h.update(chunk)
+        if entry_type == "symlink":
+            h.update(os.readlink(full).encode("utf-8"))
+        else:
+            with open(full, "rb") as fh:
+                while True:
+                    chunk = fh.read(1024 * 1024)
+                    if not chunk:
+                        break
+                    h.update(chunk)
         h.update(b"\x00")
     return h.hexdigest()
 
@@ -352,7 +358,7 @@ def main() -> int:
         compatibility["min_tunakit"] = min_tunakit
 
     package_manifest = {
-        "schema_version": "1",
+        "schema_version": "2",
         "id": bundle_id,
         "type": manifest_type,
         "version": version,
