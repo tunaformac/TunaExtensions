@@ -14,6 +14,17 @@ list_schemes() {
     | awk '/Schemes:/ {flag=1; next} flag && NF {print $1} flag && !NF {exit}'
 }
 
+list_targets() {
+  local project="$1"
+  awk '
+    /\/\* Begin PBXNativeTarget section \*\// { in_targets=1; next }
+    /\/\* End PBXNativeTarget section \*\// { in_targets=0 }
+    in_targets && /isa = PBXNativeTarget;/ { print previous }
+    { previous=$0 }
+  ' "$project/project.pbxproj" \
+    | sed -E 's@.*\/\* (.*) \*\/ = \{@\1@'
+}
+
 declare -a candidates=()
 add_candidate() {
   local candidate="$1"
@@ -49,10 +60,12 @@ done < <(find "$ROOT" -mindepth 1 -maxdepth 2 -name '*.xcodeproj' -print | sort)
 
 for project in "${projects[@]}"; do
   schemes="$(list_schemes "$project" || true)"
-  [[ -z "$schemes" ]] && continue
+  targets="$(list_targets "$project" || true)"
+  available="$(printf '%s\n%s\n' "$schemes" "$targets" | awk 'NF && !seen[$0]++')"
+  [[ -z "$available" ]] && continue
 
   for candidate in "${candidates[@]}"; do
-    if echo "$schemes" | rg -Fxq "$candidate"; then
+    if echo "$available" | rg -Fxq "$candidate"; then
       printf '%s\t%s\n' "$project" "$candidate"
       exit 0
     fi

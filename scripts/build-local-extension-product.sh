@@ -32,14 +32,23 @@ trap 'exit 143' TERM
 
 temporary_source="$temporary_directory/$(basename "$source_directory")"
 ditto "$source_directory" "$temporary_source"
+package_url="file://$LOCAL_PACKAGE"
 local_revision="$(git -C "$LOCAL_PACKAGE" rev-parse HEAD)"
+local_version="$(git -C "$LOCAL_PACKAGE" tag --sort=-v:refname | head -n 1)"
+if [[ -z "$local_version" ]]; then
+  echo "Prepared local TunaKit package has no version tag." >&2
+  exit 1
+fi
 while IFS= read -r -d '' resolved_file; do
-  jq --arg revision "$local_revision" \
-    '(.pins[] | select(.identity == "tunakit").state.revision) = $revision' \
+  jq --arg location "$package_url" --arg revision "$local_revision" --arg version "$local_version" \
+    '(.pins[] | select(.identity == "tunakit")) |= (.location = $location | .state = {revision: $revision, version: $version})' \
     "$resolved_file" > "$resolved_file.local"
   mv "$resolved_file.local" "$resolved_file"
 done < <(find "$temporary_source" -path '*/xcshareddata/swiftpm/Package.resolved' -print0)
 project="$temporary_source/$(basename "$source_project")"
+TUNA_LOCAL_PACKAGE_URL="$package_url" perl -0pi -e \
+  's{repositoryURL = "https://github\.com/tunaformac/TunaKit";}{repositoryURL = "$ENV{TUNA_LOCAL_PACKAGE_URL}";}g' \
+  "$project/project.pbxproj"
 
 build_settings=()
 if [[ "$CONFIGURATION" == "Debug" ]]; then
@@ -52,15 +61,15 @@ if [[ -n "${TUNA_CODE_SIGN_IDENTITY:-}" ]]; then
   build_settings+=(CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY="$TUNA_CODE_SIGN_IDENTITY")
 fi
 
-package_url="file://$LOCAL_PACKAGE"
-export GIT_CONFIG_COUNT=1
-export GIT_CONFIG_KEY_0="url.${package_url}.insteadOf"
-export GIT_CONFIG_VALUE_0="https://github.com/tunaformac/TunaKit"
+# A rebuilt local package can reuse the same semantic version at a new revision. SwiftPM rejects
+# that intentionally mutable development tag when its workspace still records the old SHA.
+rm -rf "$DERIVED_DATA/SourcePackages"
 
 xcodebuild -resolvePackageDependencies \
   -project "$project" \
   -scheme "$resolved_target" \
   -clonedSourcePackagesDirPath "$DERIVED_DATA/SourcePackages" \
+  -disablePackageRepositoryCache \
   -scmProvider system >&2
 
 xcodebuild build \
@@ -70,6 +79,7 @@ xcodebuild build \
   -destination "$DESTINATION" \
   -derivedDataPath "$DERIVED_DATA" \
   -clonedSourcePackagesDirPath "$DERIVED_DATA/SourcePackages" \
+  -disablePackageRepositoryCache \
   -scmProvider system \
   "${build_settings[@]}" >&2
 
@@ -82,6 +92,7 @@ xcodebuild \
   -destination "$DESTINATION" \
   -derivedDataPath "$DERIVED_DATA" \
   -clonedSourcePackagesDirPath "$DERIVED_DATA/SourcePackages" \
+  -disablePackageRepositoryCache \
   -scmProvider system \
   -showBuildSettings > "$settings_file"
 

@@ -58,6 +58,13 @@ git -C "$PACKAGE_ROOT" config user.name "Tuna Development"
 git -C "$PACKAGE_ROOT" config user.email "development@tuna.local"
 git -C "$PACKAGE_ROOT" add Package.swift TunaKit.xcframework
 git -C "$PACKAGE_ROOT" commit -qm "Build local TunaKit"
-git -C "$PACKAGE_ROOT" tag "$package_version"
+minimum_versions="$({
+  printf '%s\n' "$package_version"
+  find "$ROOT" -path "$ROOT/build" -prune -o -name project.pbxproj -print0 \
+    | xargs -0 awk '/minimumVersion = [0-9]+\.[0-9]+\.[0-9]+;/ { gsub(";", "", $3); print $3 }'
+} | sort -u)"
+while IFS= read -r version; do
+  [[ -n "$version" ]] && git -C "$PACKAGE_ROOT" tag "$version"
+done <<<"$minimum_versions"
 
 printf '%s\n' "$PACKAGE_ROOT"
