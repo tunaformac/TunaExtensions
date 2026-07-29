@@ -1,6 +1,7 @@
 import AppKit
 import Foundation
 import TunaKit
+import UniformTypeIdentifiers
 
 public final class ArenaActionsCatalog: ActionCatalog {
   public let identifier: String
@@ -17,8 +18,8 @@ public final class ArenaActionsCatalog: ActionCatalog {
     let capture = PredicateAwareAction(
       id: "capture", title: "Save to Are.na", type: .action
     ) { subject, target in
-      guard let value = captureValue(from: subject) else {
-        return .failure("Select a URL or text to save")
+      guard let capture = capture(from: subject) else {
+        return .failure("Select a URL, text, or image to save")
       }
       guard let channel = target as? ArenaChannelItem else {
         return .failure("Choose an Are.na channel")
@@ -32,8 +33,13 @@ public final class ArenaActionsCatalog: ActionCatalog {
       return .background(
         CommandBackgroundTask(title: "Saving to Are.na") {
           do {
-            let block = try await ArenaAPIClient(connection: connection).createBlock(
-              value: value, channelID: channelID)
+            let client = ArenaAPIClient(connection: connection)
+            let block = switch capture {
+            case .value(let value):
+              try await client.createBlock(value: value, channelID: channelID)
+            case .upload(let upload):
+              try await client.createBlock(upload: upload, channelID: channelID)
+            }
             return .success(
               results: [ArenaBlockItem(block: block, connectionID: connection.record.id)])
           } catch {
@@ -43,9 +49,13 @@ public final class ArenaActionsCatalog: ActionCatalog {
     }
     capture.targetRequirement = .required
     capture.systemSymbolName = "square.and.arrow.down"
-    capture.supportedSubjectTypes = [.url, .textSnippet]
+    capture.supportedSubjectTypes = [.url, .textSnippet, .file, .image]
     capture.allowedTargetTypes = [.arenaChannel]
-    capture.subjectPredicate = { captureValue(from: $0) != nil }
+    capture.targetSearchScope = .catalogs(
+      [ArenaExtension.catalogIdentifier],
+      preparation: .refresh
+    )
+    capture.subjectPredicate = { canCapture($0) }
     capture.targetPredicate = { $0 is ArenaChannelItem }
 
     let openChannel = PredicateAwareAction(
@@ -77,9 +87,39 @@ public final class ArenaActionsCatalog: ActionCatalog {
     return [capture, openChannel, openBlock, ArenaResolveAction()]
   }
 
-  private static func captureValue(from item: CatalogItem?) -> String? {
-    guard let item else { return nil }
+  private enum Capture: Sendable {
+    case value(String)
+    case upload(ArenaUpload)
+  }
 
+  private static func canCapture(_ item: CatalogItem?) -> Bool {
+    guard let item else { return false }
+    if TypeRegistry.shared.inherits(item.typeID, from: .image) { return true }
+    if imageFileUpload(from: item) != nil { return true }
+    return captureValue(from: item) != nil
+  }
+
+  private static func capture(from item: CatalogItem?) -> Capture? {
+    guard let item else { return nil }
+    if let value = captureValue(from: item) { return .value(value) }
+
+    if let upload = imageFileUpload(from: item) {
+      return .upload(upload)
+    }
+
+    guard TypeRegistry.shared.inherits(item.typeID, from: .image),
+      let image = item.image(size: 16_384) ?? item.preview(maxDimension: 16_384).image,
+      let data = pngData(from: image)
+    else { return nil }
+    return .upload(
+      ArenaUpload(
+        body: .data(data),
+        filename: "\(ArenaCatalogSupport.safeFilename(item.title, fallback: "Tuna Image")).png",
+        contentType: "image/png"
+      ))
+  }
+
+  private static func captureValue(from item: CatalogItem) -> String? {
     if TypeRegistry.shared.inherits(item.typeID, from: .url),
       let entity = item as? CatalogEntity,
       let path = entity.path,
@@ -94,6 +134,39 @@ public final class ArenaActionsCatalog: ActionCatalog {
     let value = item.textValueFallback()?.trimmingCharacters(in: .whitespacesAndNewlines)
     return value?.isEmpty == false ? value : nil
   }
+
+  private static func imageFileUpload(from item: CatalogItem) -> ArenaUpload? {
+    let registry = TypeRegistry.shared
+    guard registry.inherits(item.typeID, from: .file)
+      || registry.inherits(item.typeID, from: .image),
+      let entity = item as? CatalogEntity,
+      let path = entity.path
+    else { return nil }
+    let url = URL(fileURLWithPath: path)
+    guard let contentType = imageContentType(for: url) else { return nil }
+    return ArenaUpload(
+      body: .file(url),
+      filename: url.lastPathComponent,
+      contentType: contentType
+    )
+  }
+
+  private static func imageContentType(for url: URL) -> String? {
+    let type = (try? url.resourceValues(forKeys: [.contentTypeKey]).contentType)
+      ?? UTType(filenameExtension: url.pathExtension)
+    guard let type, type.conforms(to: .image), let contentType = type.preferredMIMEType else {
+      return nil
+    }
+    return contentType
+  }
+
+  private static func pngData(from image: NSImage) -> Data? {
+    guard let tiffData = image.tiffRepresentation,
+      let bitmap = NSBitmapImageRep(data: tiffData)
+    else { return nil }
+    return bitmap.representation(using: .png, properties: [:])
+  }
+
 }
 
 private final class ArenaResolveAction: CatalogAction, AsyncActionProviding,

@@ -1,6 +1,17 @@
 import Foundation
 import TunaKit
 
+struct ArenaUpload: Sendable {
+  enum Body: Sendable {
+    case data(Data)
+    case file(URL)
+  }
+
+  let body: Body
+  let filename: String
+  let contentType: String
+}
+
 struct ArenaConnection: Sendable {
   let record: ExtensionConnectionRecord
   let accessToken: String
@@ -160,6 +171,53 @@ struct ArenaAPIClient: Sendable {
     )
     guard let block = Self.parseBlock(payload) else { throw ArenaAPIError.invalidResponse }
     return block
+  }
+
+  func createBlock(upload: ArenaUpload, channelID: Int) async throws -> ArenaBlock {
+    let payload = try await request(
+      path: "uploads/presign",
+      method: "POST",
+      body: [
+        "files": [
+          ["filename": upload.filename, "content_type": upload.contentType]
+        ]
+      ]
+    )
+    guard
+      let files = payload["files"] as? [[String: Any]],
+      let file = files.first,
+      let uploadURLString = file["upload_url"] as? String,
+      let uploadURL = URL(string: uploadURLString),
+      let key = file["key"] as? String,
+      let contentType = file["content_type"] as? String
+    else { throw ArenaAPIError.invalidResponse }
+
+    var uploadRequest = URLRequest(url: uploadURL)
+    uploadRequest.httpMethod = "PUT"
+    uploadRequest.setValue(contentType, forHTTPHeaderField: "Content-Type")
+
+    let response: URLResponse
+    switch upload.body {
+    case .data(let data):
+      (_, response) = try await session.upload(for: uploadRequest, from: data)
+    case .file(let url):
+      (_, response) = try await session.upload(for: uploadRequest, fromFile: url)
+    }
+    guard let httpResponse = response as? HTTPURLResponse,
+      (200..<300).contains(httpResponse.statusCode)
+    else {
+      let status = (response as? HTTPURLResponse)?.statusCode ?? -1
+      throw ArenaAPIError.unexpectedStatus(status, "Could not upload the image to Are.na.")
+    }
+
+    var uploadedURL = URLComponents()
+    uploadedURL.scheme = "https"
+    uploadedURL.host = "s3.amazonaws.com"
+    uploadedURL.path = "/arena_images-temp/\(key.trimmingCharacters(in: CharacterSet(charactersIn: "/")))"
+    guard let value = uploadedURL.url?.absoluteString else {
+      throw ArenaAPIError.invalidResponse
+    }
+    return try await createBlock(value: value, channelID: channelID)
   }
 
   private func get(path: String, queryItems: [URLQueryItem] = []) async throws -> [String: Any] {

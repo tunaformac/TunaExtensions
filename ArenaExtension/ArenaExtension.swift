@@ -3,6 +3,7 @@ import TunaKit
 
 @objc(ArenaExtension)
 public final class ArenaExtension: Extension {
+  static let catalogIdentifier = "arena"
   private static let clientIdentifier = "OtwIqy8-gmNYOQkd8BqrDWlJtymLiqbqR7Oq3ydscH0"
 
   public override var declaration: ExtensionDeclaration? {
@@ -16,7 +17,10 @@ public final class ArenaExtension: Extension {
       compatibility: ExtensionDeclarationCompatibility(minTuna: "0.80", minTunaKit: "1.15.0"),
       catalogs: [
         CatalogDeclaration(
-          id: "arena", type: ArenaCatalog.self, name: "Are.na", enabledByDefault: true)
+          id: Self.catalogIdentifier,
+          type: ArenaCatalog.self,
+          name: "Are.na",
+          enabledByDefault: true)
       ],
       actionCatalogs: [
         ActionCatalogDeclaration(

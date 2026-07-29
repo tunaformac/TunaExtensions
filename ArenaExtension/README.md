@@ -2,7 +2,8 @@
 
 Browse your Are.na channels and their blocks from Tuna. “Resolve” stages a block's underlying text,
 URL, image, or attachment; images and attachments are downloaded first. “Save to Are.na” captures
-a URL or text into a selected channel.
+a URL, text, image file, or clipboard image into a selected channel and requests a channel refresh
+as target selection begins.
 
 Build and install against Tuna's current local TunaKit:
 

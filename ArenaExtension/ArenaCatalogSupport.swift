@@ -55,6 +55,17 @@ enum ArenaCatalogSupport {
       tintColor: .systemOrange
     )
   }
+
+  static func safeFilename(_ value: String, fallback: String) -> String {
+    let filename = value
+      .components(separatedBy: CharacterSet(charactersIn: "/\\:"))
+      .last?
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+    guard let filename, !filename.isEmpty, filename != ".", filename != ".." else {
+      return fallback
+    }
+    return filename
+  }
 }
 
 final class ArenaChannelItem: CatalogEntity, CatalogHierarchyNode, CatalogHierarchyViewProviding,
@@ -278,7 +289,7 @@ actor ArenaBlockResolver {
     try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
 
     let rawFilename = preferredFilename ?? response.suggestedFilename ?? url.lastPathComponent
-    let filename = safeFilename(rawFilename, fallback: "arena-block-\(blockID)")
+    let filename = ArenaCatalogSupport.safeFilename(rawFilename, fallback: "arena-block-\(blockID)")
     let destination = directory.appendingPathComponent("\(blockID)-\(filename)")
     if fileManager.fileExists(atPath: destination.path) {
       try fileManager.removeItem(at: destination)
@@ -287,16 +298,6 @@ actor ArenaBlockResolver {
     return destination
   }
 
-  private func safeFilename(_ value: String, fallback: String) -> String {
-    let filename = value
-      .components(separatedBy: CharacterSet(charactersIn: "/\\:"))
-      .last?
-      .trimmingCharacters(in: .whitespacesAndNewlines)
-    guard let filename, !filename.isEmpty, filename != ".", filename != ".." else {
-      return fallback
-    }
-    return filename
-  }
 }
 
 extension TypeID {
