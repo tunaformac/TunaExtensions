@@ -11,6 +11,7 @@ exactly the setup a third-party extension uses.
 
 | Extension | What it does |
 | --- | --- |
+| ArenaExtension | Browse Are.na channels and save links or text |
 | BrewExtension | Search and manage Homebrew packages |
 | CleanShotExtension | CleanShot X capture commands |
 | GitHubExtension | Repos, issues, and pull requests |
