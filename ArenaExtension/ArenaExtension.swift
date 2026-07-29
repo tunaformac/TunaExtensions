@@ -11,7 +11,7 @@ public final class ArenaExtension: Extension {
       metadata: ExtensionMetadata(
         displayName: "Are.na",
         author: "Tuna",
-        description: "Browse Are.na channels and save links or text.",
+        description: "Browse Are.na channels and save links, text, and images.",
         iconName: "square.grid.2x2"
       ),
       compatibility: ExtensionDeclarationCompatibility(minTuna: "0.80", minTunaKit: "1.15.0"),
@@ -68,7 +68,7 @@ public final class ArenaExtension: Extension {
           tokenURL: URL(string: "https://api.are.na/v3/oauth/token")!,
           scopes: ["read", "write"]
         ),
-        description: "Connect Are.na to browse channels and save links or text.",
+        description: "Connect Are.na to browse channels and save links, text, and images.",
         connectButtonLabel: "Connect Are.na"
       )
     ]
