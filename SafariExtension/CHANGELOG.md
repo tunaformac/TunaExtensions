@@ -1,0 +1,3 @@
+# Safari Extension Changelog
+
+## Unreleased
