@@ -60,12 +60,10 @@ enum NotionCatalogSupport {
     )
   }
 
-  static func loadingMessageItem() -> CatalogMessageItem {
-    CatalogMessageItem(
+  static func loadingItem() -> CatalogLoadingItem {
+    CatalogLoadingItem(
       title: "Loading Notion",
-      message: "Fetching shared Notion pages and data sources.",
-      symbolName: "arrow.triangle.2.circlepath",
-      tintColor: .secondaryLabelColor
+      message: "Fetching shared Notion pages and data sources."
     )
   }
 

@@ -16,6 +16,97 @@ public final class RemindersSearchCatalog: RemindersCatalogBase {
 }
 
 @MainActor
+public final class RemindersListsCatalog: NSObject, Catalog, StartupScanningCatalog {
+  public let identifier: String
+  public let name: String
+  public let scansOnStartup = false
+
+  private let authorization = RemindersAuthorization()
+  private let itemsStore = LockedValue<[CatalogItem]>([])
+  private let messageStore = LockedValue<[CatalogItem]?>(nil)
+  private var store: EKEventStore?
+
+  public var objects: [CatalogItem] {
+    messageStore.readValue { $0 } ?? itemsStore.readValue { $0 }
+  }
+
+  public required init(definition: CatalogDefinition) {
+    self.identifier = definition.identifier
+    self.name = definition.name
+    super.init()
+  }
+
+  public func scan() async {
+    if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil {
+      itemsStore.value = []
+      messageStore.value = nil
+      reportScanFinished()
+      return
+    }
+
+    let store = requireStore()
+    guard await authorization.ensureAuthorization(using: store) else {
+      itemsStore.value = []
+      messageStore.value = [
+        reminderListStatusItem(
+          title: "Reminders Access Needed",
+          message: "Enable reminders permissions for Tuna to load your lists.",
+          symbolName: "checklist.unchecked",
+          tintColor: .systemOrange
+        )
+      ]
+      reportScanFinished()
+      return
+    }
+
+    let calendars = store.calendars(for: .reminder)
+      .filter(\.allowsContentModifications)
+      .sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
+    itemsStore.value = calendars.map { calendar in
+      ReminderListItem(
+        title: calendar.title,
+        calendarIdentifier: calendar.calendarIdentifier,
+        sourceName: calendar.source.title
+      )
+    }
+    messageStore.value = calendars.isEmpty
+      ? [
+        reminderListStatusItem(
+          title: "No Writable Reminder Lists",
+          message: "Reminders has no list that Tuna can add reminders to.",
+          symbolName: "list.bullet",
+          tintColor: .secondaryLabelColor
+        )
+      ]
+      : nil
+    reportScanFinished()
+  }
+
+  private func requireStore() -> EKEventStore {
+    if let store { return store }
+    let store = EKEventStore()
+    self.store = store
+    return store
+  }
+}
+
+func reminderListStatusItem(
+  title: String,
+  message: String,
+  symbolName: String,
+  tintColor: NSColor
+) -> CatalogItem {
+  let item = CatalogMessageItem(
+    title: title,
+    message: message,
+    symbolName: symbolName,
+    tintColor: tintColor
+  )
+  item.typeID = .reminderList
+  return item
+}
+
+@MainActor
 public class RemindersCatalogBase: NSObject, Catalog {
   enum Mode {
     case all

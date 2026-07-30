@@ -8,10 +8,10 @@ public final class ObsidianExtension: Extension {
       metadata: ExtensionMetadata(
         displayName: "Obsidian",
         author: "Tuna",
-        description: "Obsidian vaults, notes, and actions.",
+        description: "Browse Obsidian vaults, folders, and notes, with quick capture actions.",
         iconName: "square.stack.3d.up"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.80", minTunaKit: "1.14.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.83", minTunaKit: "1.15.0"),
       catalogs: [
         CatalogDeclaration(
           id: "obsidian", type: ObsidianVaultsCatalog.self, name: "Vaults", enabledByDefault: true),
@@ -54,7 +54,9 @@ public final class ObsidianExtension: Extension {
       appBrowseEnrichments: [
         AppBrowseEnrichmentDefinition(
           bundleIdentifiers: ["md.obsidian"],
-          entries: [AppBrowseEnrichmentEntryDefinition(catalogIdentifier: "obsidian.notes")]
+          entries: [
+            AppBrowseEnrichmentEntryDefinition(catalogIdentifier: "obsidian", title: "Vaults")
+          ]
         )
       ],
       appActionEnrichments: [

@@ -99,6 +99,33 @@ final class ObsidianExtensionTests: XCTestCase {
     XCTAssertEqual(item.capturedAtDate, Date(timeIntervalSince1970: 123))
   }
 
+  func testVaultHierarchyGroupsFoldersBeforeRootNotes() throws {
+    let rootNote = ObsidianNoteItem(
+      title: "Root",
+      vaultName: "Vault",
+      relativePath: "Root",
+      path: "/tmp/Vault/Root.md",
+      modifiedAt: .now
+    )
+    let nestedNote = ObsidianNoteItem(
+      title: "Nested",
+      vaultName: "Vault",
+      relativePath: "Projects/Nested",
+      path: "/tmp/Vault/Projects/Nested.md",
+      modifiedAt: .now
+    )
+
+    let items = ObsidianVaultContents.hierarchy(
+      notes: [rootNote, nestedNote],
+      vaultPath: "/tmp/Vault"
+    )
+
+    let folder = try XCTUnwrap(items.first as? ObsidianFolderItem)
+    XCTAssertEqual(folder.title, "Projects")
+    XCTAssertEqual(folder.hierarchyChildren().map(\.title), ["Nested"])
+    XCTAssertEqual(items.last?.title, "Root")
+  }
+
   func testNotesCatalogDefaultsToMostRecentSort() {
     let catalog = ObsidianNotesCatalog(
       definition: CatalogDefinition(

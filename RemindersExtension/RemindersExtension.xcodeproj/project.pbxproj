@@ -9,14 +9,29 @@
 /* Begin PBXBuildFile section */
 		09F01CE4AE2C73E6F165372D /* RemindersActionsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD58315AA245B54F64BD0DA2 /* RemindersActionsCatalog.swift */; };
 		54C31747E3FDBBF7BD0C66FB /* EventKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 128CB41B5D84D7783EA0E130 /* EventKit.framework */; };
+		5835C9DEE1CAF8364BC8ACFA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 010D8AF677251370E98DE18C /* Cocoa.framework */; };
+		6541535535ACC337E607FD4D /* RemindersExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC262187134C102087A48B4A /* RemindersExtensionTests.swift */; };
 		7A909811B1A6C6FEB1D7629E /* RemindersItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA65F793C4CEC2101DF44999 /* RemindersItems.swift */; };
+		7EA8CB80FC4DE916ED25CA34 /* TunaReminders.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0FAAD1B28AE0F137E9C1BD6 /* TunaReminders.framework */; };
 		8617641E42EC3B54B9C0A856 /* RemindersCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1144DF33032F0C70A260F10 /* RemindersCatalog.swift */; };
 		BCB49792DC88CE45E033BD6F /* RemindersExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B15355D5A0DFCE7A113A280 /* RemindersExtension.swift */; };
 		D5370FA0D755C4E428D8896F /* RemindersAuthorization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95DF75212558779898F1DA65 /* RemindersAuthorization.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		61A3A3214824EF500E1046D2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C7D495B1F29E0D647818B71D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AD72AFF7EC258AA8D90124C9;
+			remoteInfo = RemindersExtension;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		010D8AF677251370E98DE18C /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
 		128CB41B5D84D7783EA0E130 /* EventKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = EventKit.framework; path = System/Library/Frameworks/EventKit.framework; sourceTree = SDKROOT; };
+		1E2E9285B735BAF0DE7B87CC /* RemindersExtensionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RemindersExtensionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		5B15355D5A0DFCE7A113A280 /* RemindersExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersExtension.swift; sourceTree = "<group>"; };
 		95DF75212558779898F1DA65 /* RemindersAuthorization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersAuthorization.swift; sourceTree = "<group>"; };
 		A1144DF33032F0C70A260F10 /* RemindersCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersCatalog.swift; sourceTree = "<group>"; };
@@ -24,9 +39,19 @@
 		B0FAAD1B28AE0F137E9C1BD6 /* TunaReminders.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TunaReminders.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA65F793C4CEC2101DF44999 /* RemindersItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersItems.swift; sourceTree = "<group>"; };
 		EAE83BF2E1A9B17B97DC2A89 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FC262187134C102087A48B4A /* RemindersExtensionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RemindersExtensionTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		1B3FA65E5CDF6014714F7C0B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5835C9DEE1CAF8364BC8ACFA /* Cocoa.framework in Frameworks */,
+				7EA8CB80FC4DE916ED25CA34 /* TunaReminders.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		842B9B032FF2A4A8C152E492 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -47,6 +72,7 @@
 				DA65F793C4CEC2101DF44999 /* RemindersItems.swift */,
 				AD58315AA245B54F64BD0DA2 /* RemindersActionsCatalog.swift */,
 				EAE83BF2E1A9B17B97DC2A89 /* Info.plist */,
+				FC262187134C102087A48B4A /* RemindersExtensionTests.swift */,
 			);
 			path = .;
 			sourceTree = "<group>";
@@ -56,15 +82,33 @@
 			children = (
 				103053583D54760A05DCEF8F /* . */,
 				D09B1215F8ECDB1FFBA89A3F /* Products */,
+				4D63BB4BD0305CCAE2737532 /* Frameworks */,
 			);
+			sourceTree = "<group>";
+		};
+		4D63BB4BD0305CCAE2737532 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				E9CC0FC882CBE56E0D17872F /* OS X */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		D09B1215F8ECDB1FFBA89A3F /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				B0FAAD1B28AE0F137E9C1BD6 /* TunaReminders.framework */,
+				1E2E9285B735BAF0DE7B87CC /* RemindersExtensionTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		E9CC0FC882CBE56E0D17872F /* OS X */ = {
+			isa = PBXGroup;
+			children = (
+				010D8AF677251370E98DE18C /* Cocoa.framework */,
+			);
+			name = "OS X";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -89,6 +133,27 @@
 			productName = TunaReminders;
 			productReference = B0FAAD1B28AE0F137E9C1BD6 /* TunaReminders.framework */;
 			productType = "com.apple.product-type.framework";
+		};
+		D321B3A6BA165AA8C77B8ED3 /* RemindersExtensionTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 684AF1CD29657CB7B32C2B19 /* Build configuration list for PBXNativeTarget "RemindersExtensionTests" */;
+			buildPhases = (
+				9BA96AA801BD43A1F17C89B7 /* Sources */,
+				1B3FA65E5CDF6014714F7C0B /* Frameworks */,
+				39C5CB5BCA9C271364E01D37 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				374ADEC5272C2885353BA60A /* PBXTargetDependency */,
+			);
+			name = RemindersExtensionTests;
+			packageProductDependencies = (
+				7F0B6B589E403F347D6EE05E /* TunaKit */,
+			);
+			productName = RemindersExtensionTests;
+			productReference = 1E2E9285B735BAF0DE7B87CC /* RemindersExtensionTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -120,11 +185,19 @@
 			projectRoot = "";
 			targets = (
 				AD72AFF7EC258AA8D90124C9 /* RemindersExtension */,
+				D321B3A6BA165AA8C77B8ED3 /* RemindersExtensionTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		39C5CB5BCA9C271364E01D37 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9B1C147AE817769036119617 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -135,6 +208,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		9BA96AA801BD43A1F17C89B7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6541535535ACC337E607FD4D /* RemindersExtensionTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		ED1E9ADC2614674458627363 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -148,6 +229,15 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		374ADEC5272C2885353BA60A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = RemindersExtension;
+			target = AD72AFF7EC258AA8D90124C9 /* RemindersExtension */;
+			targetProxy = 61A3A3214824EF500E1046D2 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		16DA7885912087E759383291 /* Release */ = {
@@ -185,6 +275,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				ENABLE_TESTABILITY = YES;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -212,10 +303,38 @@
 			};
 			name = Debug;
 		};
+		9A0EC276066C5BFCBE3ECB27 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.RemindersExtensionTests;
+				PRODUCT_MODULE_NAME = RemindersExtensionTests;
+				PRODUCT_NAME = RemindersExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
 		BE2F55A7905A58A5E646E569 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = TunaReminders;
+			};
+			name = Release;
+		};
+		EA8C783AD95C6920FB770FFD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.RemindersExtensionTests;
+				PRODUCT_MODULE_NAME = RemindersExtensionTests;
+				PRODUCT_NAME = RemindersExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -227,6 +346,15 @@
 			buildConfigurations = (
 				5867FBA0FC5492CC14E25F5D /* Debug */,
 				BE2F55A7905A58A5E646E569 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		684AF1CD29657CB7B32C2B19 /* Build configuration list for PBXNativeTarget "RemindersExtensionTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EA8C783AD95C6920FB770FFD /* Release */,
+				9A0EC276066C5BFCBE3ECB27 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -248,12 +376,17 @@
 			repositoryURL = "https://github.com/tunaformac/TunaKit";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 1.14.0;
+				minimumVersion = 1.15.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		7F0B6B589E403F347D6EE05E /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 47936F1FA2BC20FBDC4587A6 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
 		E107A6D067776260AE402D92 /* TunaKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 47936F1FA2BC20FBDC4587A6 /* XCRemoteSwiftPackageReference "TunaKit" */;

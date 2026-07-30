@@ -52,12 +52,10 @@ enum GitHubCatalogSupport {
     )
   }
 
-  static func loadingMessageItem() -> CatalogMessageItem {
-    CatalogMessageItem(
+  static func loadingItem() -> CatalogLoadingItem {
+    CatalogLoadingItem(
       title: "Loading GitHub",
-      message: "Fetching GitHub items for this catalog.",
-      symbolName: "arrow.triangle.2.circlepath",
-      tintColor: .secondaryLabelColor
+      message: "Fetching GitHub items for this catalog."
     )
   }
 

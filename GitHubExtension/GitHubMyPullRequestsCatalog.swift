@@ -22,7 +22,7 @@ public final class GitHubPullRequestsCatalog: Catalog, GitHubDateSortedCatalog,
     id: "github.pull-requests",
     detail: "Open, assigned, mentioned, review requests, reviewed, and recently closed",
     catalogIcon: .init(symbolName: "arrow.triangle.pull", color: .green),
-    loadingItemProvider: { GitHubCatalogSupport.loadingMessageItem() },
+    loadingItemProvider: { GitHubCatalogSupport.loadingItem() },
     errorItemProvider: { GitHubCatalogSupport.messageItem(for: $0) },
     didLoad: { [identifier] in GitHubCatalogSupport.postScanFinished(identifier: identifier) },
     loadChildren: {

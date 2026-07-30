@@ -79,6 +79,8 @@ public final class RemindersActionsCatalog: NSObject, ActionCatalog {
     }
     items.append(createFromText)
 
+    items.append(CreateReminderInListAction())
+
     let createFromApp = PredicateAwareAction(
       id: "create-reminder.from-app", title: "Create Reminder", type: .action
     ) { _, target in
@@ -120,6 +122,55 @@ public final class RemindersActionsCatalog: NSObject, ActionCatalog {
     items.append(toAction)
 
     return items
+  }
+}
+
+private final class CreateReminderInListAction: CatalogAction, AsyncActionProviding,
+  ActionPredicateProviding, @unchecked Sendable
+{
+  var subjectPredicate: CatalogActionSubjectPredicate? = { subject in
+    subject?.textValueFallback()?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
+  }
+  var targetPredicate: CatalogActionTargetPredicate?
+
+  init() {
+    super.init(
+      id: "create-reminder-in-list",
+      title: "Add to Reminders List",
+      type: .action
+    ) { _, _ in
+      .failure("Unable to create reminder")
+    }
+    targetRequirement = .required
+    systemSymbolName = "text.badge.plus"
+    supportedSubjectTypes = [.textSnippet]
+    allowedTargetTypes = [.reminderList]
+    targetSearchScope = .catalogs(
+      ["reminders.lists"],
+      preparation: .refresh
+    )
+  }
+
+  func performAsync(subjects: [CatalogItem], target: CatalogItem?) async -> ActionResult {
+    guard subjects.count == 1, let title = subjects.first?.textValueFallback() else {
+      return .failure("Missing reminder title")
+    }
+    guard let list = target as? ReminderListItem else {
+      return .failure("Select a reminders list")
+    }
+
+    let completion = await RemindersActions.createReminder(
+      title: title,
+      calendarIdentifier: list.calendarIdentifier
+    )
+    switch completion.disposition {
+    case .success, .successWithoutResult:
+      return .success
+    case .failure(let message):
+      return .failure(message)
+    @unknown default:
+      return .failure("Unable to create reminder")
+    }
   }
 }
 
@@ -180,16 +231,29 @@ private enum RemindersActions {
     }
   }
 
-  static func createReminder(title: String) async -> CommandTaskCompletion {
+  static func createReminder(title: String, calendarIdentifier: String? = nil) async
+    -> CommandTaskCompletion
+  {
     let store = EKEventStore()
     let authorization = RemindersAuthorization()
     guard await authorization.ensureAuthorization(using: store) else {
       return .failure(message: "Reminders access denied")
     }
 
-    guard
-      let calendar = store.defaultCalendarForNewReminders() ?? store.calendars(for: .reminder).first
-    else {
+    let calendar: EKCalendar?
+    if let calendarIdentifier {
+      guard let selectedCalendar = store.calendar(withIdentifier: calendarIdentifier) else {
+        return .failure(message: "Reminders list no longer exists")
+      }
+      guard selectedCalendar.allowsContentModifications else {
+        return .failure(message: "Reminders list is read-only")
+      }
+      calendar = selectedCalendar
+    } else {
+      calendar = store.defaultCalendarForNewReminders()
+        ?? store.calendars(for: .reminder).first
+    }
+    guard let calendar else {
       return .failure(message: "No reminders list available")
     }
 

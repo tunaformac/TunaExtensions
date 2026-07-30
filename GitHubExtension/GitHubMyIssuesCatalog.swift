@@ -18,7 +18,7 @@ public final class GitHubIssuesCatalog: Catalog, GitHubDateSortedCatalog, Startu
     id: "github.issues",
     detail: "Created, assigned, mentioned, and recently closed issues",
     catalogIcon: .init(symbolName: "exclamationmark.circle", color: .orange),
-    loadingItemProvider: { GitHubCatalogSupport.loadingMessageItem() },
+    loadingItemProvider: { GitHubCatalogSupport.loadingItem() },
     errorItemProvider: { GitHubCatalogSupport.messageItem(for: $0) },
     didLoad: { [identifier] in GitHubCatalogSupport.postScanFinished(identifier: identifier) },
     loadChildren: {
@@ -224,7 +224,7 @@ public final class GitHubRepositoriesCatalog: Catalog, GitHubDateSortedCatalog,
       id: "github.repositories.mine",
       detail: "Your repositories sorted by recently updated",
       catalogIcon: .init(symbolName: "folder", color: .blue),
-      loadingItemProvider: { GitHubCatalogSupport.loadingMessageItem() },
+      loadingItemProvider: { GitHubCatalogSupport.loadingItem() },
       errorItemProvider: { GitHubCatalogSupport.messageItem(for: $0) },
       didLoad: { [identifier] in GitHubCatalogSupport.postScanFinished(identifier: identifier) }
     ) {
@@ -246,7 +246,7 @@ public final class GitHubRepositoriesCatalog: Catalog, GitHubDateSortedCatalog,
       id: "github.repositories.starred",
       detail: "Repositories starred by you, newest stars first",
       catalogIcon: .init(symbolName: "star", color: .yellow),
-      loadingItemProvider: { GitHubCatalogSupport.loadingMessageItem() },
+      loadingItemProvider: { GitHubCatalogSupport.loadingItem() },
       errorItemProvider: { GitHubCatalogSupport.messageItem(for: $0) },
       didLoad: { [identifier] in GitHubCatalogSupport.postScanFinished(identifier: identifier) }
     ) {

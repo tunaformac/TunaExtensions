@@ -47,6 +47,28 @@ final class ReminderItem: CatalogItem, TextValueProviding, @unchecked Sendable {
   }
 }
 
+final class ReminderListItem: CatalogItem, @unchecked Sendable {
+  let calendarIdentifier: String
+  private let sourceName: String
+
+  init(title: String, calendarIdentifier: String, sourceName: String) {
+    self.calendarIdentifier = calendarIdentifier
+    self.sourceName = sourceName
+    super.init(id: calendarIdentifier, title: title, type: .entity)
+    typeID = .reminderList
+  }
+
+  override var detail: String? { sourceName }
+
+  override func preview(maxDimension: CGFloat) -> CatalogItemPreview {
+    .systemSymbol("list.bullet", tintColor: .secondaryLabelColor)
+  }
+
+  override func placeholderPreview(maxDimension: CGFloat) -> CatalogItemPreview {
+    preview(maxDimension: maxDimension)
+  }
+}
+
 final class RemindersNewReminderItem: CatalogEntity, @unchecked Sendable {
   init() {
     super.init(id: "reminders.new", title: "New Reminder", path: nil)
@@ -75,4 +97,5 @@ extension RemindersNewReminderItem: ActionFilteringProviding {
 
 extension TypeID {
   static let reminder = TypeID("com.tuna.type.reminder")
+  static let reminderList = TypeID("com.tuna.type.reminder-list")
 }

@@ -44,7 +44,7 @@ public final class GitHubNotificationsCatalog: Catalog, GitHubDateSortedCatalog,
       id: "github.notifications.unread",
       detail: "Unread notifications",
       catalogIcon: .init(symbolName: "circle.fill", color: .red),
-      loadingItemProvider: { GitHubCatalogSupport.loadingMessageItem() },
+      loadingItemProvider: { GitHubCatalogSupport.loadingItem() },
       errorItemProvider: { GitHubCatalogSupport.messageItem(for: $0) },
       didLoad: { [identifier] in GitHubCatalogSupport.postScanFinished(identifier: identifier) }
     ) {
@@ -58,7 +58,7 @@ public final class GitHubNotificationsCatalog: Catalog, GitHubDateSortedCatalog,
       id: "github.notifications.all",
       detail: "All notifications",
       catalogIcon: .init(symbolName: "tray.full", color: .indigo),
-      loadingItemProvider: { GitHubCatalogSupport.loadingMessageItem() },
+      loadingItemProvider: { GitHubCatalogSupport.loadingItem() },
       errorItemProvider: { GitHubCatalogSupport.messageItem(for: $0) },
       didLoad: { [identifier] in GitHubCatalogSupport.postScanFinished(identifier: identifier) }
     ) {
@@ -189,7 +189,7 @@ public final class GitHubUnreadNotificationsCatalog: Catalog, GitHubDateSortedCa
     id: "github.notifications.unread.direct",
     detail: "Browse unread GitHub notifications directly",
     catalogIcon: .init(symbolName: "circle.fill", color: .red),
-    loadingItemProvider: { GitHubCatalogSupport.loadingMessageItem() },
+    loadingItemProvider: { GitHubCatalogSupport.loadingItem() },
     errorItemProvider: { GitHubCatalogSupport.messageItem(for: $0) },
     didLoad: { [identifier] in GitHubCatalogSupport.postScanFinished(identifier: identifier) }
   ) {
@@ -221,7 +221,7 @@ public final class GitHubAllNotificationsCatalog: Catalog, GitHubDateSortedCatal
     id: "github.notifications.all.direct",
     detail: "Browse all GitHub notifications directly",
     catalogIcon: .init(symbolName: "tray.full", color: .indigo),
-    loadingItemProvider: { GitHubCatalogSupport.loadingMessageItem() },
+    loadingItemProvider: { GitHubCatalogSupport.loadingItem() },
     errorItemProvider: { GitHubCatalogSupport.messageItem(for: $0) },
     didLoad: { [identifier] in GitHubCatalogSupport.postScanFinished(identifier: identifier) }
   ) {

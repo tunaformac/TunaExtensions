@@ -8,15 +8,18 @@ public final class RemindersExtension: Extension {
       metadata: ExtensionMetadata(
         displayName: "Reminders",
         author: "Tuna",
-        description: "Search and manage reminders.",
+        description: "Search reminders and create them in specific lists.",
         iconName: "checklist"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.80", minTunaKit: "1.14.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.83", minTunaKit: "1.15.0"),
       catalogs: [
         CatalogDeclaration(
           id: "reminders", type: RemindersCatalog.self, name: "Reminders", enabledByDefault: true),
         CatalogDeclaration(
           id: "reminders.search", type: RemindersSearchCatalog.self, name: "Reminders",
+          enabledByDefault: true),
+        CatalogDeclaration(
+          id: "reminders.lists", type: RemindersListsCatalog.self, name: "Reminder Lists",
           enabledByDefault: true),
       ],
       actionCatalogs: [
@@ -27,7 +30,10 @@ public final class RemindersExtension: Extension {
       typeRegistrations: [
         TypeRegistrationDefinition(
           typeID: TypeID("com.tuna.type.reminder"), displayName: "Reminders",
-          inheritsFrom: [TypeID("com.tuna.type.entity")])
+          inheritsFrom: [TypeID("com.tuna.type.entity")]),
+        TypeRegistrationDefinition(
+          typeID: TypeID("com.tuna.type.reminder-list"), displayName: "Reminder Lists",
+          inheritsFrom: [TypeID("com.tuna.type.entity")]),
       ],
       defaultActionRankings: [
         DefaultActionRankingDefinition(

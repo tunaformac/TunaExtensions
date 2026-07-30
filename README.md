@@ -13,12 +13,12 @@ exactly the setup a third-party extension uses.
 | --- | --- |
 | ArenaExtension | Browse Are.na channels and save links or text |
 | BrewExtension | Search and manage Homebrew packages |
-| CleanShotExtension | CleanShot X capture commands |
+| CleanShotExtension | Browse recent CleanShot images and run capture commands |
 | GitHubExtension | Repos, issues, and pull requests |
 | NotesExtension | Apple Notes search |
 | NotionExtension | Notion pages and databases |
-| ObsidianExtension | Obsidian vaults and notes |
-| RemindersExtension | Apple Reminders |
+| ObsidianExtension | Browse Obsidian vaults, folders, and notes |
+| RemindersExtension | Search reminders and create them in specific lists |
 | SafariExtension | Safari bookmarks, reading list, and tabs |
 | ThingsExtension | Things to-dos and projects |
 

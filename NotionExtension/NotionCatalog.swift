@@ -74,7 +74,7 @@ public final class NotionCatalog: Catalog, RescanSchedulingCatalog, StartupScann
       return children
     }
 
-    return [NotionCatalogSupport.loadingMessageItem()]
+    return [NotionCatalogSupport.loadingItem()]
   }
 
   private nonisolated static func search(query: String) async throws -> [CatalogItem] {
@@ -196,7 +196,7 @@ public final class NotionPagesCatalog: Catalog, RescanSchedulingCatalog, Startup
       return Self.emptyStateItems()
     }
 
-    return [NotionCatalogSupport.loadingMessageItem()]
+    return [NotionCatalogSupport.loadingItem()]
   }
 
   private nonisolated static func searchPages(query: String) async throws -> [CatalogItem] {

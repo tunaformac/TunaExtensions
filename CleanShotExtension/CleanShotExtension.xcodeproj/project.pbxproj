@@ -7,15 +7,31 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2BA80D17383EABDCD508836F /* CleanShotExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1446D92BF58E587F67335051 /* CleanShotExtensionTests.swift */; };
 		36B799224280B6B6BDB87549 /* CleanShotExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 032596E9A8F94B1475F8DB6F /* CleanShotExtension.swift */; };
+		38FCE6F685A26E9BF0A7089F /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F590222FDAE45E582CB81708 /* Cocoa.framework */; };
+		4D20461EEC92FE256DBF24A0 /* TunaCleanShot.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E4534D7EFCF11A6A2F4CE813 /* TunaCleanShot.framework */; };
 		7BF993F7FA7D5F99C781E452 /* CleanShotCommandsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 701EFB8CAC77A97A47AE7A70 /* CleanShotCommandsCatalog.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		FCA9B8D467356D2940096F8B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92049F0350BEE0C1709F1796 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 314963BDBB510CF40C85F26A;
+			remoteInfo = CleanShotExtension;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		032596E9A8F94B1475F8DB6F /* CleanShotExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleanShotExtension.swift; sourceTree = "<group>"; };
+		1446D92BF58E587F67335051 /* CleanShotExtensionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CleanShotExtensionTests.swift; sourceTree = "<group>"; };
 		701EFB8CAC77A97A47AE7A70 /* CleanShotCommandsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleanShotCommandsCatalog.swift; sourceTree = "<group>"; };
+		8593C8A69E4A98081A759C9E /* CleanShotExtensionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CleanShotExtensionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		94E9CC95FDC6F00FA54AE9A4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E4534D7EFCF11A6A2F4CE813 /* TunaCleanShot.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TunaCleanShot.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		F590222FDAE45E582CB81708 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -26,15 +42,41 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		968CE3D62FAA9B6805FA00E6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				38FCE6F685A26E9BF0A7089F /* Cocoa.framework in Frameworks */,
+				4D20461EEC92FE256DBF24A0 /* TunaCleanShot.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		44BAA722761EC1BC9F302F16 /* OS X */ = {
+			isa = PBXGroup;
+			children = (
+				F590222FDAE45E582CB81708 /* Cocoa.framework */,
+			);
+			name = "OS X";
+			sourceTree = "<group>";
+		};
 		7D0555713972449DBB62E7E7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				E4534D7EFCF11A6A2F4CE813 /* TunaCleanShot.framework */,
+				8593C8A69E4A98081A759C9E /* CleanShotExtensionTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		A2499A96DC17B1A3B0D269F6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				44BAA722761EC1BC9F302F16 /* OS X */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		E4D285BC9E12E56BB4E9B04A = {
@@ -42,6 +84,7 @@
 			children = (
 				F2F5E5F3CF185702B1C53513 /* . */,
 				7D0555713972449DBB62E7E7 /* Products */,
+				A2499A96DC17B1A3B0D269F6 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -51,6 +94,7 @@
 				032596E9A8F94B1475F8DB6F /* CleanShotExtension.swift */,
 				701EFB8CAC77A97A47AE7A70 /* CleanShotCommandsCatalog.swift */,
 				94E9CC95FDC6F00FA54AE9A4 /* Info.plist */,
+				1446D92BF58E587F67335051 /* CleanShotExtensionTests.swift */,
 			);
 			path = .;
 			sourceTree = "<group>";
@@ -58,6 +102,27 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		065D498B55203C90CE51ED4F /* CleanShotExtensionTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C4956981637349F2E7377DD7 /* Build configuration list for PBXNativeTarget "CleanShotExtensionTests" */;
+			buildPhases = (
+				A89B42B73307F2769DE625DE /* Sources */,
+				968CE3D62FAA9B6805FA00E6 /* Frameworks */,
+				2D0CC1CF130946DAED0AAC39 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CB2239E040C9FE5C2C0CCB73 /* PBXTargetDependency */,
+			);
+			name = CleanShotExtensionTests;
+			packageProductDependencies = (
+				08B87A3726D325AF31F1AD8D /* TunaKit */,
+			);
+			productName = CleanShotExtensionTests;
+			productReference = 8593C8A69E4A98081A759C9E /* CleanShotExtensionTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		314963BDBB510CF40C85F26A /* CleanShotExtension */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F7A77ED72B406C57CCAFDD31 /* Build configuration list for PBXNativeTarget "CleanShotExtension" */;
@@ -108,11 +173,19 @@
 			projectRoot = "";
 			targets = (
 				314963BDBB510CF40C85F26A /* CleanShotExtension */,
+				065D498B55203C90CE51ED4F /* CleanShotExtensionTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		2D0CC1CF130946DAED0AAC39 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E043066F3860B9E173151210 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -132,13 +205,58 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A89B42B73307F2769DE625DE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2BA80D17383EABDCD508836F /* CleanShotExtensionTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		CB2239E040C9FE5C2C0CCB73 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = CleanShotExtension;
+			target = 314963BDBB510CF40C85F26A /* CleanShotExtension */;
+			targetProxy = FCA9B8D467356D2940096F8B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		6F70709FEC0BF28D60D8BCDD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.CleanShotExtensionTests;
+				PRODUCT_MODULE_NAME = CleanShotExtensionTests;
+				PRODUCT_NAME = CleanShotExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
 		A202316C45A9765D965CD20C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = TunaCleanShot;
+			};
+			name = Release;
+		};
+		C5005E54519B218C6B7F1D73 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.CleanShotExtensionTests;
+				PRODUCT_MODULE_NAME = CleanShotExtensionTests;
+				PRODUCT_NAME = CleanShotExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -177,6 +295,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				ENABLE_TESTABILITY = YES;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -207,6 +326,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		C4956981637349F2E7377DD7 /* Build configuration list for PBXNativeTarget "CleanShotExtensionTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C5005E54519B218C6B7F1D73 /* Release */,
+				6F70709FEC0BF28D60D8BCDD /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		D8C813213D0FACDF7A3689DE /* Build configuration list for PBXProject "CleanShotExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -233,12 +361,17 @@
 			repositoryURL = "https://github.com/tunaformac/TunaKit";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 1.14.0;
+				minimumVersion = 1.16.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		08B87A3726D325AF31F1AD8D /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F1ADF1698C08079B30A8AA45 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
 		B7C30B214865D6FA4270AF97 /* TunaKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F1ADF1698C08079B30A8AA45 /* XCRemoteSwiftPackageReference "TunaKit" */;

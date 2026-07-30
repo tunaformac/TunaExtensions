@@ -48,6 +48,7 @@ public final class ObsidianVaultsCatalog: NSObject, Catalog, RetainedCatalogStat
   }
 
   public func releaseRetainedState() {
+    invalidateVaultContents()
     vaultsStore.value = []
     messageStore.value = nil
   }
@@ -67,10 +68,25 @@ public final class ObsidianVaultsCatalog: NSObject, Catalog, RetainedCatalogStat
     switch result {
     case .success(let vaults):
       messageStore.value = nil
+      let existingVaults = vaultsStore.readValue { items in
+        items.reduce(into: [String: ObsidianVaultItem]()) { vaultsByID, item in
+          guard let vault = item as? ObsidianVaultItem else { return }
+          vaultsByID[vault.id] = vault
+        }
+      }
+      existingVaults.values.forEach { $0.invalidateContents() }
       vaultsStore.value = vaults.map { vault in
-        ObsidianVaultItem(vaultName: vault.name, path: vault.url.path)
+        if let existing = existingVaults[vault.url.path], existing.vaultName == vault.name {
+          return existing
+        }
+        return ObsidianVaultItem(
+          vaultName: vault.name,
+          path: vault.url.path,
+          catalogIdentifier: identifier
+        )
       }
     case .failure(let error):
+      invalidateVaultContents()
       vaultsStore.value = []
       messageStore.value = [
         CatalogMessageItem(
@@ -83,6 +99,12 @@ public final class ObsidianVaultsCatalog: NSObject, Catalog, RetainedCatalogStat
     }
 
     reportScanFinished()
+  }
+
+  private func invalidateVaultContents() {
+    vaultsStore.readValue { items in
+      items.compactMap { $0 as? ObsidianVaultItem }.forEach { $0.invalidateContents() }
+    }
   }
 }
 
@@ -193,7 +215,7 @@ public class ObsidianCatalogBase: NSObject, Catalog, RetainedCatalogStateReleasi
     var results: [ObsidianNoteItem] = []
 
     for vault in vaults {
-      results.append(contentsOf: notes(in: vault, fileManager: fileManager))
+      results.append(contentsOf: ObsidianVaultContents.notes(in: vault, fileManager: fileManager))
     }
 
     results.sort { lhs, rhs in
@@ -204,64 +226,5 @@ public class ObsidianCatalogBase: NSObject, Catalog, RetainedCatalogStateReleasi
     }
 
     return .success(results)
-  }
-
-  nonisolated private static func notes(
-    in vault: ObsidianVaultLocator.Vault,
-    fileManager: FileManager
-  ) -> [ObsidianNoteItem] {
-    guard fileManager.fileExists(atPath: vault.url.path) else { return [] }
-    guard
-      let enumerator = fileManager.enumerator(
-        at: vault.url,
-        includingPropertiesForKeys: [
-          .isDirectoryKey,
-          .isRegularFileKey,
-          .contentModificationDateKey,
-        ],
-        options: [.skipsHiddenFiles],
-        errorHandler: nil)
-    else { return [] }
-
-    var items: [ObsidianNoteItem] = []
-
-    for case let url as URL in enumerator {
-      let resourceValues = try? url.resourceValues(forKeys: [
-        .isDirectoryKey,
-        .isRegularFileKey,
-        .contentModificationDateKey,
-      ])
-      if resourceValues?.isDirectory == true {
-        if shouldSkipDirectory(url) {
-          enumerator.skipDescendants()
-        }
-        continue
-      }
-
-      guard resourceValues?.isRegularFile == true else { continue }
-      guard url.pathExtension.lowercased() == "md" else { continue }
-
-      let title = url.deletingPathExtension().lastPathComponent
-      let relativePath = url.deletingPathExtension().path.replacing(vault.url.path + "/", with: "")
-      items.append(
-        ObsidianNoteItem(
-          title: title,
-          vaultName: vault.name,
-          relativePath: relativePath,
-          path: url.path,
-          modifiedAt: resourceValues?.contentModificationDate ?? .distantPast
-        ))
-    }
-
-    return items
-  }
-
-  nonisolated private static func shouldSkipDirectory(_ url: URL) -> Bool {
-    switch url.lastPathComponent {
-    case ".obsidian", ".git", "node_modules":
-      return true
-    default:
-      return false
-    }
   }
 }
