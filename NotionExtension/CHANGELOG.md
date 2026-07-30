@@ -1,5 +1,5 @@
 # Notion Extension Changelog
 
-## Unreleased
+## 1.7
 
 - Show a clear loading state while Notion pages and databases load.
