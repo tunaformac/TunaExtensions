@@ -201,14 +201,16 @@ public final class CleanShotCommandsCatalog: Catalog {
       ),
     ]
 
-    return commands.compactMap { command in
+    return commands.compactMap { command -> CatalogItem? in
       guard let url = command.url else { return nil }
       return CommandItem(
         id: command.id,
         title: command.title,
         symbol: command.symbol,
         detail: command.detail,
-        tintColor: .systemOrange
+        tintColor: .systemOrange,
+        headlessEligibility: .guaranteed,
+        executionPolicy: .dismiss
       ) {
         guard URIOpener.open(url) else {
           return .failure("CleanShot X is not available")

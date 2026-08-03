@@ -11,7 +11,7 @@ public final class NotionExtension: Extension {
         description: "Browse and search Notion, with optional top-level pages in global search.",
         iconName: "book.pages"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.83", minTunaKit: "1.15.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.83", minTunaKit: "1.17.0"),
       catalogs: [
         CatalogDeclaration(
           id: "notion", type: NotionCatalog.self, name: "Notion", enabledByDefault: true),

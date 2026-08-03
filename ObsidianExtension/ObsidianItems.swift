@@ -353,7 +353,10 @@ final class ObsidianDailyNoteItem: CatalogEntity, Runnable, @unchecked Sendable 
     preview(maxDimension: maxDimension)
   }
 
-  func run() -> ActionResult {
+  let headlessEligibility: CommandHeadlessEligibility = .guaranteed
+  let executionPolicy: CommandExecutionPolicy = .dismiss
+
+  func run() async -> ActionResult {
     ObsidianCommandRunner.openDailyNote()
   }
 }

@@ -169,24 +169,29 @@ public final class ArenaActionsCatalog: ActionCatalog {
 
 }
 
-private final class ArenaResolveAction: CatalogAction, AsyncActionProviding,
-  ActionPredicateProviding, @unchecked Sendable
-{
+private final class ArenaResolveAction: CatalogAction, ActionPredicateProviding, @unchecked Sendable {
   var subjectPredicate: CatalogActionSubjectPredicate? = {
     $0 is ArenaBlockItem || $0 is ArenaChannelItem
   }
   var targetPredicate: CatalogActionTargetPredicate?
 
   init() {
-    super.init(id: "resolve", title: "Resolve", type: .action) { _, _ in
-      .failure("Nothing to resolve")
+    super.init(
+      id: "resolve",
+      title: "Resolve",
+      type: .action,
+      executionPolicy: .keepVisible
+    ) { subject, target in
+      await Self.perform(subjects: [subject], target: target)
+    }
+    batchCallback = { subjects, target in
+      await Self.perform(subjects: subjects, target: target)
     }
     systemSymbolName = "arrow.down.circle"
     supportedSubjectTypes = [.arenaBlock, .arenaChannel]
-    producesInlineResult = true
   }
 
-  func performAsync(subjects: [CatalogItem], target: CatalogItem?) async -> ActionResult {
+  private static func perform(subjects: [CatalogItem], target: CatalogItem?) async -> ActionResult {
     do {
       var resolved: [CatalogItem] = []
       resolved.reserveCapacity(subjects.count)

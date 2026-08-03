@@ -36,9 +36,7 @@ final class SafariCurrentPageRuntimeResolutionTests: XCTestCase {
       path: SafariAppleScript.currentPageToken)
     currentPage.typeID = .url
 
-    let result = await MainActor.run {
-      action.callback(currentPage, nil)
-    }
+    let result = await action.callback(currentPage, nil)
 
     guard case .background(let task) = result else {
       XCTFail("Expected Shelf task to avoid blocking main thread")

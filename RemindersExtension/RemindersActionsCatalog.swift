@@ -125,8 +125,8 @@ public final class RemindersActionsCatalog: NSObject, ActionCatalog {
   }
 }
 
-private final class CreateReminderInListAction: CatalogAction, AsyncActionProviding,
-  ActionPredicateProviding, @unchecked Sendable
+private final class CreateReminderInListAction: CatalogAction, ActionPredicateProviding,
+  @unchecked Sendable
 {
   var subjectPredicate: CatalogActionSubjectPredicate? = { subject in
     subject?.textValueFallback()?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
@@ -138,8 +138,11 @@ private final class CreateReminderInListAction: CatalogAction, AsyncActionProvid
       id: "create-reminder-in-list",
       title: "Add to Reminders List",
       type: .action
-    ) { _, _ in
-      .failure("Unable to create reminder")
+    ) { subject, target in
+      await Self.perform(subjects: [subject], target: target)
+    }
+    batchCallback = { subjects, target in
+      await Self.perform(subjects: subjects, target: target)
     }
     targetRequirement = .required
     systemSymbolName = "text.badge.plus"
@@ -151,7 +154,7 @@ private final class CreateReminderInListAction: CatalogAction, AsyncActionProvid
     )
   }
 
-  func performAsync(subjects: [CatalogItem], target: CatalogItem?) async -> ActionResult {
+  private static func perform(subjects: [CatalogItem], target: CatalogItem?) async -> ActionResult {
     guard subjects.count == 1, let title = subjects.first?.textValueFallback() else {
       return .failure("Missing reminder title")
     }

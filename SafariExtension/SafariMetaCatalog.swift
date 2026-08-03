@@ -45,7 +45,9 @@ public final class SafariMetaCatalog: Catalog {
       id: "new-tab",
       title: "New Tab",
       symbol: "plus.square.on.square",
-      detail: "Open a new Safari tab"
+      detail: "Open a new Safari tab",
+      headlessEligibility: .guaranteed,
+      executionPolicy: .dismiss
     ) {
       SafariAppleScript.openNewTab()
     }
@@ -54,7 +56,9 @@ public final class SafariMetaCatalog: Catalog {
       id: "new-private-window",
       title: "New Private Window",
       symbol: "lock.window",
-      detail: "Open a new private window"
+      detail: "Open a new private window",
+      headlessEligibility: .guaranteed,
+      executionPolicy: .dismiss
     ) {
       SafariAppleScript.openNewPrivateWindow()
     }

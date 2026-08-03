@@ -12,7 +12,7 @@ final class RemindersExtensionTests: XCTestCase {
     )
     let action = try XCTUnwrap(catalog.actions.first { $0.id == "create-reminder-in-list" })
 
-    XCTAssertTrue(action is AsyncActionProviding)
+    XCTAssertNotNil(action.batchCallback)
     XCTAssertEqual(action.targetSearchScope, .catalogs(["reminders.lists"], preparation: .refresh))
     XCTAssertEqual(action.allowedTargetTypes, [.reminderList])
     if case .required = action.targetRequirement {

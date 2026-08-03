@@ -212,7 +212,7 @@ enum BrewActionsCatalog {
     }
     action.systemSymbolName = symbol
     action.supportedSubjectTypes = [TypeID.brewMeta]
-    action.producesInlineResult = true
+    action.executionPolicy = .keepVisible
     action.subjectPredicate = { subject in subject?.typeID == TypeID.brewMeta }
     return action
   }
@@ -225,7 +225,7 @@ enum BrewActionsCatalog {
       guard let text = subject?.textValueFallback() else { return false }
       return !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
-    action.producesInlineResult = true
+    action.executionPolicy = .keepVisible
     return action
   }
 
