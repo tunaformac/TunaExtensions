@@ -19,7 +19,7 @@ public final class NotesActionsCatalog: NSObject, ActionCatalog {
     var items: [CatalogAction] = []
 
     let openInNotes = PredicateAwareAction(
-      id: "open-in-notes", title: "Open in Notes", type: .action
+      id: "open-in-notes", title: "Open in Notes"
     ) { subject, _ in
       guard let note = subject as? NoteItem else {
         return .failure("No note selected")
@@ -36,7 +36,7 @@ public final class NotesActionsCatalog: NSObject, ActionCatalog {
     items.append(openInNotes)
 
     let createFromText = PredicateAwareAction(
-      id: "create-note", title: "Create Note", type: .action
+      id: "create-note", title: "Create Note"
     ) { subject, _ in
       guard subject.typeID == .textSnippet else {
         return .failure("Select text first")
@@ -58,7 +58,7 @@ public final class NotesActionsCatalog: NSObject, ActionCatalog {
     items.append(createFromText)
 
     let createFromApp = PredicateAwareAction(
-      id: "create-note.from-app", title: "Create Note", type: .action
+      id: "create-note.from-app", title: "Create Note"
     ) { _, target in
       guard let body = target?.textValueFallback() else {
         return .failure("Missing note text")
@@ -76,7 +76,7 @@ public final class NotesActionsCatalog: NSObject, ActionCatalog {
     createFromApp.targetPredicate = { item in item?.textValueFallback() != nil }
     items.append(createFromApp)
 
-    let toAction = PredicateAwareAction(id: "to", title: "To...", type: .action) {
+    let toAction = PredicateAwareAction(id: "to", title: "To...") {
       subject, target in
       guard NotesActions.isNewNoteEntry(subject) else {
         return .failure("Select New Note first")

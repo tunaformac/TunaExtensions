@@ -197,7 +197,7 @@ final class ObsidianExtensionTests: XCTestCase {
       ObsidianActionsCatalog.actions().first(where: { $0.title == "Open" })
     )
 
-    let genericOpen = PredicateAwareAction(id: "open", title: "Open", type: .action) { _, _ in
+    let genericOpen = PredicateAwareAction(id: "open", title: "Open") { _, _ in
       .success
     }
     genericOpen.supportedSubjectTypes = [.file]

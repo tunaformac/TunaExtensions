@@ -24,7 +24,7 @@ extension ThingsActionsCatalog {
     var items: [CatalogAction] = []
 
     let showList = PredicateAwareAction(
-      id: "show-in-things", title: "Show in Things", type: .action
+      id: "show-in-things", title: "Show in Things"
     ) { subject, _ in
       guard let listItem = subject as? ThingsListItem else {
         return .failure("No Things list selected")
@@ -40,7 +40,7 @@ extension ThingsActionsCatalog {
     items.append(showList)
 
     let addToThings = PredicateAwareAction(
-      id: "add-to-things", title: "Add to Things", type: .action
+      id: "add-to-things", title: "Add to Things"
     ) { subject, _ in
       ThingsActions.open(
         url: ThingsURLBuilder.addURL(from: [subject]),
@@ -63,7 +63,7 @@ extension ThingsActionsCatalog {
     items.append(addToThings)
 
     let addQuickEntry = PredicateAwareAction(
-      id: "add-to-things-quick-entry", title: "Add to Things (Quick Entry)", type: .action
+      id: "add-to-things-quick-entry", title: "Add to Things (Quick Entry)"
     ) {
       subject, _ in
       ThingsActions.open(
@@ -78,7 +78,7 @@ extension ThingsActionsCatalog {
     items.append(addQuickEntry)
 
     let addToToday = PredicateAwareAction(
-      id: "add-to-today-in-things", title: "Add to Today in Things", type: .action
+      id: "add-to-today-in-things", title: "Add to Today in Things"
     ) { subject, _ in
       ThingsActions.open(
         url: ThingsURLBuilder.addURL(from: [subject], when: "today"),
@@ -98,7 +98,7 @@ extension ThingsActionsCatalog {
     addToToday.subjectPredicate = addToThings.subjectPredicate
     items.append(addToToday)
 
-    let search = PredicateAwareAction(id: "search-things", title: "Search Things", type: .action) {
+    let search = PredicateAwareAction(id: "search-things", title: "Search Things") {
       subject, _ in
       guard let query = ThingsURLBuilder.query(from: subject) else {
         return .failure("Missing search query")
@@ -164,7 +164,7 @@ extension ThingsActionsCatalog {
     activates: Bool? = nil,
     url: @escaping (String) -> URL?
   ) -> CatalogAction {
-    let action = PredicateAwareAction(id: id, title: title, type: .action) { _, target in
+    let action = PredicateAwareAction(id: id, title: title) { _, target in
       guard let text = target?.textValueFallback()?.trimmingCharacters(in: .whitespacesAndNewlines),
         !text.isEmpty
       else {

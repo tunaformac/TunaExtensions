@@ -18,7 +18,7 @@ public final class SafariActionsCatalog: ActionCatalog {
     var items: [CatalogAction] = []
 
     let openInSafari = PredicateAwareAction(
-      id: "open-in-safari", title: "Open in Safari", type: .action
+      id: "open-in-safari", title: "Open in Safari"
     ) { subject, _ in
       if SafariDynamicURLResolver.isCurrentPage(subject: subject) {
         return SafariDynamicURLResolver.openCurrentPageInSafari()
@@ -39,7 +39,7 @@ public final class SafariActionsCatalog: ActionCatalog {
     }
     items.append(openInSafari)
 
-    let openURL = PredicateAwareAction(id: "open-url", title: "Open URL", type: .action) {
+    let openURL = PredicateAwareAction(id: "open-url", title: "Open URL") {
       _, target in
       guard let url = SafariURLActions.url(from: target) else {
         return .failure("No URL to open")
@@ -58,7 +58,7 @@ public final class SafariActionsCatalog: ActionCatalog {
     openURL.targetPredicate = { SafariURLActions.url(from: $0) != nil }
     items.append(openURL)
 
-    let copyURL = PredicateAwareAction(id: "copy-url", title: "Copy URL", type: .action) {
+    let copyURL = PredicateAwareAction(id: "copy-url", title: "Copy URL") {
       subject, _ in
       if SafariDynamicURLResolver.isCurrentPage(subject: subject) {
         return SafariDynamicURLResolver.copyCurrentPageURLToClipboard()
@@ -81,7 +81,7 @@ public final class SafariActionsCatalog: ActionCatalog {
     items.append(copyURL)
 
     let copyTargetURL = PredicateAwareAction(
-      id: "copy-url-from-target", title: "Copy URL", type: .action
+      id: "copy-url-from-target", title: "Copy URL"
     ) { _, target in
       guard let url = SafariURLActions.url(from: target) else {
         return .failure("No URL to copy")

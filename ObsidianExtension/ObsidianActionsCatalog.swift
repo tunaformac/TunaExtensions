@@ -21,7 +21,6 @@ private final class ObsidianOpenNoteAction: CatalogAction, ActionPredicateProvid
     super.init(
       id: ObsidianActionHierarchyIdentifiers.openNote,
       title: "Open",
-      type: .action,
       callback: callback)
   }
 }
@@ -62,7 +61,7 @@ public final class ObsidianActionsCatalog: NSObject, ActionCatalog {
     items.append(openNote)
 
     let openVault = PredicateAwareAction(
-      id: "open-vault-in-obsidian", title: "Open Vault in Obsidian", type: .action
+      id: "open-vault-in-obsidian", title: "Open Vault in Obsidian"
     ) { subject, _ in
       guard let vault = subject as? ObsidianVaultItem else {
         return .failure("No Obsidian vault selected")
@@ -79,7 +78,7 @@ public final class ObsidianActionsCatalog: NSObject, ActionCatalog {
     openVault.subjectPredicate = { $0 is ObsidianVaultItem }
     items.append(openVault)
 
-    let searchVault = PredicateAwareAction(id: "search-vault", title: "Search Vault", type: .action)
+    let searchVault = PredicateAwareAction(id: "search-vault", title: "Search Vault")
     { subject, target in
       guard let vault = subject as? ObsidianVaultItem else {
         return .failure("No Obsidian vault selected")
@@ -101,7 +100,7 @@ public final class ObsidianActionsCatalog: NSObject, ActionCatalog {
     searchVault.subjectPredicate = { $0 is ObsidianVaultItem }
     items.append(searchVault)
 
-    let newNoteInVault = PredicateAwareAction(id: "new-note", title: "New Note", type: .action) {
+    let newNoteInVault = PredicateAwareAction(id: "new-note", title: "New Note") {
       subject, _ in
       guard let vault = subject as? ObsidianVaultItem else {
         return .failure("No Obsidian vault selected")
@@ -114,7 +113,7 @@ public final class ObsidianActionsCatalog: NSObject, ActionCatalog {
     items.append(newNoteInVault)
 
     let newNoteFromText = PredicateAwareAction(
-      id: "new-obsidian-note", title: "New Obsidian Note", type: .action
+      id: "new-obsidian-note", title: "New Obsidian Note"
     ) { subject, _ in
       guard let content = subject.textValueFallback() else {
         return .failure("Select text first")
@@ -127,7 +126,7 @@ public final class ObsidianActionsCatalog: NSObject, ActionCatalog {
     items.append(newNoteFromText)
 
     let newNoteFromApp = PredicateAwareAction(
-      id: "new-note.from-app", title: "New Note", type: .action
+      id: "new-note.from-app", title: "New Note"
     ) { _, target in
       guard let content = target?.textValueFallback() else {
         return .failure("Missing note text")
@@ -142,7 +141,7 @@ public final class ObsidianActionsCatalog: NSObject, ActionCatalog {
     newNoteFromApp.targetPredicate = { $0?.textValueFallback() != nil }
     items.append(newNoteFromApp)
 
-    let searchFromApp = PredicateAwareAction(id: "search", title: "Search", type: .action) {
+    let searchFromApp = PredicateAwareAction(id: "search", title: "Search") {
       _, target in
       let query = target?.textValueFallback()?.trimmingCharacters(in: .whitespacesAndNewlines)
       guard let vaultName = ObsidianCommandRunner.resolvedVaultName() else {
@@ -163,7 +162,7 @@ public final class ObsidianActionsCatalog: NSObject, ActionCatalog {
     items.append(searchFromApp)
 
     let copyURI = PredicateAwareAction(
-      id: "copy-obsidian-uri", title: "Copy Obsidian URI", type: .action
+      id: "copy-obsidian-uri", title: "Copy Obsidian URI"
     ) { subject, _ in
       guard let note = subject as? ObsidianNoteItem else {
         return .failure("No Obsidian note selected")

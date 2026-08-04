@@ -16,7 +16,7 @@ public final class ArenaActionsCatalog: ActionCatalog {
 
   private static func makeActions() -> [CatalogAction] {
     let capture = PredicateAwareAction(
-      id: "capture", title: "Save to Are.na", type: .action
+      id: "capture", title: "Save to Are.na"
     ) { subject, target in
       guard let capture = capture(from: subject) else {
         return .failure("Select a URL, text, or image to save")
@@ -59,7 +59,7 @@ public final class ArenaActionsCatalog: ActionCatalog {
     capture.targetPredicate = { $0 is ArenaChannelItem }
 
     let openChannel = PredicateAwareAction(
-      id: "open-channel", title: "Open on Are.na", type: .action
+      id: "open-channel", title: "Open on Are.na"
     ) { subject, _ in
       guard let channel = subject as? ArenaChannelItem else {
         return .failure("No Are.na channel selected")
@@ -72,7 +72,7 @@ public final class ArenaActionsCatalog: ActionCatalog {
     openChannel.subjectPredicate = { $0 is ArenaChannelItem }
 
     let openBlock = PredicateAwareAction(
-      id: "open-block", title: "Open on Are.na", type: .action
+      id: "open-block", title: "Open on Are.na"
     ) { subject, _ in
       guard let block = subject as? ArenaBlockItem else {
         return .failure("No Are.na block selected")
@@ -179,7 +179,6 @@ private final class ArenaResolveAction: CatalogAction, ActionPredicateProviding,
     super.init(
       id: "resolve",
       title: "Resolve",
-      type: .action,
       executionPolicy: .keepVisible
     ) { subject, target in
       await Self.perform(subjects: [subject], target: target)

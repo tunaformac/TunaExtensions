@@ -10,7 +10,7 @@ private final class SubjectTextSearchAction: CatalogAction, ActionPredicateProvi
   var subjectScopedSearchRootCatalogIdentifier: String? { "brew.search" }
 
   init(id: String, title: String) {
-    super.init(id: id, title: title, type: .action) { _, _ in .success }
+    super.init(id: id, title: title) { _, _ in .success }
   }
 
   func subjectScopedSearchQuery(from subject: CatalogItem) -> String? {
@@ -156,7 +156,7 @@ enum BrewActionsCatalog {
     symbol: String,
     asCask: Bool
   ) -> CatalogAction {
-    let action = PredicateAwareAction(id: id, title: title, type: .action) { subject, target in
+    let action = PredicateAwareAction(id: id, title: title) { subject, target in
       guard subject.typeID == TypeID.brewMeta else { return .failure("Select Homebrew first") }
       guard let input = target?.textValueFallback() else { return .failure("Enter a package name") }
       let packages = packageInputTokens(from: input)
@@ -187,7 +187,7 @@ enum BrewActionsCatalog {
     emptyMessage: String,
     load: @escaping @Sendable () async throws -> [BrewPackageRecord]
   ) -> CatalogAction {
-    let action = PredicateAwareAction(id: id, title: title, type: .action) { subject, _ in
+    let action = PredicateAwareAction(id: id, title: title) { subject, _ in
       guard subject.typeID == TypeID.brewMeta else { return .failure("Select Homebrew first") }
       return .background(
         CommandBackgroundTask(title: title) {
@@ -235,7 +235,7 @@ enum BrewActionsCatalog {
     symbol: String,
     arguments: [String]
   ) -> CatalogAction {
-    let action = PredicateAwareAction(id: id, title: title, type: .action) { subject, _ in
+    let action = PredicateAwareAction(id: id, title: title) { subject, _ in
       guard subject.typeID == TypeID.brewMeta else { return .failure("Select Homebrew first") }
       return brewCommandTask(title: title, arguments: arguments)
     }
@@ -321,7 +321,7 @@ enum BrewActionsCatalog {
     predicate: @escaping (BrewPackageItem) -> Bool,
     perform: @escaping (BrewPackageItem) -> ActionResult
   ) -> CatalogAction {
-    let action = PredicateAwareAction(id: id, title: title, type: .action) { subject, _ in
+    let action = PredicateAwareAction(id: id, title: title) { subject, _ in
       guard let package = subject as? BrewPackageItem else {
         return .failure("No Homebrew package selected")
       }

@@ -20,7 +20,7 @@ public final class RemindersActionsCatalog: NSObject, ActionCatalog {
     var items: [CatalogAction] = []
 
     let openInReminders = PredicateAwareAction(
-      id: "open-in-reminders", title: "Open in Reminders", type: .action
+      id: "open-in-reminders", title: "Open in Reminders"
     ) { subject, _ in
       guard let reminder = subject as? ReminderItem else {
         return .failure("No reminder selected")
@@ -38,7 +38,7 @@ public final class RemindersActionsCatalog: NSObject, ActionCatalog {
     items.append(openInReminders)
 
     let markComplete = PredicateAwareAction(
-      id: "mark-complete", title: "Mark Complete", type: .action
+      id: "mark-complete", title: "Mark Complete"
     ) { subject, _ in
       guard let reminder = subject as? ReminderItem else {
         return .failure("No reminder selected")
@@ -58,7 +58,7 @@ public final class RemindersActionsCatalog: NSObject, ActionCatalog {
     items.append(markComplete)
 
     let createFromText = PredicateAwareAction(
-      id: "create-reminder", title: "Create Reminder", type: .action
+      id: "create-reminder", title: "Create Reminder"
     ) { subject, _ in
       guard subject.typeID == .textSnippet else {
         return .failure("Select text first")
@@ -82,7 +82,7 @@ public final class RemindersActionsCatalog: NSObject, ActionCatalog {
     items.append(CreateReminderInListAction())
 
     let createFromApp = PredicateAwareAction(
-      id: "create-reminder.from-app", title: "Create Reminder", type: .action
+      id: "create-reminder.from-app", title: "Create Reminder"
     ) { _, target in
       guard let title = target?.textValueFallback() else {
         return .failure("Missing reminder title")
@@ -100,7 +100,7 @@ public final class RemindersActionsCatalog: NSObject, ActionCatalog {
     createFromApp.targetPredicate = { item in item?.textValueFallback() != nil }
     items.append(createFromApp)
 
-    let toAction = PredicateAwareAction(id: "to", title: "To...", type: .action) {
+    let toAction = PredicateAwareAction(id: "to", title: "To...") {
       subject, target in
       guard RemindersActions.isNewReminderEntry(subject) else {
         return .failure("Select New Reminder first")
@@ -136,8 +136,7 @@ private final class CreateReminderInListAction: CatalogAction, ActionPredicatePr
   init() {
     super.init(
       id: "create-reminder-in-list",
-      title: "Add to Reminders List",
-      type: .action
+      title: "Add to Reminders List"
     ) { subject, target in
       await Self.perform(subjects: [subject], target: target)
     }
