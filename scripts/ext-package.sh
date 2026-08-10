@@ -118,6 +118,7 @@ dump_extension_declaration() {
   if [[ -z "$tuna_binary" ]]; then
     local candidate
     for candidate in \
+      "$ROOT/../Tuna/build/dd/Build/Products/Debug/Tuna.app/Contents/MacOS/Tuna" \
       "/Applications/Tuna.app/Contents/MacOS/Tuna" \
       "$HOME/Applications/Tuna.app/Contents/MacOS/Tuna"
     do
@@ -129,7 +130,7 @@ dump_extension_declaration() {
   fi
   if [[ ! -x "$tuna_binary" ]]; then
     echo "Tuna is required to read the extension declaration for packaging." >&2
-    echo "Install Tuna in /Applications or ~/Applications, or set TUNA_BINARY." >&2
+    echo "Build sibling ../Tuna, install Tuna, or set TUNA_BINARY." >&2
     exit 1
   fi
 

@@ -12,6 +12,8 @@ TARGET="${1:?Usage: upload-extension.sh TARGET}"
 API_URL="${STORE_API_URL:-https://tunaformac.com/api/v1/items}"
 TOKEN_OP_REF="${RELEASE_UPLOAD_TOKEN_OP:-op://Brainbow/Tuna/RELEASE_UPLOAD_TOKEN}"
 CREATE_GIT_TAG="${CREATE_GIT_TAG:-0}"
+PACKAGE_METADATA_PATH="${TUNA_RELEASE_PACKAGE_METADATA:-}"
+PREFLIGHT_ONLY="${TUNA_RELEASE_PREFLIGHT_ONLY:-0}"
 RESPONSE_BODY=""
 UPLOAD_SNAPSHOT_DIR=""
 
@@ -39,6 +41,11 @@ RELEASE_INPUTS=("$EXTENSION_DIR" .gitignore Makefile scripts media)
 ensure_paths_committed "$ROOT" "${RELEASE_INPUTS[@]}"
 ensure_head_unchanged "$ROOT" "$RELEASE_COMMIT"
 
+if [[ "$PREFLIGHT_ONLY" != "0" && "$PREFLIGHT_ONLY" != "1" ]]; then
+  echo "TUNA_RELEASE_PREFLIGHT_ONLY must be 0 or 1." >&2
+  exit 64
+fi
+
 resolve_upload_token() {
   if [[ -z "$TOKEN" && -n "$TOKEN_OP_REF" ]]; then
     if command -v op >/dev/null 2>&1; then
@@ -58,7 +65,15 @@ resolve_upload_token() {
 }
 
 PKG=""
-RAW_OUTPUT="$(make -C "$ROOT" ext-package TARGET="$TARGET")"
+if [[ -n "$PACKAGE_METADATA_PATH" ]]; then
+  if [[ ! -f "$PACKAGE_METADATA_PATH" || -L "$PACKAGE_METADATA_PATH" ]]; then
+    echo "Prepared package metadata not found: $PACKAGE_METADATA_PATH" >&2
+    exit 1
+  fi
+  RAW_OUTPUT="$(<"$PACKAGE_METADATA_PATH")"
+else
+  RAW_OUTPUT="$(make -C "$ROOT" ext-package TARGET="$TARGET")"
+fi
 ensure_paths_committed "$ROOT" "${RELEASE_INPUTS[@]}"
 ensure_head_unchanged "$ROOT" "$RELEASE_COMMIT"
 ITEM_JSON="$(printf '%s\n' "$RAW_OUTPUT" | python3 -c "
@@ -881,6 +896,14 @@ case "$PREFLIGHT_HTTP_CODE" in
     exit 1
     ;;
 esac
+
+if [[ "$PREFLIGHT_ONLY" == "1" ]]; then
+  if [[ -n "$TAG" ]]; then
+    ensure_tag_available_at_commit "$ROOT" "$TAG" "$RELEASE_COMMIT"
+  fi
+  echo "Preflight passed: $NAME $VERSION"
+  exit 0
+fi
 
 if [[ "$RELEASE_ACTION" == "upload" || "$RELEASE_ACTION" == "recover" ]]; then
   if [[ -n "$TAG" ]]; then

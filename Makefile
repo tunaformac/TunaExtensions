@@ -10,7 +10,7 @@ TUNA_ROOT ?= ../Tuna
 LOCAL_DERIVED_DATA := ./build/dd-local
 
 .DEFAULT_GOAL := build-all
-.PHONY: build-all test test-extensions ext ext-all ext-local ext-all-local ext-package ext-upload release release-all clean
+.PHONY: build-all test test-release-scripts test-extensions ext ext-all ext-local ext-all-local ext-package ext-upload release release-all clean
 
 define require_target
 	@test -n "$(TARGET)" || { echo "usage: make $@ TARGET=<Scheme>" >&2; exit 64; }
@@ -20,8 +20,11 @@ endef
 build-all:
 	@set -e; for SCHEME in $(EXTENSION_SCHEMES); do echo "=== $$SCHEME ==="; ./scripts/tuna-extension build --scheme "$$SCHEME" --release >/dev/null; done; echo "All extensions build."
 
-# Discover every extension unit-test target and require each shared scheme to cover it.
-test: test-extensions
+# Run release tooling regressions and every extension unit-test target.
+test: test-release-scripts test-extensions
+
+test-release-scripts:
+	@./tests/release-all-extensions-test.sh
 
 test-extensions:
 	@set -e; found_tests=""; \
@@ -81,12 +84,9 @@ release: test-extensions
 	$(require_target)
 	@./scripts/tuna-extension release --scheme "$(TARGET)"
 
-# Release every extension whose local version is newer than the store version.
+# Prepare and preflight every extension before publishing any of them.
 release-all: test-extensions
-	@set -e; for SCHEME in $(EXTENSION_SCHEMES); do \
-		echo "=== $$SCHEME ==="; \
-		./scripts/tuna-extension release --scheme "$$SCHEME"; \
-	done
+	@./scripts/release-all-extensions.sh $(EXTENSION_SCHEMES)
 
 clean:
 	rm -rf ./build

@@ -54,14 +54,17 @@ make release-all
 ```
 
 The command tests, builds, signs, uploads, downloads and verifies the public package, then creates
-and pushes its annotated tag. `release-all` verifies already-published matching versions and only
-uploads versions that are newer or need their bytes repaired.
+and pushes its annotated tag. Before `release-all` publishes anything, it builds and packages every
+extension, preflights every candidate against the store, and verifies the complete release input
+set is still clean. It then verifies already-published matching versions and only uploads versions
+that are newer or need their bytes repaired.
 
 Packaging derives store metadata from the built bundle's Swift declaration,
-which requires a Tuna binary. It uses `TUNA_BINARY` when provided and otherwise falls back to
-`/Applications/Tuna.app`. A store icon belongs beside its sources at `<Extension>/icon.png` — every extension
-here has one. `media/icons/<id-or-slug>.<extension>` still works for icons curated outside an
-extension directory. Screenshots live at
+which requires a Tuna binary. It uses `TUNA_BINARY` when provided, then looks for the sibling debug
+build at `../Tuna/build/dd/Build/Products/Debug/Tuna.app/Contents/MacOS/Tuna`, then falls back to
+`/Applications/Tuna.app` and `~/Applications/Tuna.app`. A store icon belongs beside its sources at
+`<Extension>/icon.png` — every extension here has one. `media/icons/<id-or-slug>.<extension>` still
+works for icons curated outside an extension directory. Screenshots live at
 `media/screenshots/<id-or-slug>/*`. Media supplied by this tooling must be tracked; curated server
 media need not be duplicated here. `dist/store/` is generated output and is never used as a
 listing-media source.
@@ -74,12 +77,14 @@ Packaging requires both `minTuna` and `minTunaKit` from the declaration or expli
 are not copied from declarations.
 
 Uploads require the selected extension, `.gitignore`, `Makefile`, `scripts/`, and `media/` to remain
-clean before and after packaging, including staged and untracked files. A release also refuses an
-existing version tag that does not point to the captured release commit; a matching tag makes
-reruns safe. Packages use fixed timestamps and sorted ZIP entries, so rerunning from the same source
-produces the same bytes. Releases made before deterministic packaging are compared by their signed
-manifest and payload contents when their outer ZIP bytes differ; compiler-dependent packages may
-also reuse their immutable public bytes when the extension source still matches its annotated tag.
+clean before and after packaging, including staged and untracked files. `release-all` applies that
+check across every extension and every tracked `Package.resolved`, after preparing all packages and
+again after all store preflights. A release also refuses an existing version tag that does not point
+to the captured release commit; a matching tag makes reruns safe. Packages use fixed timestamps and
+sorted ZIP entries, so rerunning from the same source produces the same bytes. Releases made before
+deterministic packaging are compared by their signed manifest and payload contents when their outer
+ZIP bytes differ; compiler-dependent packages may also reuse their immutable public bytes when the
+extension source still matches its annotated tag.
 
 The uploader sends private snapshots of the package and tracked listing media; media bytes
 come from the captured release commit rather than mutable worktree paths, and ignored `dist/store/`
