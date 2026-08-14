@@ -84,7 +84,7 @@ public final class ObsidianActionsCatalog: NSObject, ActionCatalog {
         return .failure("No Obsidian vault selected")
       }
 
-      let query = target?.textValueFallback()?.trimmingCharacters(in: .whitespacesAndNewlines)
+      let query = target?.textInputValue()?.trimmingCharacters(in: .whitespacesAndNewlines)
       guard let url = ObsidianActions.searchURL(vaultName: vault.vaultName, query: query) else {
         return .failure("Invalid Obsidian URL")
       }
@@ -115,20 +115,20 @@ public final class ObsidianActionsCatalog: NSObject, ActionCatalog {
     let newNoteFromText = PredicateAwareAction(
       id: "new-obsidian-note", title: "New Obsidian Note"
     ) { subject, _ in
-      guard let content = subject.textValueFallback() else {
+      guard let content = subject.textInputValue() else {
         return .failure("Select text first")
       }
       return ObsidianCommandRunner.createNoteFromText(content)
     }
     newNoteFromText.systemSymbolName = "square.and.pencil"
     newNoteFromText.supportedSubjectTypes = [.textSnippet]
-    newNoteFromText.subjectPredicate = { $0?.textValueFallback() != nil }
+    newNoteFromText.subjectPredicate = { $0?.textInputValue() != nil }
     items.append(newNoteFromText)
 
     let newNoteFromApp = PredicateAwareAction(
       id: "new-note.from-app", title: "New Note"
     ) { _, target in
-      guard let content = target?.textValueFallback() else {
+      guard let content = target?.textInputValue() else {
         return .failure("Missing note text")
       }
       return ObsidianCommandRunner.createNoteFromText(content)
@@ -138,12 +138,12 @@ public final class ObsidianActionsCatalog: NSObject, ActionCatalog {
     newNoteFromApp.supportedSubjectTypes = [.application]
     newNoteFromApp.allowedTargetTypes = [.textSnippet]
     newNoteFromApp.subjectPredicate = ObsidianActions.isObsidianApplication
-    newNoteFromApp.targetPredicate = { $0?.textValueFallback() != nil }
+    newNoteFromApp.targetPredicate = { $0?.textInputValue() != nil }
     items.append(newNoteFromApp)
 
     let searchFromApp = PredicateAwareAction(id: "search", title: "Search") {
       _, target in
-      let query = target?.textValueFallback()?.trimmingCharacters(in: .whitespacesAndNewlines)
+      let query = target?.textInputValue()?.trimmingCharacters(in: .whitespacesAndNewlines)
       guard let vaultName = ObsidianCommandRunner.resolvedVaultName() else {
         return .failure("Select an Obsidian vault first")
       }

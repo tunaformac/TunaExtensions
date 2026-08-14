@@ -165,7 +165,7 @@ extension ThingsActionsCatalog {
     url: @escaping (String) -> URL?
   ) -> CatalogAction {
     let action = PredicateAwareAction(id: id, title: title) { _, target in
-      guard let text = target?.textValueFallback()?.trimmingCharacters(in: .whitespacesAndNewlines),
+      guard let text = target?.textInputValue()?.trimmingCharacters(in: .whitespacesAndNewlines),
         !text.isEmpty
       else {
         return .failure(failure)
@@ -179,7 +179,7 @@ extension ThingsActionsCatalog {
     action.allowedTargetTypes = [.textSnippet]
     action.subjectPredicate = ThingsActions.isThingsApplication
     action.targetPredicate = { target in
-      guard let text = target?.textValueFallback()?.trimmingCharacters(in: .whitespacesAndNewlines)
+      guard let text = target?.textInputValue()?.trimmingCharacters(in: .whitespacesAndNewlines)
       else { return false }
       return !text.isEmpty
     }
@@ -301,10 +301,7 @@ enum ThingsURLBuilder {
   }
 
   static func textTitle(for subject: CatalogItem?) -> String? {
-    guard let subject, TypeRegistry.shared.inherits(subject.typeID, from: .textSnippet) else {
-      return nil
-    }
-    return normalize(subject.textValueFallback())
+    normalize(subject?.textInputValue())
   }
 
   private static func normalize(_ value: String?) -> String? {

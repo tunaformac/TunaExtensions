@@ -41,7 +41,7 @@ public final class NotesActionsCatalog: NSObject, ActionCatalog {
       guard subject.typeID == .textSnippet else {
         return .failure("Select text first")
       }
-      guard let body = subject.textValueFallback() else {
+      guard let body = subject.textInputValue() else {
         return .failure("Missing note text")
       }
       Task.detached(priority: .utility) {
@@ -53,14 +53,14 @@ public final class NotesActionsCatalog: NSObject, ActionCatalog {
     createFromText.supportedSubjectTypes = [.textSnippet]
     createFromText.subjectPredicate = { subject in
       guard let subject else { return false }
-      return subject.typeID == .textSnippet && subject.textValueFallback() != nil
+      return subject.typeID == .textSnippet && subject.textInputValue() != nil
     }
     items.append(createFromText)
 
     let createFromApp = PredicateAwareAction(
       id: "create-note.from-app", title: "Create Note"
     ) { _, target in
-      guard let body = target?.textValueFallback() else {
+      guard let body = target?.textInputValue() else {
         return .failure("Missing note text")
       }
       Task.detached(priority: .utility) {
@@ -73,7 +73,7 @@ public final class NotesActionsCatalog: NSObject, ActionCatalog {
     createFromApp.supportedSubjectTypes = [.application]
     createFromApp.allowedTargetTypes = [.textSnippet]
     createFromApp.subjectPredicate = NotesActions.isNotesApplication
-    createFromApp.targetPredicate = { item in item?.textValueFallback() != nil }
+    createFromApp.targetPredicate = { item in item?.textInputValue() != nil }
     items.append(createFromApp)
 
     let toAction = PredicateAwareAction(id: "to", title: "To...") {
@@ -81,7 +81,7 @@ public final class NotesActionsCatalog: NSObject, ActionCatalog {
       guard NotesActions.isNewNoteEntry(subject) else {
         return .failure("Select New Note first")
       }
-      guard let body = target?.textValueFallback() else {
+      guard let body = target?.textInputValue() else {
         return .failure("Missing note text")
       }
       Task.detached(priority: .utility) {
@@ -94,7 +94,7 @@ public final class NotesActionsCatalog: NSObject, ActionCatalog {
     toAction.supportedSubjectTypes = Set([TypeID.searchCatalogEntry])
     toAction.allowedTargetTypes = Set([TypeID.textSnippet])
     toAction.subjectPredicate = { subject in NotesActions.isNewNoteEntry(subject) }
-    toAction.targetPredicate = { item in item?.textValueFallback() != nil }
+    toAction.targetPredicate = { item in item?.textInputValue() != nil }
     items.append(toAction)
 
     return items

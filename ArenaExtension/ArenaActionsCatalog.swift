@@ -130,8 +130,7 @@ public final class ArenaActionsCatalog: ActionCatalog {
       return url.absoluteString
     }
 
-    guard TypeRegistry.shared.inherits(item.typeID, from: .textSnippet) else { return nil }
-    let value = item.textValueFallback()?.trimmingCharacters(in: .whitespacesAndNewlines)
+    let value = item.textInputValue()?.trimmingCharacters(in: .whitespacesAndNewlines)
     return value?.isEmpty == false ? value : nil
   }
 

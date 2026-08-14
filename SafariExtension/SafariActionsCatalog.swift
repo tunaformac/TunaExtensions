@@ -166,7 +166,7 @@ private enum SafariURLActions {
   static func url(from item: CatalogItem?) -> URL? {
     guard let item else { return nil }
 
-    if let text = item.textValueFallback(), let url = url(fromString: text) {
+    if let text = item.displayTextFallback(), let url = url(fromString: text) {
       return url
     }
 

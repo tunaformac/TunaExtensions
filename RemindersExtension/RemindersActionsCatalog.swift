@@ -63,7 +63,7 @@ public final class RemindersActionsCatalog: NSObject, ActionCatalog {
       guard subject.typeID == .textSnippet else {
         return .failure("Select text first")
       }
-      guard let title = subject.textValueFallback() else {
+      guard let title = subject.textInputValue() else {
         return .failure("Missing reminder title")
       }
       Task.detached(priority: .utility) {
@@ -75,7 +75,7 @@ public final class RemindersActionsCatalog: NSObject, ActionCatalog {
     createFromText.supportedSubjectTypes = [.textSnippet]
     createFromText.subjectPredicate = { subject in
       guard let subject else { return false }
-      return subject.typeID == .textSnippet && subject.textValueFallback() != nil
+      return subject.typeID == .textSnippet && subject.textInputValue() != nil
     }
     items.append(createFromText)
 
@@ -84,7 +84,7 @@ public final class RemindersActionsCatalog: NSObject, ActionCatalog {
     let createFromApp = PredicateAwareAction(
       id: "create-reminder.from-app", title: "Create Reminder"
     ) { _, target in
-      guard let title = target?.textValueFallback() else {
+      guard let title = target?.textInputValue() else {
         return .failure("Missing reminder title")
       }
       Task.detached(priority: .utility) {
@@ -97,7 +97,7 @@ public final class RemindersActionsCatalog: NSObject, ActionCatalog {
     createFromApp.supportedSubjectTypes = [.application]
     createFromApp.allowedTargetTypes = [.textSnippet]
     createFromApp.subjectPredicate = RemindersActions.isRemindersApplication
-    createFromApp.targetPredicate = { item in item?.textValueFallback() != nil }
+    createFromApp.targetPredicate = { item in item?.textInputValue() != nil }
     items.append(createFromApp)
 
     let toAction = PredicateAwareAction(id: "to", title: "To...") {
@@ -105,7 +105,7 @@ public final class RemindersActionsCatalog: NSObject, ActionCatalog {
       guard RemindersActions.isNewReminderEntry(subject) else {
         return .failure("Select New Reminder first")
       }
-      guard let title = target?.textValueFallback() else {
+      guard let title = target?.textInputValue() else {
         return .failure("Missing reminder title")
       }
       Task.detached(priority: .utility) {
@@ -118,7 +118,7 @@ public final class RemindersActionsCatalog: NSObject, ActionCatalog {
     toAction.supportedSubjectTypes = Set([TypeID.searchCatalogEntry])
     toAction.allowedTargetTypes = Set([TypeID.textSnippet])
     toAction.subjectPredicate = { subject in RemindersActions.isNewReminderEntry(subject) }
-    toAction.targetPredicate = { item in item?.textValueFallback() != nil }
+    toAction.targetPredicate = { item in item?.textInputValue() != nil }
     items.append(toAction)
 
     return items
@@ -129,7 +129,7 @@ private final class CreateReminderInListAction: CatalogAction, ActionPredicatePr
   @unchecked Sendable
 {
   var subjectPredicate: CatalogActionSubjectPredicate? = { subject in
-    subject?.textValueFallback()?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
+    subject?.textInputValue() != nil
   }
   var targetPredicate: CatalogActionTargetPredicate?
 
@@ -154,7 +154,7 @@ private final class CreateReminderInListAction: CatalogAction, ActionPredicatePr
   }
 
   private static func perform(subjects: [CatalogItem], target: CatalogItem?) async -> ActionResult {
-    guard subjects.count == 1, let title = subjects.first?.textValueFallback() else {
+    guard subjects.count == 1, let title = subjects.first?.textInputValue() else {
       return .failure("Missing reminder title")
     }
     guard let list = target as? ReminderListItem else {

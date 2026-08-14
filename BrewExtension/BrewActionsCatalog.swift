@@ -14,7 +14,7 @@ private final class SubjectTextSearchAction: CatalogAction, ActionPredicateProvi
   }
 
   func subjectScopedSearchQuery(from subject: CatalogItem) -> String? {
-    subject.textValueFallback()?.trimmingCharacters(in: .whitespacesAndNewlines)
+    subject.textInputValue()?.trimmingCharacters(in: .whitespacesAndNewlines)
   }
 
   func subjectScopedSearchRoot(for _: CatalogItem) -> CatalogItem? {
@@ -158,7 +158,7 @@ enum BrewActionsCatalog {
   ) -> CatalogAction {
     let action = PredicateAwareAction(id: id, title: title) { subject, target in
       guard subject.typeID == TypeID.brewMeta else { return .failure("Select Homebrew first") }
-      guard let input = target?.textValueFallback() else { return .failure("Enter a package name") }
+      guard let input = target?.textInputValue() else { return .failure("Enter a package name") }
       let packages = packageInputTokens(from: input)
       guard !packages.isEmpty else { return .failure("Enter a package name") }
 
@@ -173,7 +173,7 @@ enum BrewActionsCatalog {
     action.allowedTargetTypes = [.textSnippet]
     action.subjectPredicate = { subject in subject?.typeID == TypeID.brewMeta }
     action.targetPredicate = { target in
-      guard let text = target?.textValueFallback() else { return false }
+      guard let text = target?.textInputValue() else { return false }
       return !packageInputTokens(from: text).isEmpty
     }
     return action
@@ -222,8 +222,7 @@ enum BrewActionsCatalog {
     action.systemSymbolName = "magnifyingglass"
     action.supportedSubjectTypes = [.textSnippet]
     action.subjectPredicate = { subject in
-      guard let text = subject?.textValueFallback() else { return false }
-      return !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+      subject?.textInputValue() != nil
     }
     action.executionPolicy = .keepVisible
     return action
