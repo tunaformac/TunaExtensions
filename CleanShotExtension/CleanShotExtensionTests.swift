@@ -24,6 +24,8 @@ final class CleanShotExtensionTests: XCTestCase {
     let deferredItem = try XCTUnwrap(item as? DeferredBrowseCatalogItem)
     XCTAssertFalse(deferredItem.usesCatalogResultsPresentation)
     XCTAssertEqual(deferredItem.childResultsPresentation.gridConfiguration.columns, 4)
+    XCTAssertEqual(catalog.sortOptions.map(\.id), [CatalogSortOption.capturedAtDescending.id])
+    XCTAssertEqual(catalog.defaultSortOptionID, CatalogSortOption.capturedAtDescending.id)
   }
 
   func testRecentCapturesReturnsNewestHundredByFileDateFromShallowMediaDirectories() throws {
@@ -57,6 +59,7 @@ final class CleanShotExtensionTests: XCTestCase {
     XCTAssertEqual(captures.first?.title, "119")
     XCTAssertEqual(captures.last?.title, "20")
     XCTAssertFalse(captures.contains { $0.title == "19" })
+    XCTAssertEqual(captures.first?.typeID, .file)
   }
 
   func testRecentCapturesDoesNotRecursivelyWalkCaptureDirectories() throws {

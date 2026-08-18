@@ -10,9 +10,10 @@ import Foundation
 import ImageIO
 import TunaKit
 
-public final class CleanShotCommandsCatalog: Catalog {
+public final class CleanShotCommandsCatalog: Catalog, CatalogSortingProviding {
   public let identifier: String
   public let name: String
+  public let sortOptions = [CatalogSortOption.capturedAtDescending]
 
   private let objectsStore = LockedValue<[CatalogItem]>([])
   private lazy var recentCapturesItem = DeferredBrowseCatalogItem(
@@ -221,21 +222,16 @@ public final class CleanShotCommandsCatalog: Catalog {
   }
 }
 
-private final class CleanShotCaptureItem: CatalogEntity, CatalogAsyncPreviewProviding,
-  CatalogGridPreviewProviding, TimestampedCatalogItem, @unchecked Sendable
+private final class CleanShotCaptureItem: FileSystemEntity, CatalogAsyncPreviewProviding,
+  CatalogGridPreviewProviding, @unchecked Sendable
 {
-  let capturedAtDate: Date
-  private let fileURL: URL
-
   init(fileURL: URL, modifiedAt: Date) {
-    self.fileURL = fileURL
-    self.capturedAtDate = modifiedAt
     super.init(
-      id: fileURL.path,
-      title: fileURL.deletingPathExtension().lastPathComponent,
-      path: fileURL.path
+      displayName: fileURL.deletingPathExtension().lastPathComponent,
+      url: fileURL,
+      kind: .file,
+      capturedAtDate: modifiedAt
     )
-    typeID = .image
     updatePreviewIdentityVersion(from: modifiedAt)
   }
 
@@ -252,7 +248,7 @@ private final class CleanShotCaptureItem: CatalogEntity, CatalogAsyncPreviewProv
   }
 
   func asyncPreview(maxDimension: CGFloat) async -> CatalogItemPreview? {
-    let fileURL = fileURL
+    let fileURL = url
     return await Task.detached(priority: .utility) {
       guard let source = CGImageSourceCreateWithURL(fileURL as CFURL, nil) else { return nil }
       let options: [CFString: Any] = [
