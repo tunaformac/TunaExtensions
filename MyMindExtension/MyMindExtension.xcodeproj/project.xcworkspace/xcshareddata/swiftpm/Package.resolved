@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/tunaformac/TunaKit",
       "state" : {
-        "revision" : "bcaf8dc35ce2f547930ca37ad8f6aeebbe0d9a32",
-        "version" : "1.18.0"
+        "revision" : "f978b936efeac60f5417a0c2a22ca0ae09e25268",
+        "version" : "1.19.0"
       }
     }
   ],

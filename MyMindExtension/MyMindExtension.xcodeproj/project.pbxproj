@@ -307,7 +307,7 @@
 			repositoryURL = "https://github.com/tunaformac/TunaKit";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 1.18.0;
+				minimumVersion = 1.19.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
