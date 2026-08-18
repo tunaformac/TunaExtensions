@@ -1,0 +1,15 @@
+{
+  "originHash" : "164f26a1c203ebfceae8327530e2513252e0e3303408dfe94cfb6a8ac235a501",
+  "pins" : [
+    {
+      "identity" : "tunakit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tunaformac/TunaKit",
+      "state" : {
+        "revision" : "bcaf8dc35ce2f547930ca37ad8f6aeebbe0d9a32",
+        "version" : "1.18.0"
+      }
+    }
+  ],
+  "version" : 3
+}

@@ -1,0 +1,329 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B10000010000000000000001 /* MyMindExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000020000000000000001 /* MyMindExtension.swift */; };
+		B10000210000000000000001 /* MyMindAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000220000000000000001 /* MyMindAPIClient.swift */; };
+		B10000230000000000000001 /* MyMindCatalogSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000240000000000000001 /* MyMindCatalogSupport.swift */; };
+		B10000250000000000000001 /* MyMindCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000260000000000000001 /* MyMindCatalog.swift */; };
+		B10000270000000000000001 /* MyMindActionsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000280000000000000001 /* MyMindActionsCatalog.swift */; };
+		C20000010000000000000001 /* MyMindExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000020000000000000001 /* MyMindExtensionTests.swift */; };
+		C20000030000000000000001 /* MyMindExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10000040000000000000001 /* MyMindExtension.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		C20000040000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B10000140000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B10000090000000000000001;
+			remoteInfo = MyMindExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		B10000020000000000000001 /* MyMindExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyMindExtension.swift; sourceTree = "<group>"; };
+		B10000030000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B10000040000000000000001 /* MyMindExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MyMindExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B10000220000000000000001 /* MyMindAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyMindAPIClient.swift; sourceTree = "<group>"; };
+		B10000240000000000000001 /* MyMindCatalogSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyMindCatalogSupport.swift; sourceTree = "<group>"; };
+		B10000260000000000000001 /* MyMindCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyMindCatalog.swift; sourceTree = "<group>"; };
+		B10000280000000000000001 /* MyMindActionsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyMindActionsCatalog.swift; sourceTree = "<group>"; };
+		C20000020000000000000001 /* MyMindExtensionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MyMindExtensionTests.swift; sourceTree = "<group>"; };
+		C20000050000000000000001 /* MyMindExtensionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MyMindExtensionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B10000050000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C20000060000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (C20000030000000000000001 /* MyMindExtension.framework in Frameworks */);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		B10000060000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				B10000070000000000000001 /* MyMindExtension */,
+				C20000020000000000000001 /* MyMindExtensionTests.swift */,
+				B10000080000000000000001 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B10000070000000000000001 /* MyMindExtension */ = {
+			isa = PBXGroup;
+			children = (
+				B10000220000000000000001 /* MyMindAPIClient.swift */,
+				B10000240000000000000001 /* MyMindCatalogSupport.swift */,
+				B10000260000000000000001 /* MyMindCatalog.swift */,
+				B10000280000000000000001 /* MyMindActionsCatalog.swift */,
+				B10000020000000000000001 /* MyMindExtension.swift */,
+				B10000030000000000000001 /* Info.plist */,
+			);
+			sourceTree = "<group>";
+		};
+		B10000080000000000000001 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B10000040000000000000001 /* MyMindExtension.framework */,
+				C20000050000000000000001 /* MyMindExtensionTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B10000090000000000000001 /* MyMindExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B10000100000000000000001 /* Build configuration list for PBXNativeTarget "MyMindExtension" */;
+			buildPhases = (
+				B10000110000000000000001 /* Sources */,
+				B10000050000000000000001 /* Frameworks */,
+				B10000120000000000000001 /* Resources */,
+			);
+			buildRules = ();
+			dependencies = ();
+			name = MyMindExtension;
+			packageProductDependencies = (B10000130000000000000001 /* TunaKit */);
+			productName = MyMindExtension;
+			productReference = B10000040000000000000001 /* MyMindExtension.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		C20000070000000000000001 /* MyMindExtensionTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C20000080000000000000001 /* Build configuration list for PBXNativeTarget "MyMindExtensionTests" */;
+			buildPhases = (
+				C20000090000000000000001 /* Sources */,
+				C20000060000000000000001 /* Frameworks */,
+				C20000100000000000000001 /* Resources */,
+			);
+			buildRules = ();
+			dependencies = (C20000110000000000000001 /* PBXTargetDependency */);
+			name = MyMindExtensionTests;
+			packageProductDependencies = (C20000120000000000000001 /* TunaKit */);
+			productName = MyMindExtensionTests;
+			productReference = C20000050000000000000001 /* MyMindExtensionTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B10000140000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = { B10000090000000000000001 = { CreatedOnToolsVersion = 15.0; }; };
+			};
+			buildConfigurationList = B10000150000000000000001 /* Build configuration list for PBXProject "MyMindExtension" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (en);
+			mainGroup = B10000060000000000000001;
+			packageReferences = (B10000160000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */);
+			productRefGroup = B10000080000000000000001 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B10000090000000000000001 /* MyMindExtension */,
+				C20000070000000000000001 /* MyMindExtensionTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B10000120000000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C20000100000000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B10000110000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B10000210000000000000001 /* MyMindAPIClient.swift in Sources */,
+				B10000230000000000000001 /* MyMindCatalogSupport.swift in Sources */,
+				B10000250000000000000001 /* MyMindCatalog.swift in Sources */,
+				B10000270000000000000001 /* MyMindActionsCatalog.swift in Sources */,
+				B10000010000000000000001 /* MyMindExtension.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C20000090000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (C20000010000000000000001 /* MyMindExtensionTests.swift in Sources */);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C20000110000000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = MyMindExtension;
+			target = B10000090000000000000001 /* MyMindExtension */;
+			targetProxy = C20000040000000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		B10000170000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				ENABLE_TESTABILITY = YES;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@loader_path/Frameworks");
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.mymind;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Debug;
+		};
+		B10000180000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@loader_path/Frameworks");
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.mymind;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Release;
+		};
+		B10000190000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = { PRODUCT_NAME = MyMindExtension; };
+			name = Debug;
+		};
+		B10000200000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = { PRODUCT_NAME = MyMindExtension; };
+			name = Release;
+		};
+		C20000130000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.MyMindExtensionTests;
+				PRODUCT_MODULE_NAME = MyMindExtensionTests;
+				PRODUCT_NAME = MyMindExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		C20000140000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.MyMindExtensionTests;
+				PRODUCT_MODULE_NAME = MyMindExtensionTests;
+				PRODUCT_NAME = MyMindExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B10000100000000000000001 /* Build configuration list for PBXNativeTarget "MyMindExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (B10000170000000000000001 /* Debug */, B10000180000000000000001 /* Release */);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B10000150000000000000001 /* Build configuration list for PBXProject "MyMindExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (B10000190000000000000001 /* Debug */, B10000200000000000000001 /* Release */);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C20000080000000000000001 /* Build configuration list for PBXNativeTarget "MyMindExtensionTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C20000130000000000000001 /* Debug */,
+				C20000140000000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B10000160000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tunaformac/TunaKit";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 1.18.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B10000130000000000000001 /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B10000160000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
+		C20000120000000000000001 /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B10000160000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = B10000140000000000000001 /* Project object */;
+}

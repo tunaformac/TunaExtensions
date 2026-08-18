@@ -14,6 +14,9 @@
       location = "group:GitHubExtension/GitHubExtension.xcodeproj">
    </FileRef>
    <FileRef
+      location = "group:MyMindExtension/MyMindExtension.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:NotesExtension/NotesExtension.xcodeproj">
    </FileRef>
    <FileRef

@@ -15,6 +15,7 @@ exactly the setup a third-party extension uses.
 | BrewExtension | Search and manage Homebrew packages |
 | CleanShotExtension | Browse recent CleanShot images and run capture commands |
 | GitHubExtension | Repos, issues, and pull requests |
+| MyMindExtension | Search, browse, resolve, and save mymind objects |
 | NotesExtension | Apple Notes search |
 | NotionExtension | Notion pages and databases |
 | ObsidianExtension | Browse Obsidian vaults, folders, and notes |
