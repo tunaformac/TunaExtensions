@@ -43,12 +43,12 @@ public final class MyMindSpacesCatalog: Catalog, CatalogViewProviding,
 {
   public let identifier: String
   public let name: String
-  private lazy var spacesItem = MyMindSpacesItem(catalogIdentifier: identifier)
+  private let itemsStore = LockedValue<[CatalogItem]>([])
 
   public let resultsViewStyle = CatalogResultsView.grid
   public let gridConfiguration = MyMindCatalogSupport.gridConfiguration
   public let sortOptions = [CatalogSortOption.capturedAtDescending]
-  public var objects: [CatalogItem] { [spacesItem] }
+  public var objects: [CatalogItem] { itemsStore.readValue { $0 } }
 
   public required init(definition: CatalogDefinition) {
     identifier = definition.identifier
@@ -56,10 +56,30 @@ public final class MyMindSpacesCatalog: Catalog, CatalogViewProviding,
   }
 
   @MainActor public func scan() async {
+    do {
+      let credentials = try MyMindSettings.credentials(for: MyMindSpacesCatalog.self)
+      let spaces = try await MyMindAPIClient(credentials: credentials).listSpaces()
+      itemsStore.value = spaces.isEmpty
+        ? [MyMindCatalogSupport.emptyItem(
+            title: "No Spaces",
+            message: "Create a Space in mymind to see it here."
+          )]
+        : spaces.map {
+            MyMindSpaceItem(
+              space: $0,
+              credentials: credentials,
+              catalogIdentifier: identifier
+            )
+          }
+    } catch MyMindAPIError.credentialsRequired {
+      itemsStore.value = [MyMindCatalogSupport.authRequiredItem()]
+    } catch {
+      itemsStore.value = [MyMindCatalogSupport.errorItem(error)]
+    }
     NotificationCenter.default.post(name: CatalogDidFinishScan, object: identifier)
   }
 
   public func releaseRetainedState() {
-    spacesItem.reset()
+    itemsStore.value = []
   }
 }

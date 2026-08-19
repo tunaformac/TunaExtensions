@@ -15,45 +15,31 @@ public final class MyMindActionsCatalog: ActionCatalog {
   }
 
   private static func makeActions() -> [CatalogAction] {
-    let save = PredicateAwareAction(id: "save", title: "Save to mymind") { subject, target in
-      guard let capture = capture(from: subject) else {
-        return .failure("Select a URL, text, image, PDF, or supported file to save")
-      }
-      let space = target as? MyMindSpaceItem
-      if target != nil, space == nil { return .failure("Choose a mymind Space or leave it blank") }
-
-      let credentials: MyMindCredentials
-      do {
-        credentials = try MyMindSettings.credentials(for: MyMindActionsCatalog.self)
-      } catch {
-        return .failure(error.localizedDescription)
-      }
-      guard credentials.accessLevel.canWrite else {
-        return .failure(MyMindAPIError.readOnlyKey.localizedDescription)
-      }
-
-      return .background(
-        CommandBackgroundTask(title: "Saving to mymind") {
-          do {
-            let object = try await MyMindAPIClient(credentials: credentials)
-              .createObject(capture, spaceID: space?.space.id)
-            return .success(results: [MyMindObjectItem(object: object, credentials: credentials)])
-          } catch {
-            return .failure(message: error.localizedDescription)
-          }
-        }
-      )
+    let save = PredicateAwareAction(id: "save", title: "Save to mymind") { subject, _ in
+      await performSave(subject, to: nil)
     }
-    save.targetRequirement = .optional
     save.systemSymbolName = "brain.head.profile"
+    save.executionPolicy = .resultDriven
     // Capture is additive, not the primary handler for any built-in subject type.
     save.supportedSubjectTypes = [.entity]
-    save.allowedTargetTypes = [.entity]
-    save.targetSearchScope = .catalogs(["mymind.spaces"], preparation: .refresh)
     save.subjectPredicate = { canCapture($0) }
-    save.targetPredicate = {
-      $0 == nil || $0 is MyMindSpacesItem || $0 is MyMindSpaceItem
+
+    let saveToSpace = PredicateAwareAction(
+      id: "save-to-space", title: "Save to mymind space"
+    ) { subject, target in
+      guard let space = target as? MyMindSpaceItem else {
+        return .failure("Choose a mymind Space")
+      }
+      return await performSave(subject, to: space)
     }
+    saveToSpace.targetRequirement = .required
+    saveToSpace.systemSymbolName = "square.grid.2x2"
+    saveToSpace.executionPolicy = .resultDriven
+    saveToSpace.supportedSubjectTypes = [.entity]
+    saveToSpace.allowedTargetTypes = [.myMindSpace]
+    saveToSpace.targetSearchScope = .catalogs(["mymind.spaces"], preparation: .refresh)
+    saveToSpace.subjectPredicate = { canCapture($0) }
+    saveToSpace.targetPredicate = { $0 is MyMindSpaceItem }
 
     let openOriginal = PredicateAwareAction(id: "open-original", title: "Open Original") {
       subject, _ in
@@ -69,7 +55,34 @@ public final class MyMindActionsCatalog: ActionCatalog {
       ($0 as? MyMindObjectItem)?.object.sourceURL != nil
     }
 
-    return [save, openOriginal, MyMindResolveAction()]
+    return [save, saveToSpace, openOriginal, MyMindResolveAction()]
+  }
+
+  @MainActor
+  private static func performSave(
+    _ subject: CatalogItem, to space: MyMindSpaceItem?
+  ) async -> ActionResult {
+    guard let capture = capture(from: subject) else {
+      return .failure("Select a URL, text, image, PDF, or supported file to save")
+    }
+
+    let credentials: MyMindCredentials
+    do {
+      credentials = try MyMindSettings.credentials(for: MyMindActionsCatalog.self)
+    } catch {
+      return .failure(error.localizedDescription)
+    }
+    guard credentials.accessLevel.canWrite else {
+      return .failure(MyMindAPIError.readOnlyKey.localizedDescription)
+    }
+
+    do {
+      let object = try await MyMindAPIClient(credentials: credentials)
+        .createObject(capture, spaceID: space?.space.id)
+      return .results([URLItem(urlString: object.accessURLString)])
+    } catch {
+      return .failure(error.localizedDescription)
+    }
   }
 
   static func canCapture(_ item: CatalogItem?) -> Bool {
@@ -105,7 +118,6 @@ public final class MyMindActionsCatalog: ActionCatalog {
   }
 
   private static func httpURL(from item: CatalogItem) -> URL? {
-    guard TypeRegistry.shared.inherits(item.typeID, from: .url) else { return nil }
     let url = (item as? URLPreviewSourceProviding)?.previewURL
       ?? item.textInputValue().flatMap(URL.init(string:))
     guard let url, let scheme = url.scheme?.lowercased(), scheme == "http" || scheme == "https"

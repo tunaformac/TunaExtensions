@@ -1,7 +1,7 @@
 # mymind Extension
 
 Search and browse your mymind library from Tuna, resolve saved objects into native URLs, text, or
-files, and save URLs, text, images, PDFs, and supported files with an optional Space target.
+files, and save URLs, text, images, PDFs, and supported files with or without a Space.
 
 ## Setup
 
@@ -24,15 +24,16 @@ than retrying.
 
 - Browse **mymind** for the complete library, with newest items first as in mymind.
 - Type while browsing **mymind** to filter the loaded library.
-- Browse **mymind Spaces** to reveal a lazy **Spaces** parent; Spaces and their contents are shown
-  newest first and individual Spaces are not indexed into the main catalog.
+- Browse **mymind Spaces** to load your Spaces; Spaces and their contents are shown newest first and
+  individual Spaces are not indexed into the main catalog.
 - Browsing the installed mymind app goes directly to the main library. Both catalogs and Space
   contents use Tuna's grid presentation and support type-to-search.
 - Use **Resolve** to stage an object's original URL, note text, or downloaded file.
 - Press Quick Look on an object to prepare and preview its image, file, note, or web snapshot without
   running Resolve first. Image objects always resolve to their image data rather than their source URL.
-- Use **Save to mymind** with no target, or select a Space as the optional target. It remains an
-  additional action rather than replacing the standard default action for images or files.
+- Use **Save to mymind** to save without a Space, or **Save to mymind space** to load and choose a
+  Space. Saves run inline with an activity indicator and return a direct mymind URL for the saved
+  object. Both remain additional actions rather than replacing standard image or file actions.
 
 Video uploads are accepted by the extension but require mymind's Mastermind plan.
 

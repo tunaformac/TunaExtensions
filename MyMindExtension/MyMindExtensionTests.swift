@@ -73,6 +73,21 @@ final class MyMindExtensionTests: XCTestCase {
     XCTAssertEqual(objects.first?.displayTitle, "First line")
   }
 
+  func testCreateOnlyRequiresObjectID() async throws {
+    let json = #"{"id":"new-object"}"#
+    MockURLProtocol.requestHandler = { request in
+      Self.response(for: request, status: 201, body: Data(json.utf8))
+    }
+
+    let object = try await mockClient().createObject(
+      .url(URL(string: "https://example.com")!),
+      spaceID: nil
+    )
+
+    XCTAssertEqual(object.id, "new-object")
+    XCTAssertEqual(object.accessURLString, "https://access.mymind.com/everything#new-object")
+  }
+
   func testImageObjectPrefersBlobOverSourceURL() async throws {
     let json = ##"[{"id":"image","title":"Image","blob":{"type":"image/png","name":"image.png"},"mainEntity":{"@type":"ImageObject"},"source":{"url":"https://example.com/image"},"tags":[]}]"##
     let objects = try await mockClient(status: 200, body: Data(json.utf8)).listObjects()
@@ -174,15 +189,22 @@ final class MyMindExtensionTests: XCTestCase {
     )
   }
 
-  @MainActor func testSaveIsAnAdditiveEntityAction() throws {
+  @MainActor func testSaveActionsSeparateDirectAndSpaceSaving() throws {
     let catalog = MyMindActionsCatalog(
       definition: ActionCatalogDefinition(identifier: "test.mymind.actions", name: "Actions")
     )
     let save = try XCTUnwrap(catalog.actions.first { $0.id == "save" })
+    let saveToSpace = try XCTUnwrap(catalog.actions.first { $0.id == "save-to-space" })
 
     XCTAssertEqual(save.supportedSubjectTypes, [.entity])
+    XCTAssertEqual(save.executionPolicy, .resultDriven)
+    XCTAssertFalse(save.allowsTargetSelection)
+    XCTAssertEqual(saveToSpace.supportedSubjectTypes, [.entity])
+    XCTAssertEqual(saveToSpace.executionPolicy, .resultDriven)
+    XCTAssertTrue(saveToSpace.requiresTargetSelection(for: nil))
+    XCTAssertEqual(saveToSpace.allowedTargetTypes, [.myMindSpace])
     XCTAssertEqual(
-      save.targetSearchScope,
+      saveToSpace.targetSearchScope,
       .catalogs(["mymind.spaces"], preparation: .refresh)
     )
   }
@@ -191,6 +213,18 @@ final class MyMindExtensionTests: XCTestCase {
     let expected = try XCTUnwrap(URL(string: "https://example.com/article"))
     let item = URLItem(urlString: expected.absoluteString)
     let capture = try XCTUnwrap(MyMindActionsCatalog.capture(from: item))
+
+    guard case .url(let actual) = capture else {
+      return XCTFail("Expected URL capture")
+    }
+    XCTAssertEqual(actual, expected)
+  }
+
+  @MainActor func testTextContainingURLCreatesURLCapture() throws {
+    let expected = try XCTUnwrap(URL(string: "https://example.com/article"))
+    let capture = try XCTUnwrap(
+      MyMindActionsCatalog.capture(from: TextSnippetItem(text: expected.absoluteString))
+    )
 
     guard case .url(let actual) = capture else {
       return XCTFail("Expected URL capture")

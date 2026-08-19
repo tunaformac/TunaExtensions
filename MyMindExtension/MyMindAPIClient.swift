@@ -14,6 +14,14 @@ struct MyMindCredentials: Sendable {
   let accessLevel: MyMindAccessLevel
 }
 
+struct MyMindCreatedObject: Decodable, Sendable {
+  let id: String
+
+  var accessURLString: String {
+    "https://access.mymind.com/everything#\(id)"
+  }
+}
+
 struct MyMindSpace: Codable, Sendable {
   let id: String
   let name: String
@@ -332,7 +340,7 @@ struct MyMindAPIClient: Sendable {
     try await request(path: "/spaces")
   }
 
-  func createObject(_ capture: MyMindCapture, spaceID: String?) async throws -> MyMindObject {
+  func createObject(_ capture: MyMindCapture, spaceID: String?) async throws -> MyMindCreatedObject {
     guard credentials.accessLevel.canWrite else { throw MyMindAPIError.readOnlyKey }
     switch capture {
     case .url(let url):
@@ -463,7 +471,9 @@ struct MyMindAPIClient: Sendable {
     return (data, response)
   }
 
-  private func uploadObject(_ upload: MyMindUpload, spaceID: String?) async throws -> MyMindObject {
+  private func uploadObject(_ upload: MyMindUpload, spaceID: String?) async throws
+    -> MyMindCreatedObject
+  {
     let fileData: Data
     switch upload.body {
     case .data(let data):
@@ -499,7 +509,7 @@ struct MyMindAPIClient: Sendable {
       contentType: "multipart/form-data; boundary=\(boundary)"
     )
     do {
-      return try decoder.decode(MyMindObject.self, from: result.0)
+      return try decoder.decode(MyMindCreatedObject.self, from: result.0)
     } catch {
       throw MyMindAPIError.invalidResponse
     }
