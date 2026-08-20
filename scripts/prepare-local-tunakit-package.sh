@@ -20,11 +20,10 @@ package_versions="$(
     | xargs -0 jq -r '.pins[] | select(.identity == "tunakit") | .state.version' \
     | sort -u
 )"
-if [[ -z "$package_versions" || "$package_versions" == *$'\n'* ]]; then
-  echo "Expected every extension to resolve one common TunaKit package version." >&2
+if [[ -z "$package_versions" ]]; then
+  echo "Expected at least one extension to resolve a TunaKit package version." >&2
   exit 1
 fi
-package_version="$package_versions"
 
 xcodebuild build \
   -project "$TUNAKIT_PROJECT" \
@@ -59,7 +58,7 @@ git -C "$PACKAGE_ROOT" config user.email "development@tuna.local"
 git -C "$PACKAGE_ROOT" add Package.swift TunaKit.xcframework
 git -C "$PACKAGE_ROOT" commit -qm "Build local TunaKit"
 minimum_versions="$({
-  printf '%s\n' "$package_version"
+  printf '%s\n' "$package_versions"
   find "$ROOT" -path "$ROOT/build" -prune -o -name project.pbxproj -print0 \
     | xargs -0 awk '/minimumVersion = [0-9]+\.[0-9]+\.[0-9]+;/ { gsub(";", "", $3); print $3 }'
 } | sort -u)"
