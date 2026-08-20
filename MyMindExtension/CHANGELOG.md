@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.2
+
 - Split saving into direct and Space actions that run inline, show activity, and return the saved
   object's direct mymind URL.
 - Add locally searchable, newest-first libraries and lazy Space browsing.
