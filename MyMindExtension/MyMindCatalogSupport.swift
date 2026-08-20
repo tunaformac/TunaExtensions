@@ -69,8 +69,6 @@ enum MyMindCatalogSupport {
 final class MyMindCatalogRootItem: CatalogEntity, CatalogHierarchyNode,
   ScopedCatalogSearchPagingProviding, @unchecked Sendable
 {
-  private static let dynamicSearchType = TypeID("com.tuna.type.dynamic-search-catalog-entry")
-
   private let catalogIcon: BrowseCatalogItem.CatalogIcon
   private let deferredItem: DeferredBrowseCatalogItem
   private let searchPageHandler: @Sendable (String, Int) async throws -> ScopedSearchPage
@@ -101,7 +99,7 @@ final class MyMindCatalogRootItem: CatalogEntity, CatalogHierarchyNode,
       loadChildren: loadChildren
     )
     super.init(id: id, title: title, path: nil)
-    typeID = Self.dynamicSearchType
+    typeID = .dynamicSearchCatalogEntry
   }
 
   override var detail: String? { deferredItem.detail }

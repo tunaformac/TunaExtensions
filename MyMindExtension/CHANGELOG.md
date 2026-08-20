@@ -1,12 +1,13 @@
 # mymind Extension Changelog
 
-## Unreleased
+## 0.3
 
 - Load objects only when browsing the catalog and search mymind semantically as you type instead of
   downloading the full library into Tuna's global search index.
 - Load additional semantic search results on demand without reloading earlier result objects.
 - Make Search the default action for the mymind catalog, while the enriched app still defaults to
   Open and enters Search with Right Arrow; Browse remains available for recent objects.
+- Require Tuna 0.93 and TunaKit 1.20.0.
 
 ## 0.2
 
