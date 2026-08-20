@@ -22,6 +22,11 @@ struct MyMindCreatedObject: Decodable, Sendable {
   }
 }
 
+struct MyMindObjectPage: Sendable {
+  let objects: [MyMindObject]
+  let hasMore: Bool
+}
+
 struct MyMindSpace: Codable, Sendable {
   let id: String
   let name: String
@@ -304,6 +309,7 @@ struct MyMindJWTSigner: Sendable {
 struct MyMindAPIClient: Sendable {
   static let baseURL = URL(string: "https://api.mymind.com")!
   static let maximumUploadSize: Int64 = 64 * 1_024 * 1_024
+  static let maximumSearchResults = 1_000
 
   private let credentials: MyMindCredentials
   private let session: URLSession
@@ -334,6 +340,55 @@ struct MyMindAPIClient: Sendable {
     if let query, !query.isEmpty { queryItems.append(URLQueryItem(name: "q", value: query)) }
     if let spaceID { queryItems.append(URLQueryItem(name: "spaceId", value: spaceID)) }
     return try await request(path: "/objects", queryItems: queryItems)
+  }
+
+  func searchObjects(query: String, limit: Int = 40) async throws -> [MyMindObject] {
+    try await searchObjectsPage(query: query, page: 1, pageSize: limit).objects
+  }
+
+  func searchObjectsPage(query: String, page: Int, pageSize: Int = 40) async throws
+    -> MyMindObjectPage
+  {
+    let pageSize = min(max(1, pageSize), Self.maximumSearchResults)
+    let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
+    if query.isEmpty {
+      let objects = page == 1 ? try await listObjects(limit: pageSize) : []
+      return MyMindObjectPage(objects: objects, hasMore: false)
+    }
+
+    let maximumPage = (Self.maximumSearchResults + pageSize - 1) / pageSize
+    let page = max(1, page)
+    guard page <= maximumPage else {
+      return MyMindObjectPage(objects: [], hasMore: false)
+    }
+    let pageEnd = min(page * pageSize, Self.maximumSearchResults)
+    // The API has a limit but no cursor or offset, so fetch cumulative ranked IDs and hydrate only
+    // the requested page.
+    let limit = pageEnd
+    let search: MyMindSearchResponse = try await request(
+      path: "/search",
+      queryItems: [
+        URLQueryItem(name: "q", value: query),
+        URLQueryItem(name: "limit", value: String(limit)),
+        URLQueryItem(name: "semantic", value: "true"),
+      ]
+    )
+    let offset = (page - 1) * pageSize
+    guard offset < search.matches.count else {
+      return MyMindObjectPage(objects: [], hasMore: false)
+    }
+
+    let ids = search.matches.dropFirst(offset).prefix(pageSize).map(\.id)
+    let hasMore = search.matches.count == limit && limit < Self.maximumSearchResults
+
+    var queryItems = [URLQueryItem(name: "contentAs", value: "text/markdown")]
+    queryItems.append(contentsOf: ids.map { URLQueryItem(name: "id", value: $0) })
+    let objects: [MyMindObject] = try await request(path: "/objects", queryItems: queryItems)
+    let objectsByID = Dictionary(uniqueKeysWithValues: objects.map { ($0.id, $0) })
+    return MyMindObjectPage(
+      objects: ids.compactMap { objectsByID[$0] },
+      hasMore: hasMore
+    )
   }
 
   func listSpaces() async throws -> [MyMindSpace] {
@@ -591,6 +646,14 @@ struct MyMindAPIClient: Sendable {
     let url: String?
     let content: MyMindObject.Content?
     let spaces: [MyMindObject.Reference]?
+  }
+}
+
+private struct MyMindSearchResponse: Decodable {
+  let matches: [Match]
+
+  struct Match: Decodable {
+    let id: String
   }
 }
 

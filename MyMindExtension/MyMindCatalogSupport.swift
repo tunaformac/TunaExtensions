@@ -66,8 +66,73 @@ enum MyMindCatalogSupport {
   }
 }
 
+final class MyMindCatalogRootItem: CatalogEntity, CatalogHierarchyNode,
+  ScopedCatalogSearchPagingProviding, @unchecked Sendable
+{
+  private static let dynamicSearchType = TypeID("com.tuna.type.dynamic-search-catalog-entry")
+
+  private let catalogIcon: BrowseCatalogItem.CatalogIcon
+  private let deferredItem: DeferredBrowseCatalogItem
+  private let searchPageHandler: @Sendable (String, Int) async throws -> ScopedSearchPage
+
+  var scopedSearchConfiguration: ScopedSearchConfiguration {
+    ScopedSearchConfiguration(debounce: .milliseconds(350), searchOnChange: true)
+  }
+
+  init(
+    title: String,
+    id: String,
+    detail: String,
+    catalogIcon: BrowseCatalogItem.CatalogIcon,
+    didLoad: (@Sendable () -> Void)? = nil,
+    loadChildren: @escaping @Sendable () async throws -> [CatalogItem],
+    searchPageHandler: @escaping @Sendable (String, Int) async throws -> ScopedSearchPage
+  ) {
+    self.catalogIcon = catalogIcon
+    self.searchPageHandler = searchPageHandler
+    self.deferredItem = DeferredBrowseCatalogItem(
+      title: title,
+      id: id,
+      detail: detail,
+      catalogIcon: catalogIcon,
+      loadingItemProvider: { MyMindCatalogSupport.loadingItem() },
+      errorItemProvider: { MyMindCatalogSupport.errorItem($0) },
+      didLoad: didLoad,
+      loadChildren: loadChildren
+    )
+    super.init(id: id, title: title, path: nil)
+    typeID = Self.dynamicSearchType
+  }
+
+  override var detail: String? { deferredItem.detail }
+
+  override func preview(maxDimension: CGFloat) -> CatalogItemPreview {
+    .catalogIcon(
+      symbolName: catalogIcon.symbolName,
+      color: catalogIcon.color,
+      maxDimension: maxDimension
+    )
+  }
+
+  override func placeholderPreview(maxDimension: CGFloat) -> CatalogItemPreview {
+    preview(maxDimension: maxDimension)
+  }
+
+  func hierarchyChildren() -> [CatalogItem] {
+    deferredItem.hierarchyChildren()
+  }
+
+  func scopedSearchPage(query: String, page: Int) async throws -> ScopedSearchPage {
+    try await searchPageHandler(query, page)
+  }
+
+  func reset() {
+    deferredItem.reset()
+  }
+}
+
 final class MyMindSpaceItem: CatalogEntity, CatalogHierarchyNode, CatalogHierarchyViewProviding,
-  TimestampedCatalogItem, @unchecked Sendable
+  ScopedCatalogSearchProviding, TimestampedCatalogItem, @unchecked Sendable
 {
   let space: MyMindSpace
   let credentials: MyMindCredentials
@@ -80,6 +145,10 @@ final class MyMindSpaceItem: CatalogEntity, CatalogHierarchyNode, CatalogHierarc
 
   var childResultsPresentation: CatalogResultsPresentation {
     .grid(MyMindCatalogSupport.gridConfiguration)
+  }
+
+  var scopedSearchConfiguration: ScopedSearchConfiguration {
+    ScopedSearchConfiguration(debounce: .milliseconds(300), searchOnChange: true)
   }
 
   init(space: MyMindSpace, credentials: MyMindCredentials, catalogIdentifier: String) {
@@ -108,6 +177,17 @@ final class MyMindSpaceItem: CatalogEntity, CatalogHierarchyNode, CatalogHierarc
     return [MyMindCatalogSupport.loadingItem(space.name)]
   }
 
+  func scopedSearch(query: String) async throws -> [CatalogItem] {
+    let objects = try await MyMindAPIClient(credentials: credentials)
+      .listObjects(query: query, spaceID: space.id, limit: 40)
+    return objects.isEmpty
+      ? [MyMindCatalogSupport.emptyItem(
+          title: "No matches",
+          message: "No objects in this Space matched your search."
+        )]
+      : objects.map { MyMindObjectItem(object: $0, credentials: credentials) }
+  }
+
   private func loadObjects() {
     loadTask.withValue { task in
       guard task == nil else { return }
@@ -117,7 +197,7 @@ final class MyMindSpaceItem: CatalogEntity, CatalogHierarchyNode, CatalogHierarc
         guard let self else { return }
         do {
           let objects = try await MyMindAPIClient(credentials: credentials)
-            .listObjects(spaceID: space.id, limit: 10_000)
+            .listObjects(spaceID: space.id, limit: 40)
           childrenStore.value = objects.isEmpty
             ? [MyMindCatalogSupport.emptyItem(
                 title: "Empty Space",

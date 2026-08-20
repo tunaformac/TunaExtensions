@@ -66,6 +66,98 @@ final class MyMindExtensionTests: XCTestCase {
     XCTAssertEqual(object.sourceURL?.absoluteString, "https://example.com/plain-text")
   }
 
+  func testSemanticSearchHydratesMatchesInRelevanceOrder() async throws {
+    var requests = 0
+    MockURLProtocol.requestHandler = { request in
+      requests += 1
+      if request.url?.path == "/search" {
+        let components = try XCTUnwrap(URLComponents(url: try XCTUnwrap(request.url), resolvingAgainstBaseURL: false))
+        let query = Dictionary(uniqueKeysWithValues: components.queryItems?.map { ($0.name, $0.value) } ?? [])
+        XCTAssertEqual(query["q"] ?? nil, "warm evening light")
+        XCTAssertEqual(query["semantic"] ?? nil, "true")
+        XCTAssertEqual(query["limit"] ?? nil, "2")
+        return Self.response(
+          for: request,
+          status: 200,
+          body: Data(#"{"matches":[{"id":"second","score":0.9,"semanticScore":0.95},{"id":"first","score":0.8,"semanticScore":0.9}]}"#.utf8)
+        )
+      }
+
+      XCTAssertEqual(request.url?.path, "/objects")
+      let ids = URLComponents(url: try XCTUnwrap(request.url), resolvingAgainstBaseURL: false)?
+        .queryItems?.filter { $0.name == "id" }.compactMap(\.value)
+      XCTAssertEqual(ids, ["second", "first"])
+      return Self.response(
+        for: request,
+        status: 200,
+        body: Data(#"[{"id":"first","title":"First","tags":[]},{"id":"second","title":"Second","tags":[]}]"#.utf8)
+      )
+    }
+
+    let results = try await mockClient().searchObjects(query: "warm evening light", limit: 2)
+
+    XCTAssertEqual(requests, 2)
+    XCTAssertEqual(results.map(\.id), ["second", "first"])
+  }
+
+  func testEmptySearchReturnsRecentObjectsWithoutSemanticRequest() async throws {
+    MockURLProtocol.requestHandler = { request in
+      XCTAssertEqual(request.url?.path, "/objects")
+      let components = try XCTUnwrap(
+        URLComponents(url: try XCTUnwrap(request.url), resolvingAgainstBaseURL: false)
+      )
+      XCTAssertEqual(components.queryItems?.first(where: { $0.name == "limit" })?.value, "40")
+      XCTAssertNil(components.queryItems?.first(where: { $0.name == "q" }))
+      return Self.response(
+        for: request,
+        status: 200,
+        body: Data(Self.objectListJSON.utf8)
+      )
+    }
+
+    let result = try await mockClient().searchObjectsPage(query: "  \n", page: 1)
+
+    XCTAssertEqual(result.objects.map(\.id), ["a1B2c3D4e5F6g7H8i9J0k1"])
+    XCTAssertFalse(result.hasMore)
+  }
+
+  func testSemanticSearchPaginatesWithoutRehydratingEarlierMatches() async throws {
+    let matchIDs = (1...80).map { "id-\($0)" }
+    MockURLProtocol.requestHandler = { request in
+      if request.url?.path == "/search" {
+        let components = try XCTUnwrap(
+          URLComponents(url: try XCTUnwrap(request.url), resolvingAgainstBaseURL: false)
+        )
+        XCTAssertEqual(components.queryItems?.first(where: { $0.name == "limit" })?.value, "80")
+        let matches = matchIDs.map { ["id": $0] }
+        return Self.response(
+          for: request,
+          status: 200,
+          body: try JSONSerialization.data(withJSONObject: ["matches": matches])
+        )
+      }
+
+      let ids = URLComponents(url: try XCTUnwrap(request.url), resolvingAgainstBaseURL: false)?
+        .queryItems?.filter { $0.name == "id" }.compactMap(\.value)
+      XCTAssertEqual(ids, Array(matchIDs[40..<80]))
+      let objects = ids?.map { ["id": $0, "title": $0, "tags": []] } ?? []
+      return Self.response(
+        for: request,
+        status: 200,
+        body: try JSONSerialization.data(withJSONObject: objects)
+      )
+    }
+
+    let result = try await mockClient().searchObjectsPage(
+      query: "architecture",
+      page: 2,
+      pageSize: 40
+    )
+
+    XCTAssertEqual(result.objects.map(\.id), Array(matchIDs[40..<80]))
+    XCTAssertTrue(result.hasMore)
+  }
+
   func testDecodesObjectWithoutTitle() async throws {
     let json = ##"[{"id":"untitled","content":{"type":"text/markdown","body":"First line\nSecond line"},"tags":[]}]"##
     let objects = try await mockClient(status: 200, body: Data(json.utf8)).listObjects()
@@ -242,6 +334,33 @@ final class MyMindExtensionTests: XCTestCase {
 
     XCTAssertEqual(MyMindCatalog(definition: definition).defaultSortOptionID, "capturedAt.desc")
     XCTAssertEqual(MyMindSpacesCatalog(definition: definition).defaultSortOptionID, "capturedAt.desc")
+  }
+
+  @MainActor func testRemoteCatalogsLoadOnlyWhenEnteredOrExplicitlyRefreshed() throws {
+    let definition = CatalogDefinition(
+      identifier: "test.mymind",
+      name: "mymind",
+      enabledByDefault: true,
+      settings: []
+    )
+    let catalog = MyMindCatalog(definition: definition)
+    let spaces = MyMindSpacesCatalog(definition: definition)
+
+    XCTAssertFalse(catalog.scansOnStartup)
+    XCTAssertFalse(spaces.scansOnStartup)
+    XCTAssertEqual(catalog.objects.count, 1)
+    XCTAssertTrue(try XCTUnwrap(catalog.objects.first) is ScopedCatalogSearchProviding)
+    XCTAssertTrue(try XCTUnwrap(catalog.objects.first) is ScopedCatalogSearchPagingProviding)
+    XCTAssertEqual(
+      catalog.objects.first?.typeID.rawValue,
+      "com.tuna.type.dynamic-search-catalog-entry"
+    )
+    XCTAssertEqual(spaces.objects.count, 1)
+  }
+
+  @MainActor func testExtensionDeclarationIsValid() throws {
+    let extensionInstance = try MyMindExtension(bundle: Bundle(for: MyMindExtension.self))
+    try XCTUnwrap(extensionInstance.declaration).validate()
   }
 
   private func mockClient(
