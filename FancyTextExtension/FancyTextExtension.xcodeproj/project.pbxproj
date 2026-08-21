@@ -1,0 +1,260 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F10000010000000000000001 /* FancyTextExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000020000000000000001 /* FancyTextExtension.swift */; };
+		F10000030000000000000001 /* FancyTextActionsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000040000000000000001 /* FancyTextActionsCatalog.swift */; };
+		F10000050000000000000001 /* FancyTextItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000060000000000000001 /* FancyTextItem.swift */; };
+		F10000070000000000000001 /* FancyTextFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000080000000000000001 /* FancyTextFont.swift */; };
+		F10000090000000000000001 /* fonts.json in Resources */ = {isa = PBXBuildFile; fileRef = F10000100000000000000001 /* fonts.json */; };
+		F10000110000000000000001 /* FancyTextExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000120000000000000001 /* FancyTextExtensionTests.swift */; };
+		F10000130000000000000001 /* FancyTextExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F10000140000000000000001 /* FancyTextExtension.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F10000150000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F10000160000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F10000170000000000000001;
+			remoteInfo = FancyTextExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		F10000020000000000000001 /* FancyTextExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FancyTextExtension.swift; sourceTree = "<group>"; };
+		F10000040000000000000001 /* FancyTextActionsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FancyTextActionsCatalog.swift; sourceTree = "<group>"; };
+		F10000060000000000000001 /* FancyTextItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FancyTextItem.swift; sourceTree = "<group>"; };
+		F10000080000000000000001 /* FancyTextFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FancyTextFont.swift; sourceTree = "<group>"; };
+		F10000100000000000000001 /* fonts.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = fonts.json; sourceTree = "<group>"; };
+		F10000120000000000000001 /* FancyTextExtensionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FancyTextExtensionTests.swift; sourceTree = "<group>"; };
+		F10000140000000000000001 /* FancyTextExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FancyTextExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		F10000180000000000000001 /* FancyTextExtensionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FancyTextExtensionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F10000190000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F10000200000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		F10000210000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (F10000130000000000000001 /* FancyTextExtension.framework in Frameworks */); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F10000220000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				F10000230000000000000001 /* FancyTextExtension */,
+				F10000120000000000000001 /* FancyTextExtensionTests.swift */,
+				F10000240000000000000001 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F10000230000000000000001 /* FancyTextExtension */ = {
+			isa = PBXGroup;
+			children = (
+				F10000020000000000000001 /* FancyTextExtension.swift */,
+				F10000040000000000000001 /* FancyTextActionsCatalog.swift */,
+				F10000060000000000000001 /* FancyTextItem.swift */,
+				F10000080000000000000001 /* FancyTextFont.swift */,
+				F10000100000000000000001 /* fonts.json */,
+				F10000190000000000000001 /* Info.plist */,
+			);
+			sourceTree = "<group>";
+		};
+		F10000240000000000000001 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F10000140000000000000001 /* FancyTextExtension.framework */,
+				F10000180000000000000001 /* FancyTextExtensionTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F10000170000000000000001 /* FancyTextExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F10000250000000000000001 /* Build configuration list for PBXNativeTarget "FancyTextExtension" */;
+			buildPhases = (
+				F10000260000000000000001 /* Sources */,
+				F10000200000000000000001 /* Frameworks */,
+				F10000270000000000000001 /* Resources */,
+			);
+			buildRules = ();
+			dependencies = ();
+			name = FancyTextExtension;
+			packageProductDependencies = (F10000280000000000000001 /* TunaKit */);
+			productName = FancyTextExtension;
+			productReference = F10000140000000000000001 /* FancyTextExtension.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		F10000290000000000000001 /* FancyTextExtensionTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F10000300000000000000001 /* Build configuration list for PBXNativeTarget "FancyTextExtensionTests" */;
+			buildPhases = (
+				F10000310000000000000001 /* Sources */,
+				F10000210000000000000001 /* Frameworks */,
+				F10000320000000000000001 /* Resources */,
+			);
+			buildRules = ();
+			dependencies = (F10000330000000000000001 /* PBXTargetDependency */);
+			name = FancyTextExtensionTests;
+			packageProductDependencies = (F10000340000000000000001 /* TunaKit */);
+			productName = FancyTextExtensionTests;
+			productReference = F10000180000000000000001 /* FancyTextExtensionTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F10000160000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = { F10000170000000000000001 = { CreatedOnToolsVersion = 15.0; }; };
+			};
+			buildConfigurationList = F10000350000000000000001 /* Build configuration list for PBXProject "FancyTextExtension" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (en);
+			mainGroup = F10000220000000000000001;
+			packageReferences = (F10000360000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */);
+			productRefGroup = F10000240000000000000001 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F10000170000000000000001 /* FancyTextExtension */,
+				F10000290000000000000001 /* FancyTextExtensionTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F10000270000000000000001 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (F10000090000000000000001 /* fonts.json in Resources */); runOnlyForDeploymentPostprocessing = 0; };
+		F10000320000000000000001 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F10000260000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F10000010000000000000001 /* FancyTextExtension.swift in Sources */,
+				F10000030000000000000001 /* FancyTextActionsCatalog.swift in Sources */,
+				F10000050000000000000001 /* FancyTextItem.swift in Sources */,
+				F10000070000000000000001 /* FancyTextFont.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F10000310000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (F10000110000000000000001 /* FancyTextExtensionTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F10000330000000000000001 /* PBXTargetDependency */ = {isa = PBXTargetDependency; name = FancyTextExtension; target = F10000170000000000000001 /* FancyTextExtension */; targetProxy = F10000150000000000000001 /* PBXContainerItemProxy */; };
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		F10000370000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				ENABLE_TESTABILITY = YES;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@loader_path/Frameworks");
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.fancy-text;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		F10000380000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@loader_path/Frameworks");
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.fancy-text;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		F10000390000000000000001 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = { PRODUCT_NAME = FancyTextExtension; }; name = Debug; };
+		F10000400000000000000001 /* Release */ = {isa = XCBuildConfiguration; buildSettings = { PRODUCT_NAME = FancyTextExtension; }; name = Release; };
+		F10000410000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.FancyTextExtensionTests;
+				PRODUCT_MODULE_NAME = FancyTextExtensionTests;
+				PRODUCT_NAME = FancyTextExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		F10000420000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.FancyTextExtensionTests;
+				PRODUCT_MODULE_NAME = FancyTextExtensionTests;
+				PRODUCT_NAME = FancyTextExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F10000250000000000000001 /* Build configuration list for PBXNativeTarget "FancyTextExtension" */ = {isa = XCConfigurationList; buildConfigurations = (F10000370000000000000001 /* Debug */, F10000380000000000000001 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		F10000300000000000000001 /* Build configuration list for PBXNativeTarget "FancyTextExtensionTests" */ = {isa = XCConfigurationList; buildConfigurations = (F10000410000000000000001 /* Debug */, F10000420000000000000001 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		F10000350000000000000001 /* Build configuration list for PBXProject "FancyTextExtension" */ = {isa = XCConfigurationList; buildConfigurations = (F10000390000000000000001 /* Debug */, F10000400000000000000001 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		F10000360000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tunaformac/TunaKit";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 1.20.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F10000280000000000000001 /* TunaKit */ = {isa = XCSwiftPackageProductDependency; package = F10000360000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */; productName = TunaKit; };
+		F10000340000000000000001 /* TunaKit */ = {isa = XCSwiftPackageProductDependency; package = F10000360000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */; productName = TunaKit; };
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = F10000160000000000000001 /* Project object */;
+}

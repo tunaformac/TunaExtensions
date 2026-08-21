@@ -11,6 +11,9 @@
       location = "group:CleanShotExtension/CleanShotExtension.xcodeproj">
    </FileRef>
    <FileRef
+      location = "group:FancyTextExtension/FancyTextExtension.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:GitHubExtension/GitHubExtension.xcodeproj">
    </FileRef>
    <FileRef

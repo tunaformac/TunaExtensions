@@ -14,6 +14,7 @@ exactly the setup a third-party extension uses.
 | ArenaExtension | Browse Are.na channels and save links or text |
 | BrewExtension | Search and manage Homebrew packages |
 | CleanShotExtension | Browse recent CleanShot images and run capture commands |
+| FancyTextExtension | Turn text into searchable Unicode styles |
 | GitHubExtension | Repos, issues, and pull requests |
 | MyMindExtension | Search, browse, resolve, and save mymind objects |
 | NotesExtension | Apple Notes search |
