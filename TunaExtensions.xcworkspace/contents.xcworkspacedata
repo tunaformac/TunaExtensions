@@ -29,6 +29,9 @@
       location = "group:ObsidianExtension/ObsidianExtension.xcodeproj">
    </FileRef>
    <FileRef
+      location = "group:PoofExtension/PoofExtension.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:RemindersExtension/RemindersExtension.xcodeproj">
    </FileRef>
    <FileRef

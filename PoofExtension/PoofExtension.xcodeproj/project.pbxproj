@@ -1,0 +1,395 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1283C731F4649CBA5663132B /* PoofExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1545A750F3AFB635DCAE63BB /* PoofExtension.swift */; };
+		39B75F619D749315D7C1883B /* PoofExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7F0111A195A34DF6D24B55B /* PoofExtensionTests.swift */; };
+		8F2C1F29D1ADD34000DE463A /* PoofActionsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E91EE3727DE2E7D0CD222B8 /* PoofActionsCatalog.swift */; };
+		A6F2393668C079D3B78D9AEA /* PoofItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76068355973B391E87236F81 /* PoofItems.swift */; };
+		CA75F3AD0EDC45F5D717A7BD /* PoofCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F9D7E1B883BBE76B571E353 /* PoofCatalog.swift */; };
+		DD8BA524B3EB7B38AE4DA0AD /* TunaPoof.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C8A601D9ECA6E3A372DE7CE8 /* TunaPoof.framework */; };
+		E489CB4A823FC023D76CF58E /* PoofConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85D283F3E5F765BB1902465A /* PoofConfig.swift */; };
+		FB336C65005BFAABF2A547B6 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32E6D2EBD17720CC4DC9CB0F /* Cocoa.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		7A92CB32E3D69C29ECCB604E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1FE7943E45146EB1491C3BFD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E2474FE19B0271B69AFA457E;
+			remoteInfo = PoofExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0E91EE3727DE2E7D0CD222B8 /* PoofActionsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoofActionsCatalog.swift; sourceTree = "<group>"; };
+		1545A750F3AFB635DCAE63BB /* PoofExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoofExtension.swift; sourceTree = "<group>"; };
+		32E6D2EBD17720CC4DC9CB0F /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
+		76068355973B391E87236F81 /* PoofItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoofItems.swift; sourceTree = "<group>"; };
+		7F9D7E1B883BBE76B571E353 /* PoofCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoofCatalog.swift; sourceTree = "<group>"; };
+		85D283F3E5F765BB1902465A /* PoofConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoofConfig.swift; sourceTree = "<group>"; };
+		8C114AA1E9D5BFE3A30AF882 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C7F0111A195A34DF6D24B55B /* PoofExtensionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PoofExtensionTests.swift; sourceTree = "<group>"; };
+		C8A601D9ECA6E3A372DE7CE8 /* TunaPoof.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TunaPoof.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		EE12F422D8060E655ADB863A /* PoofExtensionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PoofExtensionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C87DB47DDF48331FFAB9FC53 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CE7985F3EED4F9FA22B96972 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FB336C65005BFAABF2A547B6 /* Cocoa.framework in Frameworks */,
+				DD8BA524B3EB7B38AE4DA0AD /* TunaPoof.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		45DE891638FD65921B7ACEFC /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B07A2AE1F1EC09640EB8BA61 /* OS X */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		8E7A7EE6BA00140A0C371E37 = {
+			isa = PBXGroup;
+			children = (
+				C5FD88090A0DB6E25458E016 /* . */,
+				E267AF98AC2072F768EE8A03 /* Products */,
+				45DE891638FD65921B7ACEFC /* Frameworks */,
+				C7F0111A195A34DF6D24B55B /* PoofExtensionTests.swift */,
+			);
+			sourceTree = "<group>";
+		};
+		B07A2AE1F1EC09640EB8BA61 /* OS X */ = {
+			isa = PBXGroup;
+			children = (
+				32E6D2EBD17720CC4DC9CB0F /* Cocoa.framework */,
+			);
+			name = "OS X";
+			sourceTree = "<group>";
+		};
+		C5FD88090A0DB6E25458E016 /* . */ = {
+			isa = PBXGroup;
+			children = (
+				1545A750F3AFB635DCAE63BB /* PoofExtension.swift */,
+				7F9D7E1B883BBE76B571E353 /* PoofCatalog.swift */,
+				76068355973B391E87236F81 /* PoofItems.swift */,
+				85D283F3E5F765BB1902465A /* PoofConfig.swift */,
+				0E91EE3727DE2E7D0CD222B8 /* PoofActionsCatalog.swift */,
+				8C114AA1E9D5BFE3A30AF882 /* Info.plist */,
+			);
+			path = .;
+			sourceTree = "<group>";
+		};
+		E267AF98AC2072F768EE8A03 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C8A601D9ECA6E3A372DE7CE8 /* TunaPoof.framework */,
+				EE12F422D8060E655ADB863A /* PoofExtensionTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E2474FE19B0271B69AFA457E /* PoofExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 94A596F02F246BD9A2BC7303 /* Build configuration list for PBXNativeTarget "PoofExtension" */;
+			buildPhases = (
+				C8C3E0046D103FEF213D8B36 /* Sources */,
+				C87DB47DDF48331FFAB9FC53 /* Frameworks */,
+				0F5720199D1A26FD7829D49E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PoofExtension;
+			packageProductDependencies = (
+				FE5DCA866242DFEB2DF3CB40 /* TunaKit */,
+			);
+			productName = TunaPoof;
+			productReference = C8A601D9ECA6E3A372DE7CE8 /* TunaPoof.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		F5101D63811E9229B63D0D82 /* PoofExtensionTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 97A6B0B16C917BAAEE069552 /* Build configuration list for PBXNativeTarget "PoofExtensionTests" */;
+			buildPhases = (
+				1D2AD046EB1E7628EA8CD25C /* Sources */,
+				CE7985F3EED4F9FA22B96972 /* Frameworks */,
+				EA801C84C2B5BFE864885CC4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1C0B10644B68C6628AE982DA /* PBXTargetDependency */,
+			);
+			name = PoofExtensionTests;
+			packageProductDependencies = (
+				F64F3527274C38680D080CD9 /* TunaKit */,
+			);
+			productName = PoofExtensionTests;
+			productReference = EE12F422D8060E655ADB863A /* PoofExtensionTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		1FE7943E45146EB1491C3BFD /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					E2474FE19B0271B69AFA457E = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 57B97636C931FD2AA4A358D7 /* Build configuration list for PBXProject "PoofExtension" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 8E7A7EE6BA00140A0C371E37;
+			packageReferences = (
+				B1EB7D9C9C3DBAA08607F107 /* XCRemoteSwiftPackageReference "TunaKit" */,
+			);
+			productRefGroup = E267AF98AC2072F768EE8A03 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E2474FE19B0271B69AFA457E /* PoofExtension */,
+				F5101D63811E9229B63D0D82 /* PoofExtensionTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		0F5720199D1A26FD7829D49E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EA801C84C2B5BFE864885CC4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1D2AD046EB1E7628EA8CD25C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				39B75F619D749315D7C1883B /* PoofExtensionTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C8C3E0046D103FEF213D8B36 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1283C731F4649CBA5663132B /* PoofExtension.swift in Sources */,
+				CA75F3AD0EDC45F5D717A7BD /* PoofCatalog.swift in Sources */,
+				A6F2393668C079D3B78D9AEA /* PoofItems.swift in Sources */,
+				E489CB4A823FC023D76CF58E /* PoofConfig.swift in Sources */,
+				8F2C1F29D1ADD34000DE463A /* PoofActionsCatalog.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1C0B10644B68C6628AE982DA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = PoofExtension;
+			target = E2474FE19B0271B69AFA457E /* PoofExtension */;
+			targetProxy = 7A92CB32E3D69C29ECCB604E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		797FEF8E262838D4159DF8F0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.poof;
+				PRODUCT_MODULE_NAME = TunaPoof;
+				PRODUCT_NAME = TunaPoof;
+				SKIP_INSTALL = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Release;
+		};
+		969A1386F2D048251B4D7CE3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TunaPoof;
+			};
+			name = Debug;
+		};
+		AA3F93D8BAE72BC5A71CDC0A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				ENABLE_TESTABILITY = YES;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.poof;
+				PRODUCT_MODULE_NAME = TunaPoof;
+				PRODUCT_NAME = TunaPoof;
+				SKIP_INSTALL = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Debug;
+		};
+		B810C48B97F9F41FE2E599AC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.PoofExtensionTests;
+				PRODUCT_MODULE_NAME = PoofExtensionTests;
+				PRODUCT_NAME = PoofExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		BADFB5D4059BB29DC64F85BA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TunaPoof;
+			};
+			name = Release;
+		};
+		BE05B5C661DB49F507C1FD53 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.PoofExtensionTests;
+				PRODUCT_MODULE_NAME = PoofExtensionTests;
+				PRODUCT_NAME = PoofExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		57B97636C931FD2AA4A358D7 /* Build configuration list for PBXProject "PoofExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				969A1386F2D048251B4D7CE3 /* Debug */,
+				BADFB5D4059BB29DC64F85BA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		94A596F02F246BD9A2BC7303 /* Build configuration list for PBXNativeTarget "PoofExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA3F93D8BAE72BC5A71CDC0A /* Debug */,
+				797FEF8E262838D4159DF8F0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		97A6B0B16C917BAAEE069552 /* Build configuration list for PBXNativeTarget "PoofExtensionTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B810C48B97F9F41FE2E599AC /* Release */,
+				BE05B5C661DB49F507C1FD53 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B1EB7D9C9C3DBAA08607F107 /* XCRemoteSwiftPackageReference "TunaKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tunaformac/TunaKit";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 1.20.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F64F3527274C38680D080CD9 /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B1EB7D9C9C3DBAA08607F107 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
+		FE5DCA866242DFEB2DF3CB40 /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B1EB7D9C9C3DBAA08607F107 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 1FE7943E45146EB1491C3BFD /* Project object */;
+}

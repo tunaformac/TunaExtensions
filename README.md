@@ -20,6 +20,7 @@ exactly the setup a third-party extension uses.
 | NotesExtension | Apple Notes search |
 | NotionExtension | Notion pages and databases |
 | ObsidianExtension | Browse Obsidian vaults, folders, and notes |
+| PoofExtension | Find, paste, and manage Poof text snippets |
 | RemindersExtension | Search reminders and create them in specific lists |
 | SafariExtension | Safari bookmarks, reading list, and tabs |
 | ThingsExtension | Things to-dos and projects |
