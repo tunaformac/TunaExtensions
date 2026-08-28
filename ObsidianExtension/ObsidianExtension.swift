@@ -11,16 +11,17 @@ public final class ObsidianExtension: Extension {
         description: "Browse Obsidian vaults, folders, and notes, with quick capture actions.",
         iconName: "square.stack.3d.up"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.83", minTunaKit: "1.18.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.95", minTunaKit: "1.21.0"),
       catalogs: [
         CatalogDeclaration(
-          id: "obsidian", type: ObsidianVaultsCatalog.self, name: "Vaults", enabledByDefault: true),
+          id: "obsidian", type: ObsidianVaultsCatalog.self, name: "Vaults",
+          presentation: .source, enabledByDefault: true),
         CatalogDeclaration(
           id: "obsidian.notes", type: ObsidianNotesCatalog.self, name: "Notes",
-          enabledByDefault: false),
+          presentation: .source, enabledByDefault: false),
         CatalogDeclaration(
           id: "obsidian.search", type: ObsidianSearchCatalog.self, name: "Notes",
-          enabledByDefault: true),
+          presentation: .browseRoot(contents: "obsidian.notes"), enabledByDefault: true),
       ],
       actionCatalogs: [
         ActionCatalogDeclaration(

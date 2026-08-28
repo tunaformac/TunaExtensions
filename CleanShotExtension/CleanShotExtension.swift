@@ -16,12 +16,13 @@ public final class CleanShotExtension: Extension {
         description: "Browse recent CleanShot images and run capture utilities.",
         iconName: "camera.viewfinder"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.84", minTunaKit: "1.18.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.95", minTunaKit: "1.21.0"),
       catalogs: [
         CatalogDeclaration(
           id: "cleanshot.commands",
           type: CleanShotCommandsCatalog.self,
           name: "CleanShot Commands",
+          presentation: .source,
           enabledByDefault: false
         )
       ],

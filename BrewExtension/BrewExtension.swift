@@ -11,7 +11,7 @@ public final class BrewExtension: Extension {
         description: "Search Homebrew formulae and casks.",
         iconName: "mug"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.80", minTunaKit: "1.18.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.95", minTunaKit: "1.21.0"),
       settings: [
         CatalogSettingDefinition(
           key: "CustomBrewPath",
@@ -26,12 +26,14 @@ public final class BrewExtension: Extension {
           id: "brew.packages",
           type: BrewCatalog.self,
           name: "Homebrew",
+          presentation: .source,
           enabledByDefault: false
         ),
         CatalogDeclaration(
           id: "brew.search",
           type: BrewSearchCatalog.self,
-          name: "Homebrew",
+          name: "Homebrew Search",
+          presentation: .liveSearch,
           enabledByDefault: true
         ),
       ],

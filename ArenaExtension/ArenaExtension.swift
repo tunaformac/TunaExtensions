@@ -14,12 +14,13 @@ public final class ArenaExtension: Extension {
         description: "Browse Are.na channels and save links, text, and images.",
         iconName: "square.grid.2x2"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.83", minTunaKit: "1.18.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.95", minTunaKit: "1.21.0"),
       catalogs: [
         CatalogDeclaration(
           id: Self.catalogIdentifier,
           type: ArenaCatalog.self,
           name: "Are.na",
+          presentation: .source,
           enabledByDefault: true)
       ],
       actionCatalogs: [

@@ -11,7 +11,7 @@ public final class ThingsExtension: Extension {
         description: "Create Things to-dos and jump to lists.",
         iconName: "checkmark.circle"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.80", minTunaKit: "1.18.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.95", minTunaKit: "1.21.0"),
       settings: [
         CatalogSettingDefinition(
           key: "ShowThingsWhenAdding",
@@ -23,7 +23,8 @@ public final class ThingsExtension: Extension {
       ],
       catalogs: [
         CatalogDeclaration(
-          id: "things", type: ThingsCatalog.self, name: "Things Items", enabledByDefault: true),
+          id: "things", type: ThingsCatalog.self, name: "Things Items", presentation: .source,
+          enabledByDefault: true),
       ],
       actionCatalogs: [
         ActionCatalogDeclaration(

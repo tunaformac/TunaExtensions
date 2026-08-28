@@ -1,5 +1,9 @@
 # Notion Extension Changelog
 
+## Unreleased
+
+- Declare catalog presentation for Tuna 0.95's Sources pane; requires Tuna 0.95 / TunaKit 1.21.0.
+
 ## 1.10
 
 - Make provider-backed Notion roots default to Search while retaining Browse for recent pages and

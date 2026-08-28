@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Declare catalog presentation for Tuna 0.95's Sources pane; requires Tuna 0.95 / TunaKit 1.21.0.
 - Show recent captures newest first.
 - Open recent captures by default while keeping file sharing actions available.
 

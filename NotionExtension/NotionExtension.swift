@@ -11,12 +11,14 @@ public final class NotionExtension: Extension {
         description: "Browse and search Notion, with optional top-level pages in global search.",
         iconName: "book.pages"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.93", minTunaKit: "1.20.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.95", minTunaKit: "1.21.0"),
       catalogs: [
         CatalogDeclaration(
-          id: "notion", type: NotionCatalog.self, name: "Notion", enabledByDefault: true),
+          id: "notion", type: NotionCatalog.self, name: "Notion", presentation: .liveSearch,
+          enabledByDefault: true),
         CatalogDeclaration(
-          id: "notion.pages", type: NotionPagesCatalog.self, name: "Pages", enabledByDefault: false),
+          id: "notion.pages", type: NotionPagesCatalog.self, name: "Pages",
+          presentation: .liveSearch, enabledByDefault: false),
       ],
       appBrowseEnrichments: [
         AppBrowseEnrichmentDefinition(

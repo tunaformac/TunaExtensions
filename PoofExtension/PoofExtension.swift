@@ -11,18 +11,20 @@ public final class PoofExtension: Extension {
         description: "Find, paste, create, delete, and edit Poof text snippets.",
         iconName: "text.quote"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.94", minTunaKit: "1.20.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.95", minTunaKit: "1.21.0"),
       catalogs: [
         CatalogDeclaration(
           id: "poof.snippets",
           type: PoofCatalog.self,
           name: "Poof Snippets",
+          presentation: .source,
           enabledByDefault: true
         ),
         CatalogDeclaration(
           id: "poof.snippets.search",
           type: PoofBrowseCatalog.self,
           name: "Poof Snippets",
+          presentation: .browseRoot(contents: "poof.snippets"),
           enabledByDefault: true
         )
       ],

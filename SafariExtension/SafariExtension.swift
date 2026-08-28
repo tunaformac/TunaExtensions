@@ -11,29 +11,30 @@ public final class SafariExtension: Extension {
         description: "Safari bookmarks, reading list, and actions.",
         iconName: "safari"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.80", minTunaKit: "1.18.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.95", minTunaKit: "1.21.0"),
       catalogs: [
         CatalogDeclaration(
           id: "safari.bookmarks", type: SafariBookmarksCatalog.self, name: "Bookmarks",
-          enabledByDefault: true),
+          presentation: .source, enabledByDefault: true),
         CatalogDeclaration(
           id: "safari.bookmarks.search", type: SafariBookmarksSearchCatalog.self, name: "Bookmarks",
-          enabledByDefault: true),
+          presentation: .browseRoot(contents: "safari.bookmarks"), enabledByDefault: true),
         CatalogDeclaration(
           id: "safari.reading-list", type: SafariReadingListCatalog.self, name: "Reading List",
-          enabledByDefault: true),
+          presentation: .source, enabledByDefault: true),
         CatalogDeclaration(
           id: "safari.reading-list.search", type: SafariReadingListSearchCatalog.self,
-          name: "Reading List", enabledByDefault: true),
+          name: "Reading List", presentation: .browseRoot(contents: "safari.reading-list"),
+          enabledByDefault: true),
         CatalogDeclaration(
           id: "safari.favorites", type: SafariFavoritesCatalog.self, name: "Favorites",
-          enabledByDefault: true),
+          presentation: .source, enabledByDefault: true),
         CatalogDeclaration(
           id: "safari.favorites.search", type: SafariFavoritesSearchCatalog.self, name: "Favorites",
-          enabledByDefault: true),
+          presentation: .browseRoot(contents: "safari.favorites"), enabledByDefault: true),
         CatalogDeclaration(
           id: "safari.utilities", type: SafariMetaCatalog.self, name: "Safari Utilities",
-          enabledByDefault: true),
+          presentation: .source, enabledByDefault: true),
       ],
       actionCatalogs: [
         ActionCatalogDeclaration(
