@@ -31,8 +31,8 @@ exactly the setup a third-party extension uses.
 make                  # compile every extension (Release)
 make test             # run every extension unit-test target
 make ext-all          # build + install all into Tuna's ExtensionsDev for local development
-make ext-all-local    # build + install all against ../Tuna's current local TunaKit
-make ext-local TARGET=SafariExtension TUNA_ROOT=../Tuna
+make ext-all-local TUNA_ROOT=/absolute/path/to/Tuna
+make ext-local TARGET=SafariExtension TUNA_ROOT=/absolute/path/to/Tuna
 ./scripts/tuna-extension install --scheme ObsidianExtension
 ```
 
@@ -63,9 +63,10 @@ set is still clean. It then verifies already-published matching versions and onl
 that are newer or need their bytes repaired.
 
 Packaging derives store metadata from the built bundle's Swift declaration,
-which requires a Tuna binary. It uses `TUNA_BINARY` when provided, then looks for the sibling debug
-build at `../Tuna/build/dd/Build/Products/Debug/Tuna.app/Contents/MacOS/Tuna`, then falls back to
-`/Applications/Tuna.app` and `~/Applications/Tuna.app`. A store icon belongs beside its sources at
+which requires a Tuna binary. It uses `TUNA_BINARY` when provided, then the debug build under an
+explicit `TUNA_ROOT`, then falls back to `/Applications/Tuna.app` and `~/Applications/Tuna.app`.
+When coordinating changes from a Tuna worktree, prefer Tuna's
+`scripts/tuna-extensions.sh <target>` wrapper; it passes both paths explicitly. A store icon belongs beside its sources at
 `<Extension>/icon.png` — every extension here has one. `media/icons/<id-or-slug>.<extension>` still
 works for icons curated outside an extension directory. Screenshots live at
 `media/screenshots/<id-or-slug>/*`. Media supplied by this tooling must be tracked; curated server

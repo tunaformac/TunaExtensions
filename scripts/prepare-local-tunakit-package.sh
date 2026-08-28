@@ -2,7 +2,18 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TUNA_ROOT="${1:-${TUNA_ROOT:-$ROOT/../Tuna}}"
+TUNA_ROOT="${1:-${TUNA_ROOT:-}}"
+
+if [[ -z "$TUNA_ROOT" ]]; then
+  echo "A Tuna checkout is required to build local TunaKit." >&2
+  echo "Set TUNA_ROOT to its absolute path." >&2
+  exit 64
+fi
+if [[ ! -d "$TUNA_ROOT" ]]; then
+  echo "Tuna checkout not found at $TUNA_ROOT" >&2
+  exit 64
+fi
+TUNA_ROOT="$(cd "$TUNA_ROOT" && pwd -P)"
 TUNAKIT_PROJECT="$TUNA_ROOT/app/TunaKit/TunaKit.xcodeproj"
 DERIVED_DATA="$ROOT/build/local-tunakit-dd"
 PACKAGE_ROOT="$ROOT/build/local-tunakit-package"
@@ -13,6 +24,9 @@ if [[ ! -d "$TUNAKIT_PROJECT" ]]; then
   echo "Set TUNA_ROOT to a Tuna checkout." >&2
   exit 64
 fi
+
+echo "TunaExtensions root: $ROOT" >&2
+echo "Tuna root: $TUNA_ROOT" >&2
 
 package_versions="$(
   find "$ROOT" -path "$ROOT/build" -prune -o \

@@ -6,7 +6,6 @@ DESTINATION := generic/platform=macOS
 DEV_DESTINATION := platform=macOS,arch=$(ARCH)
 DERIVED_DATA := ./build/dd
 INSTALL_DIR := $(HOME)/Library/Application Support/Tuna/ExtensionsDev
-TUNA_ROOT ?= ../Tuna
 LOCAL_DERIVED_DATA := ./build/dd-local
 
 .DEFAULT_GOAL := build-all
@@ -14,6 +13,10 @@ LOCAL_DERIVED_DATA := ./build/dd-local
 
 define require_target
 	@test -n "$(TARGET)" || { echo "usage: make $@ TARGET=<Scheme>" >&2; exit 64; }
+endef
+
+define require_tuna_root
+	@test -n "$(TUNA_ROOT)" || { echo "usage: make $@ TARGET=<Scheme> TUNA_ROOT=/absolute/path/to/Tuna" >&2; exit 64; }
 endef
 
 # Compile every extension in Release.
@@ -25,6 +28,7 @@ test: test-release-scripts test-extensions
 
 test-release-scripts:
 	@./tests/release-all-extensions-test.sh
+	@./tests/cross-repo-paths-test.sh
 
 test-extensions:
 	@set -e; found_tests=""; \
@@ -54,13 +58,16 @@ ext-all:
 # Build one extension against Tuna's local TunaKit source and dev-install it.
 ext-local:
 	$(require_target)
+	$(require_tuna_root)
 	@set -e; \
+	./scripts/resolve-extension-scheme.sh "$(TARGET)" >/dev/null; \
 	PACKAGE="$$(./scripts/prepare-local-tunakit-package.sh "$(TUNA_ROOT)")"; \
 	TUNA_LOCAL_TUNAKIT_PACKAGE="$$PACKAGE" \
 	  ./scripts/install-local-extension-product.sh "$(TARGET)" "$(INSTALL_DIR)" "$(LOCAL_DERIVED_DATA)"
 
 # Build every extension against Tuna's local TunaKit source and dev-install it.
 ext-all-local:
+	@test -n "$(TUNA_ROOT)" || { echo "usage: make $@ TUNA_ROOT=/absolute/path/to/Tuna" >&2; exit 64; }
 	@set -e; \
 	PACKAGE="$$(./scripts/prepare-local-tunakit-package.sh "$(TUNA_ROOT)")"; \
 	for SCHEME in $(EXTENSION_SCHEMES); do \
