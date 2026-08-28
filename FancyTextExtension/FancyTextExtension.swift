@@ -11,7 +11,7 @@ public final class FancyTextExtension: Extension {
         description: "Turn ordinary text into playful Unicode styles.",
         iconName: "wand.and.sparkles"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.94", minTunaKit: "1.20.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.95", minTunaKit: "1.21.0"),
       actionCatalogs: [
         ActionCatalogDeclaration(
           id: "fancy-text.actions",

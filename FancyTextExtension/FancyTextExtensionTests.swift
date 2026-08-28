@@ -55,8 +55,8 @@ final class FancyTextExtensionTests: XCTestCase {
 
     try declaration.validate()
     let compatibility = try XCTUnwrap(declaration.compatibility)
-    XCTAssertEqual(compatibility.minTuna, "0.94")
-    XCTAssertEqual(compatibility.minTunaKit, "1.20.0")
+    XCTAssertEqual(compatibility.minTuna, "0.95")
+    XCTAssertEqual(compatibility.minTunaKit, "1.21.0")
   }
 
   private func font(named name: String, in fonts: [FancyTextFont]) throws -> FancyTextFont {
