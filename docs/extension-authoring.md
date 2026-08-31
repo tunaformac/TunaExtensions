@@ -50,14 +50,14 @@ known-good project wiring and a relevant API recipe.
 ## Current shape and recipe index
 
 Refresh this list against every `*Extension.swift` before designing; names in catalog IDs do not
-determine presentation or search behavior. At the time of writing, the 13 declarations expose 31
-catalogs: 15 `.source`, 10 `.liveSearch`, and 6 `.browseRoot(contents:)`.
+determine presentation or search behavior.
 
 | Shape | Examples | Start here when |
 | --- | --- | --- |
 | Action-only text transform | `FancyTextExtension` | Tuna already supplies the subject and the extension only contributes a verb and results. |
 | Static destinations and commands | `ThingsExtension`, `SafariExtension/SafariMetaCatalog.swift`, `CleanShotExtension` | The domain exposes fixed destinations, URL-scheme utilities, or directly runnable commands rather than a content corpus. |
 | App companion commands with deferred children | `CleanShotExtension` | An app is the natural entry point and expensive children should load only on browse. |
+| App-enriched deferred local data | `Messages2FAExtension` | Private or fast-changing local data should load only when browsed and refresh from native change signals. |
 | Direct indexed local content | `NotesExtension`, `RemindersExtension` | A bounded local corpus belongs directly in global search. |
 | Indexed content plus opt-in browse root | `SafariExtension`, `PoofExtension`, `ObsidianExtension`, parts of `RemindersExtension` | Everything should be browsable while users choose which concrete items enter global search. |
 | Hierarchical local files/config | `ObsidianExtension`, `PoofExtension` | External folders, files, or native config form the domain hierarchy and writes must preserve native data. |
@@ -74,8 +74,9 @@ Useful implementation landmarks:
 - Eager, deferred, and scoped roots: `ArenaExtension/ArenaCatalog.swift`,
   `CleanShotExtension/CleanShotCommandsCatalog.swift`, `NotionExtension/NotionCatalog.swift`
 - Item-level hierarchy and native files: `ObsidianExtension/ObsidianItems.swift`
-- Provider boundaries: `BrewExtension/BrewCLI.swift`, `NotesExtension/NotesDatabase.swift`,
-  `PoofExtension/PoofConfig.swift`, `RemindersExtension/RemindersAuthorization.swift`
+- Provider boundaries: `BrewExtension/BrewCLI.swift`, `Messages2FAExtension/MessagesDatabase.swift`,
+  `NotesExtension/NotesDatabase.swift`, `PoofExtension/PoofConfig.swift`,
+  `RemindersExtension/RemindersAuthorization.swift`
 - Connections and credentials: `ArenaExtension/ArenaExtension.swift`,
   `GitHubExtension/GitHubCatalogSupport.swift`, `NotionExtension/NotionCatalogSupport.swift`,
   `MyMindExtension/MyMindExtension.swift`
@@ -85,8 +86,9 @@ Useful implementation landmarks:
 - Direct commands and execution-time subjects: `CleanShotExtension/CleanShotCommandsCatalog.swift`,
   `SafariExtension/SafariMetaCatalog.swift`
 - Focused tests: `CleanShotExtension/CleanShotExtensionTests.swift`,
-  `MyMindExtension/MyMindExtensionTests.swift`, `ObsidianExtension/ObsidianExtensionTests.swift`,
-  `PoofExtension/PoofExtensionTests.swift`, `RemindersExtension/RemindersExtensionTests.swift`
+  `Messages2FAExtension/Messages2FAExtensionTests.swift`, `MyMindExtension/MyMindExtensionTests.swift`,
+  `ObsidianExtension/ObsidianExtensionTests.swift`, `PoofExtension/PoofExtensionTests.swift`,
+  `RemindersExtension/RemindersExtensionTests.swift`
 
 ## Development commands
 
