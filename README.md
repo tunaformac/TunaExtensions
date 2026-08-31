@@ -16,6 +16,7 @@ exactly the setup a third-party extension uses.
 | CleanShotExtension | Browse recent CleanShot images and run capture commands |
 | FancyTextExtension | Turn text into searchable Unicode styles |
 | GitHubExtension | Repos, issues, and pull requests |
+| Messages2FAExtension | Find recent authentication codes from Apple Messages |
 | MyMindExtension | Search, browse, resolve, and save mymind objects |
 | NotesExtension | Apple Notes search |
 | NotionExtension | Notion pages and databases |
