@@ -37,6 +37,15 @@ cd TunaExtensions
 git switch -c add-example-extension
 ```
 
+When this repository is checked out beside Tuna, remember that a linked Tuna worktree is nested
+under the primary checkout rather than beside this repository. Resolve the sibling checkout from
+Tuna's common Git directory instead of using `../TunaExtensions` from the worktree:
+
+```bash
+TUNA_ROOT="$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")"
+EXTENSIONS_ROOT="$(dirname "$TUNA_ROOT")/TunaExtensions"
+```
+
 Copy the closest existing extension project, rename its product, scheme, source folder, declaration,
 and bundle identifier, then remove behavior that is not part of the approved design. Keep the new
 extension as a top-level `<Name>Extension` directory and add its project to

@@ -35,6 +35,7 @@ struct MusicAlbum: Hashable, Sendable {
   }
 
   var key: String { Self.key(title: title, artist: artist) }
+  var catalogID: String { Data(key.utf8).base64EncodedString() }
 }
 
 struct MusicArtist: Hashable, Sendable {

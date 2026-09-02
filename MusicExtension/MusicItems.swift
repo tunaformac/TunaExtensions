@@ -59,7 +59,7 @@ final class MusicAlbumItem: CatalogEntity, CatalogHierarchyNode, CatalogAsyncPre
 
   init(album: MusicAlbum) {
     self.album = album
-    super.init(id: "music.album.\(album.key)", title: album.title, path: nil)
+    super.init(id: "music.album.\(album.catalogID)", title: album.title, path: nil)
     typeID = .musicAlbum
   }
 

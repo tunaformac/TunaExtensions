@@ -191,6 +191,7 @@ final class MusicExtensionTests: XCTestCase {
     let albums = MusicLibraryCatalogBase.buildItems(for: .albums, mode: .all, load: load)
     let debut = try XCTUnwrap(albums.first as? MusicAlbumItem)
     XCTAssertEqual(debut.typeID, .musicAlbum)
+    XCTAssertTrue(albums.allSatisfy { CatalogReference.isCanonicalLocalID($0.id) })
     XCTAssertEqual(debut.detail, "Band · 2001 · 2 songs")
     XCTAssertEqual(debut.hierarchyChildren().map(\.title), ["First Song", "Second Song"])
     XCTAssertEqual(debut.trackIDs, ["BBB", "AAA"])

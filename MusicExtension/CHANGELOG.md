@@ -1,5 +1,9 @@
 # Music Extension Changelog
 
+## 0.1.1
+
+- Fix albums not appearing in search or browse results.
+
 ## 0.1
 
 - Now Playing plus Play/Pause, Next Track, Previous Track, Toggle Shuffle, and Toggle Repeat.
