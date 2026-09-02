@@ -1,0 +1,403 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B00000000000000000000001 /* MusicExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000001 /* MusicExtension.swift */; };
+		B00000000000000000000002 /* MusicAppleScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000002 /* MusicAppleScript.swift */; };
+		B00000000000000000000003 /* MusicLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000003 /* MusicLibrary.swift */; };
+		B00000000000000000000004 /* MusicItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000004 /* MusicItems.swift */; };
+		B00000000000000000000005 /* MusicCatalogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000005 /* MusicCatalogs.swift */; };
+		B00000000000000000000006 /* AppleMusicCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000006 /* AppleMusicCatalog.swift */; };
+		B00000000000000000000007 /* MusicActionsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000007 /* MusicActionsCatalog.swift */; };
+		B00000000000000000000008 /* MusicExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000008 /* MusicExtensionTests.swift */; };
+		DD8BA524B3EB7B38AE4DA0AD /* TunaMusic.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C8A601D9ECA6E3A372DE7CE8 /* TunaMusic.framework */; };
+		FB336C65005BFAABF2A547B6 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32E6D2EBD17720CC4DC9CB0F /* Cocoa.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		7A92CB32E3D69C29ECCB604E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1FE7943E45146EB1491C3BFD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E2474FE19B0271B69AFA457E;
+			remoteInfo = MusicExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		F00000000000000000000001 /* MusicExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicExtension.swift; sourceTree = "<group>"; };
+		F00000000000000000000002 /* MusicAppleScript.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicAppleScript.swift; sourceTree = "<group>"; };
+		F00000000000000000000003 /* MusicLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicLibrary.swift; sourceTree = "<group>"; };
+		F00000000000000000000004 /* MusicItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicItems.swift; sourceTree = "<group>"; };
+		F00000000000000000000005 /* MusicCatalogs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicCatalogs.swift; sourceTree = "<group>"; };
+		F00000000000000000000006 /* AppleMusicCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleMusicCatalog.swift; sourceTree = "<group>"; };
+		F00000000000000000000007 /* MusicActionsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicActionsCatalog.swift; sourceTree = "<group>"; };
+		F00000000000000000000008 /* MusicExtensionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MusicExtensionTests.swift; sourceTree = "<group>"; };
+		32E6D2EBD17720CC4DC9CB0F /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
+		8C114AA1E9D5BFE3A30AF882 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C8A601D9ECA6E3A372DE7CE8 /* TunaMusic.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TunaMusic.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		EE12F422D8060E655ADB863A /* MusicExtensionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MusicExtensionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C87DB47DDF48331FFAB9FC53 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CE7985F3EED4F9FA22B96972 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FB336C65005BFAABF2A547B6 /* Cocoa.framework in Frameworks */,
+				DD8BA524B3EB7B38AE4DA0AD /* TunaMusic.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		45DE891638FD65921B7ACEFC /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B07A2AE1F1EC09640EB8BA61 /* OS X */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		8E7A7EE6BA00140A0C371E37 = {
+			isa = PBXGroup;
+			children = (
+				C5FD88090A0DB6E25458E016 /* . */,
+				E267AF98AC2072F768EE8A03 /* Products */,
+				45DE891638FD65921B7ACEFC /* Frameworks */,
+				F00000000000000000000008 /* MusicExtensionTests.swift */,
+			);
+			sourceTree = "<group>";
+		};
+		B07A2AE1F1EC09640EB8BA61 /* OS X */ = {
+			isa = PBXGroup;
+			children = (
+				32E6D2EBD17720CC4DC9CB0F /* Cocoa.framework */,
+			);
+			name = "OS X";
+			sourceTree = "<group>";
+		};
+		C5FD88090A0DB6E25458E016 /* . */ = {
+			isa = PBXGroup;
+			children = (
+				F00000000000000000000001 /* MusicExtension.swift */,
+				F00000000000000000000002 /* MusicAppleScript.swift */,
+				F00000000000000000000003 /* MusicLibrary.swift */,
+				F00000000000000000000004 /* MusicItems.swift */,
+				F00000000000000000000005 /* MusicCatalogs.swift */,
+				F00000000000000000000006 /* AppleMusicCatalog.swift */,
+				F00000000000000000000007 /* MusicActionsCatalog.swift */,
+				8C114AA1E9D5BFE3A30AF882 /* Info.plist */,
+			);
+			path = .;
+			sourceTree = "<group>";
+		};
+		E267AF98AC2072F768EE8A03 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C8A601D9ECA6E3A372DE7CE8 /* TunaMusic.framework */,
+				EE12F422D8060E655ADB863A /* MusicExtensionTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E2474FE19B0271B69AFA457E /* MusicExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 94A596F02F246BD9A2BC7303 /* Build configuration list for PBXNativeTarget "MusicExtension" */;
+			buildPhases = (
+				C8C3E0046D103FEF213D8B36 /* Sources */,
+				C87DB47DDF48331FFAB9FC53 /* Frameworks */,
+				0F5720199D1A26FD7829D49E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MusicExtension;
+			packageProductDependencies = (
+				FE5DCA866242DFEB2DF3CB40 /* TunaKit */,
+			);
+			productName = TunaMusic;
+			productReference = C8A601D9ECA6E3A372DE7CE8 /* TunaMusic.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		F5101D63811E9229B63D0D82 /* MusicExtensionTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 97A6B0B16C917BAAEE069552 /* Build configuration list for PBXNativeTarget "MusicExtensionTests" */;
+			buildPhases = (
+				1D2AD046EB1E7628EA8CD25C /* Sources */,
+				CE7985F3EED4F9FA22B96972 /* Frameworks */,
+				EA801C84C2B5BFE864885CC4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1C0B10644B68C6628AE982DA /* PBXTargetDependency */,
+			);
+			name = MusicExtensionTests;
+			packageProductDependencies = (
+				F64F3527274C38680D080CD9 /* TunaKit */,
+			);
+			productName = MusicExtensionTests;
+			productReference = EE12F422D8060E655ADB863A /* MusicExtensionTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		1FE7943E45146EB1491C3BFD /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					E2474FE19B0271B69AFA457E = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 57B97636C931FD2AA4A358D7 /* Build configuration list for PBXProject "MusicExtension" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 8E7A7EE6BA00140A0C371E37;
+			packageReferences = (
+				B1EB7D9C9C3DBAA08607F107 /* XCRemoteSwiftPackageReference "TunaKit" */,
+			);
+			productRefGroup = E267AF98AC2072F768EE8A03 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E2474FE19B0271B69AFA457E /* MusicExtension */,
+				F5101D63811E9229B63D0D82 /* MusicExtensionTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		0F5720199D1A26FD7829D49E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EA801C84C2B5BFE864885CC4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1D2AD046EB1E7628EA8CD25C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B00000000000000000000008 /* MusicExtensionTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C8C3E0046D103FEF213D8B36 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B00000000000000000000001 /* MusicExtension.swift in Sources */,
+				B00000000000000000000002 /* MusicAppleScript.swift in Sources */,
+				B00000000000000000000003 /* MusicLibrary.swift in Sources */,
+				B00000000000000000000004 /* MusicItems.swift in Sources */,
+				B00000000000000000000005 /* MusicCatalogs.swift in Sources */,
+				B00000000000000000000006 /* AppleMusicCatalog.swift in Sources */,
+				B00000000000000000000007 /* MusicActionsCatalog.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1C0B10644B68C6628AE982DA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = MusicExtension;
+			target = E2474FE19B0271B69AFA457E /* MusicExtension */;
+			targetProxy = 7A92CB32E3D69C29ECCB604E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		797FEF8E262838D4159DF8F0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.music;
+				PRODUCT_MODULE_NAME = TunaMusic;
+				PRODUCT_NAME = TunaMusic;
+				SKIP_INSTALL = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Release;
+		};
+		969A1386F2D048251B4D7CE3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TunaMusic;
+			};
+			name = Debug;
+		};
+		AA3F93D8BAE72BC5A71CDC0A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				ENABLE_TESTABILITY = YES;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.music;
+				PRODUCT_MODULE_NAME = TunaMusic;
+				PRODUCT_NAME = TunaMusic;
+				SKIP_INSTALL = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Debug;
+		};
+		B810C48B97F9F41FE2E599AC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.MusicExtensionTests;
+				PRODUCT_MODULE_NAME = MusicExtensionTests;
+				PRODUCT_NAME = MusicExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		BADFB5D4059BB29DC64F85BA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TunaMusic;
+			};
+			name = Release;
+		};
+		BE05B5C661DB49F507C1FD53 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.MusicExtensionTests;
+				PRODUCT_MODULE_NAME = MusicExtensionTests;
+				PRODUCT_NAME = MusicExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		57B97636C931FD2AA4A358D7 /* Build configuration list for PBXProject "MusicExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				969A1386F2D048251B4D7CE3 /* Debug */,
+				BADFB5D4059BB29DC64F85BA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		94A596F02F246BD9A2BC7303 /* Build configuration list for PBXNativeTarget "MusicExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA3F93D8BAE72BC5A71CDC0A /* Debug */,
+				797FEF8E262838D4159DF8F0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		97A6B0B16C917BAAEE069552 /* Build configuration list for PBXNativeTarget "MusicExtensionTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B810C48B97F9F41FE2E599AC /* Release */,
+				BE05B5C661DB49F507C1FD53 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B1EB7D9C9C3DBAA08607F107 /* XCRemoteSwiftPackageReference "TunaKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tunaformac/TunaKit";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 1.21.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F64F3527274C38680D080CD9 /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B1EB7D9C9C3DBAA08607F107 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
+		FE5DCA866242DFEB2DF3CB40 /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B1EB7D9C9C3DBAA08607F107 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 1FE7943E45146EB1491C3BFD /* Project object */;
+}

@@ -65,6 +65,7 @@ determine presentation or search behavior.
 | Remote deferred browse/write | `ArenaExtension` | Network content is browsed lazily without type-to-search, with connection-scoped writes and partial failures. |
 | Remote browse and scoped search | `GitHubExtension`, `NotionExtension` | Provider search runs as users type inside explicit roots, with connections and deferred state. |
 | Remote paged search/grid | `MyMindExtension` | Large visual libraries need paging, thumbnails, resolution, and Quick Look. |
+| Scripted app library plus remote search | `MusicExtension` | An app's data is only reachable through Apple Events, a helper playlist or similar stands in for missing scripting objects, and a framework adds remote search and enrichment. |
 | Framework-backed live data | `RemindersExtension` | A system framework owns authorization, querying, writes, and change notifications. |
 
 Useful implementation landmarks:
@@ -74,7 +75,7 @@ Useful implementation landmarks:
 - Eager, deferred, and scoped roots: `ArenaExtension/ArenaCatalog.swift`,
   `CleanShotExtension/CleanShotCommandsCatalog.swift`, `NotionExtension/NotionCatalog.swift`
 - Item-level hierarchy and native files: `ObsidianExtension/ObsidianItems.swift`
-- Provider boundaries: `BrewExtension/BrewCLI.swift`, `Messages2FAExtension/MessagesDatabase.swift`,
+- Provider boundaries: `BrewExtension/BrewCLI.swift`, `MusicExtension/MusicAppleScript.swift`, `Messages2FAExtension/MessagesDatabase.swift`,
   `NotesExtension/NotesDatabase.swift`, `PoofExtension/PoofConfig.swift`,
   `RemindersExtension/RemindersAuthorization.swift`
 - Connections and credentials: `ArenaExtension/ArenaExtension.swift`,
@@ -86,7 +87,8 @@ Useful implementation landmarks:
 - Direct commands and execution-time subjects: `CleanShotExtension/CleanShotCommandsCatalog.swift`,
   `SafariExtension/SafariMetaCatalog.swift`
 - Focused tests: `CleanShotExtension/CleanShotExtensionTests.swift`,
-  `Messages2FAExtension/Messages2FAExtensionTests.swift`, `MyMindExtension/MyMindExtensionTests.swift`,
+  `Messages2FAExtension/Messages2FAExtensionTests.swift`, `MusicExtension/MusicExtensionTests.swift`,
+  `MyMindExtension/MyMindExtensionTests.swift`,
   `ObsidianExtension/ObsidianExtensionTests.swift`, `PoofExtension/PoofExtensionTests.swift`,
   `RemindersExtension/RemindersExtensionTests.swift`
 
