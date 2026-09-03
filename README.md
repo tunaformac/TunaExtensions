@@ -39,6 +39,7 @@ below rather than a generic template, and include the new project in `TunaExtens
 | CleanShotExtension | Browse recent CleanShot images and run capture commands |
 | FancyTextExtension | Turn text into searchable Unicode styles |
 | GitHubExtension | Repos, issues, and pull requests |
+| GiphyExtension | Search, preview, and paste GIFs from GIPHY |
 | Messages2FAExtension | Find recent authentication codes from Apple Messages |
 | MusicExtension | Control Music, browse your library, and search Apple Music |
 | MyMindExtension | Search, browse, resolve, and save mymind objects |

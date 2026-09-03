@@ -1,7 +1,7 @@
 ARCH := $(shell uname -m)
 # One scheme per extension project. GitHubExtension's target kept its
 # load-bearing TunaGitHub name; resolve-extension-scheme maps either spelling.
-EXTENSION_SCHEMES := ArenaExtension BrewExtension CleanShotExtension FancyTextExtension TunaGitHub Messages2FAExtension MusicExtension MyMindExtension NotesExtension NotionExtension ObsidianExtension PoofExtension RemindersExtension SafariExtension ThingsExtension
+EXTENSION_SCHEMES := ArenaExtension BrewExtension CleanShotExtension FancyTextExtension TunaGitHub GiphyExtension Messages2FAExtension MusicExtension MyMindExtension NotesExtension NotionExtension ObsidianExtension PoofExtension RemindersExtension SafariExtension ThingsExtension
 DESTINATION := generic/platform=macOS
 DEV_DESTINATION := platform=macOS,arch=$(ARCH)
 DERIVED_DATA := ./build/dd
