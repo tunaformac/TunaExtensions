@@ -74,7 +74,7 @@ private final class GiphyResolveAction: CatalogAction, ActionPredicateProviding,
 
 actor GiphyResolver {
   static let live = GiphyResolver(
-    session: .shared,
+    session: GiphyURLSessions.direct,
     directory: FileManager.default.temporaryDirectory
       .appending(path: "Tuna", directoryHint: .isDirectory)
       .appending(path: "GIPHY", directoryHint: .isDirectory)

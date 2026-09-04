@@ -49,10 +49,28 @@ enum GiphyCatalogSupport {
   }
 
   static func errorItem(_ error: Error) -> CatalogMessageItem {
-    CatalogMessageItem(
-      title: "GIPHY request failed",
+    let title: String
+    let symbolName: String
+    if let error = error as? GiphyAPIError {
+      switch error {
+      case .invalidAPIKey:
+        title = "Check the GIPHY API key"
+        symbolName = "key.fill"
+      case .rateLimited:
+        title = "GIPHY request limit reached"
+        symbolName = "clock"
+      default:
+        title = "GIPHY request failed"
+        symbolName = "exclamationmark.triangle"
+      }
+    } else {
+      title = "GIPHY request failed"
+      symbolName = "exclamationmark.triangle"
+    }
+    return CatalogMessageItem(
+      title: title,
       message: error.localizedDescription,
-      symbolName: "exclamationmark.triangle",
+      symbolName: symbolName,
       tintColor: .systemOrange
     )
   }
@@ -130,9 +148,18 @@ final class GiphyCatalogRootItem: CatalogEntity, CatalogHierarchyNode,
 
 final class GiphyGIFItem: CatalogEntity, TextValueProviding, CopyRepresentationProviding,
   PasteboardDataProviding, CatalogAsyncPreviewProviding, CatalogGridPreviewProviding,
-  CatalogQuickLookProviding, @unchecked Sendable
+  CatalogQuickLookProviding, CatalogItemInteractionReporting, @unchecked Sendable
 {
+  private struct AnalyticsState {
+    var generation = 0
+    var isVisible = false
+    var didLoadPreview = false
+    var didReportAppearance = false
+  }
+
   let gif: GiphyGIF
+  var cachesAsyncPreview: Bool { false }
+  private let analyticsState = LockedValue(AnalyticsState())
 
   var textValue: String { gif.originalURL.absoluteString }
   var copyRepresentation: String? { gif.originalURL.absoluteString }
@@ -168,11 +195,52 @@ final class GiphyGIFItem: CatalogEntity, TextValueProviding, CopyRepresentationP
   }
 
   func asyncPreview(maxDimension: CGFloat) async -> CatalogItemPreview? {
-    await GiphyImageLoader.preview(from: gif.previewURL)
+    let generation = analyticsState.readValue(\.generation)
+    guard let preview = await GiphyImageLoader.preview(from: gif.previewURL) else { return nil }
+    reportAppearanceIfNeeded {
+      guard $0.generation == generation else { return }
+      $0.didLoadPreview = true
+    }
+    return preview
   }
 
   func quickLookURLs() async throws -> [URL] {
     [try await GiphyResolver.live.resolve(gif).url]
+  }
+
+  func catalogItemDidAppear() {
+    reportAppearanceIfNeeded { $0.isVisible = true }
+  }
+
+  func catalogItemDidActivate() {
+    Task { await GiphyAnalyticsReporter.live.report(.activated, for: gif) }
+  }
+
+  func catalogItemDidDisappear() {
+    analyticsState.withValue {
+      $0.generation += 1
+      $0.isVisible = false
+      $0.didLoadPreview = false
+      $0.didReportAppearance = false
+    }
+  }
+
+  func catalogItemDidShare() {
+    Task { await GiphyAnalyticsReporter.live.report(.shared, for: gif) }
+  }
+
+  private func reportAppearanceIfNeeded(_ update: (inout AnalyticsState) -> Void) {
+    let shouldReport = analyticsState.withValue { state in
+      update(&state)
+      guard state.isVisible, state.didLoadPreview, !state.didReportAppearance else {
+        return false
+      }
+      state.didReportAppearance = true
+      return true
+    }
+    if shouldReport {
+      Task { await GiphyAnalyticsReporter.live.report(.appeared, for: gif) }
+    }
   }
 
   private var htmlRepresentation: String {
@@ -194,7 +262,7 @@ private enum GiphyImageLoader {
     var request = URLRequest(url: url)
     request.setValue("image/gif,image/*;q=0.8", forHTTPHeaderField: "Accept")
     guard
-      let (data, response) = try? await URLSession.shared.data(for: request),
+      let (data, response) = try? await GiphyURLSessions.direct.data(for: request),
       let response = response as? HTTPURLResponse,
       (200..<300).contains(response.statusCode),
       response.mimeType?.hasPrefix("image/") != false

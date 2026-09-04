@@ -21,6 +21,8 @@ final class GiphyExtensionTests: XCTestCase {
     XCTAssertEqual(declaration.catalogs.first?.presentation, .liveSearch)
     XCTAssertEqual(declaration.actionCatalogs.map(\.id), ["giphy.actions"])
     XCTAssertTrue(declaration.appBrowseEnrichments.isEmpty)
+    XCTAssertEqual(declaration.settings.map(\.key), ["APIKey", "Rating"])
+    XCTAssertEqual(declaration.settings.first?.type, .secret)
 
     let catalog = GiphyCatalog(
       definition: CatalogDefinition(
@@ -53,11 +55,13 @@ final class GiphyExtensionTests: XCTestCase {
       )
       let values = Dictionary(
         uniqueKeysWithValues: components.queryItems?.map { ($0.name, $0.value) } ?? [])
-      XCTAssertEqual(request.url?.path, "/api/v1/giphy")
-      XCTAssertEqual(values["query"] ?? nil, "happy birthday 🎂")
+      XCTAssertEqual(request.url?.path, "/v1/gifs/search")
+      XCTAssertEqual(values["q"] ?? nil, "happy birthday 🎂")
       XCTAssertEqual(values["offset"] ?? nil, "25")
       XCTAssertEqual(values["limit"] ?? nil, "25")
-      XCTAssertNil(values["api_key"] ?? nil)
+      XCTAssertEqual(values["api_key"] ?? nil, "test-key")
+      XCTAssertEqual(values["customer_id"] ?? nil, "test-customer")
+      XCTAssertEqual(values["bundle"] ?? nil, "messaging_non_clips")
       return Self.response(request, status: 200, body: Self.responseJSON)
     }
 
@@ -72,12 +76,77 @@ final class GiphyExtensionTests: XCTestCase {
       let components = try XCTUnwrap(
         URLComponents(url: try XCTUnwrap(request.url), resolvingAgainstBaseURL: false)
       )
-      XCTAssertEqual(request.url?.path, "/api/v1/giphy")
-      XCTAssertNil(components.queryItems?.first { $0.name == "query" })
+      XCTAssertEqual(request.url?.path, "/v1/gifs/trending")
+      XCTAssertNil(components.queryItems?.first { $0.name == "q" })
       return Self.response(request, status: 200, body: Self.responseJSON)
     }
 
     _ = try await mockClient().page(query: nil, page: 1)
+  }
+
+  func testAnalyticsURLAddsAnonymousIdentityAndTimestamp() async throws {
+    let reporter = GiphyAnalyticsReporter(
+      session: mockSession(),
+      customerID: { "test-customer" }
+    )
+    let generatedURL = await reporter.trackingURL(
+        from: URL(
+          string:
+            "https://giphy-analytics.giphy.com/v2/pingback_simple?analytics_response_payload=e%3DZ2lm%2BaWQ%2F&action_type=SEEN"
+      )!,
+      now: Date(timeIntervalSince1970: 1_700_000_000)
+    )
+    let url = try XCTUnwrap(generatedURL)
+    let components = try XCTUnwrap(URLComponents(url: url, resolvingAgainstBaseURL: false))
+    let values = Dictionary(
+      uniqueKeysWithValues: components.queryItems?.map { ($0.name, $0.value) } ?? [])
+
+    XCTAssertEqual(values["analytics_response_payload"] ?? nil, "e=Z2lm+aWQ/")
+    XCTAssertEqual(values["action_type"] ?? nil, "SEEN")
+    XCTAssertEqual(values["customer_id"] ?? nil, "test-customer")
+    XCTAssertEqual(values["ts"] ?? nil, "1700000000000")
+    XCTAssertTrue(url.absoluteString.contains("analytics_response_payload=e%3DZ2lm%2BaWQ%2F"))
+  }
+
+  func testAnalyticsDecodingAndRequestUseProviderURL() async throws {
+    let gif = try JSONDecoder().decode(GiphyGIF.self, from: Data(Self.analyticsGIFJSON.utf8))
+    MockURLProtocol.requestHandler = { request in
+      XCTAssertEqual(request.url?.host, "giphy-analytics.giphy.com")
+      XCTAssertTrue(request.url?.absoluteString.contains("action_type=CLICK") == true)
+      XCTAssertTrue(request.url?.absoluteString.contains("customer_id=test-customer") == true)
+      return Self.response(request, status: 200, body: "{}")
+    }
+    let reporter = GiphyAnalyticsReporter(
+      session: mockSession(),
+      customerID: { "test-customer" }
+    )
+
+    await reporter.report(.activated, for: gif)
+  }
+
+  func testAnalyticsRejectsNonGiphyHost() async {
+    let reporter = GiphyAnalyticsReporter(customerID: { "test-customer" })
+    let url = await reporter.trackingURL(
+      from: URL(string: "https://example.com/ping?payload=secret")!)
+
+    XCTAssertNil(url)
+  }
+
+  func testInvalidAPIKeyResponseHasSpecificError() async throws {
+    MockURLProtocol.requestHandler = { request in
+      Self.response(
+        request,
+        status: 401,
+        body: #"{"meta":{"status":401,"msg":"Unauthorized"}}"#)
+    }
+
+    do {
+      _ = try await mockClient().page(query: nil, page: 1)
+      XCTFail("Expected invalid API key error")
+    } catch GiphyAPIError.invalidAPIKey {
+    } catch {
+      XCTFail("Expected invalid API key error, got \(error)")
+    }
   }
 
   func testGIFItemProvidesAnimatedHTMLAndURLFallback() throws {
@@ -129,7 +198,9 @@ final class GiphyExtensionTests: XCTestCase {
   private func mockClient() -> GiphyAPIClient {
     GiphyAPIClient(
       session: mockSession(),
-      baseURL: URL(string: "https://api.example.test/api/v1/giphy")!
+      baseURL: URL(string: "https://api.example.test/v1/gifs")!,
+      apiKey: { "test-key" },
+      customerID: { "test-customer" }
     )
   }
 
@@ -165,6 +236,7 @@ final class GiphyExtensionTests: XCTestCase {
   }
 
   private static let gifJSON = #"{"id":"abc123","title":"Happy Cat GIF","alt_text":"A happy & dancing cat","username":"cats","url":"https://giphy.com/gifs/abc123","images":{"fixed_width":{"url":"https://media.giphy.com/preview.gif"},"original":{"url":"https://media.giphy.com/original.gif"}}}"#
+  private static let analyticsGIFJSON = #"{"id":"abc123","title":"Happy Cat GIF","alt_text":"A happy cat","username":"cats","url":"https://giphy.com/gifs/abc123","images":{"fixed_width":{"url":"https://media.giphy.com/preview.gif"},"original":{"url":"https://media.giphy.com/original.gif"}},"analytics":{"onload":{"url":"https://giphy-analytics.giphy.com/v2/pingback_simple?action_type=SEEN"},"onclick":{"url":"https://giphy-analytics.giphy.com/v2/pingback_simple?action_type=CLICK"},"onsent":{"url":"https://giphy-analytics.giphy.com/v2/pingback_simple?action_type=SENT"}}}"#
   private static let responseJSON = #"{"data":[{"id":"abc123","title":"Happy Cat GIF","alt_text":"A happy & dancing cat","username":"cats","url":"https://giphy.com/gifs/abc123","images":{"fixed_width":{"url":"https://media.giphy.com/preview.gif"},"original":{"url":"https://media.giphy.com/original.gif"}}}],"pagination":{"total_count":1,"count":1,"offset":25},"meta":{"status":200,"msg":"OK"}}"#
 }
 

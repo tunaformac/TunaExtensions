@@ -6,4 +6,6 @@
   HTML pasteboard output.
 - Added a Resolve action that downloads the original GIF and restages it as a local file.
 - Added on-demand Quick Look and made Copy URL and Resolve the first two GIF actions.
-- Routed GIPHY API requests through Tuna's proxy so the provider key is not distributed.
+- Added a shared beta API key, an optional Keychain-backed personal-key override, and direct GIPHY
+  requests so search terms do not pass through Tuna's service.
+- Added GIPHY view, click, and successful-paste analytics.

@@ -51,6 +51,17 @@ public final class GiphyExtension: Extension {
 }
 
 enum GiphySettings {
+  static let sharedBetaAPIKey = "spHSUYH2w0W13jAdZ4QaV3lPNpTdSfBP"
+
+  static let apiKey = CatalogSettingDefinition(
+    key: "APIKey",
+    type: .secret,
+    label: "Personal GIPHY API key (optional)",
+    defaultValue: "",
+    description:
+      "Overrides Tuna's shared beta key and its shared 100 requests/hour limit. Create a key at https://developers.giphy.com/dashboard/. It stays in your Mac Keychain."
+  )
+
   static let rating = CatalogSettingDefinition(
     key: "Rating",
     type: .string,
@@ -65,14 +76,24 @@ enum GiphySettings {
     ]
   )
 
-  static let definitions = [rating]
+  static let definitions = [apiKey, rating]
+
+  static var currentAPIKey: String {
+    let value = currentStore.secretValue(for: apiKey)?
+      .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+    return value.isEmpty ? sharedBetaAPIKey : value
+  }
 
   static var currentRating: String {
+    let value = currentStore.stringValue(for: rating)
+    return ["g", "pg", "pg-13", "r"].contains(value) ? value : "g"
+  }
+
+  private static var currentStore: CatalogSettingStore {
     let bundle = Bundle(for: GiphyExtension.self)
     let identifier = bundle.bundleIdentifier
       ?? (bundle.object(forInfoDictionaryKey: "CFBundleName") as? String ?? "TunaGiphy")
-    let value = CatalogSettingStore(catalogIdentifier: identifier).stringValue(for: rating)
-    return ["g", "pg", "pg-13", "r"].contains(value) ? value : "g"
+    return CatalogSettingStore(catalogIdentifier: identifier)
   }
 }
 
