@@ -15,10 +15,10 @@ public final class ArenaActionsCatalog: ActionCatalog {
   }
 
   private static func makeActions() -> [CatalogAction] {
-    let capture = PredicateAwareAction(
+    let captureAction = PredicateAwareAction(
       id: "capture", title: "Save to Are.na"
     ) { subject, target in
-      guard let capture = capture(from: subject) else {
+      guard let capturedContent = capture(from: subject) else {
         return .failure("Select a URL, text, or image to save")
       }
       guard let channel = target as? ArenaChannelItem else {
@@ -34,7 +34,7 @@ public final class ArenaActionsCatalog: ActionCatalog {
         CommandBackgroundTask(title: "Saving to Are.na") {
           do {
             let client = ArenaAPIClient(connection: connection)
-            let block = switch capture {
+            let block = switch capturedContent {
             case .value(let value):
               try await client.createBlock(value: value, channelID: channelID)
             case .upload(let upload):
@@ -47,16 +47,16 @@ public final class ArenaActionsCatalog: ActionCatalog {
           }
         })
     }
-    capture.targetRequirement = .required
-    capture.systemSymbolName = "square.and.arrow.down"
-    capture.supportedSubjectTypes = [.url, .textSnippet, .file, .image]
-    capture.allowedTargetTypes = [.arenaChannel]
-    capture.targetSearchScope = .catalogs(
+    captureAction.targetRequirement = .required
+    captureAction.systemSymbolName = "square.and.arrow.down"
+    captureAction.supportedSubjectTypes = [.url, .textSnippet, .file, .image]
+    captureAction.allowedTargetTypes = [.arenaChannel]
+    captureAction.targetSearchScope = .catalogs(
       [ArenaExtension.catalogIdentifier],
       preparation: .refresh
     )
-    capture.subjectPredicate = { canCapture($0) }
-    capture.targetPredicate = { $0 is ArenaChannelItem }
+    captureAction.subjectPredicate = { canCapture($0) }
+    captureAction.targetPredicate = { $0 is ArenaChannelItem }
 
     let openChannel = PredicateAwareAction(
       id: "open-channel", title: "Open on Are.na"
@@ -84,7 +84,7 @@ public final class ArenaActionsCatalog: ActionCatalog {
     openBlock.supportedSubjectTypes = [.arenaBlock]
     openBlock.subjectPredicate = { $0 is ArenaBlockItem }
 
-    return [capture, openChannel, openBlock, ArenaResolveAction()]
+    return [captureAction, openChannel, openBlock, ArenaResolveAction()]
   }
 
   private enum Capture: Sendable {
