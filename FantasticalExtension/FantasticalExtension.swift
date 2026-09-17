@@ -29,6 +29,14 @@ public final class FantasticalExtension: Extension {
           description: "Open parse and search results in Fantastical's menu bar Mini Window instead of the main window."
         ),
         CatalogSettingDefinition(
+          key: FantasticalSettings.fieldSeparatorKey,
+          type: .string,
+          label: "Field separator",
+          defaultValue: FantasticalFields.defaultSeparator,
+          description:
+            "Separates the sentence from fields: title, start, end, due, allday, cal, url, notes. Example: Dentist tomorrow 15h -- notes: bring card -- cal: Perso"
+        ),
+        CatalogSettingDefinition(
           key: FantasticalSettings.calendarSetsKey,
           type: .string,
           label: "Calendar sets",

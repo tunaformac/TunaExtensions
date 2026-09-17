@@ -9,7 +9,30 @@ enum FantasticalURLBuilder {
     sentence: String, task: Bool, addImmediately: Bool, miniWindow: Bool
   ) -> URL? {
     guard let sentence = normalize(sentence) else { return nil }
-    var queryItems = [percentEncodedQueryItem(name: "sentence", value: sentence)]
+    var fields = FantasticalFields()
+    fields.sentence = sentence
+    return parseURL(
+      fields: fields, task: task, addImmediately: addImmediately, miniWindow: miniWindow)
+  }
+
+  static func parseURL(
+    fields: FantasticalFields, task: Bool, addImmediately: Bool, miniWindow: Bool
+  ) -> URL? {
+    guard fields.hasContent else { return nil }
+    var queryItems: [URLQueryItem] = []
+    let values: [(String, String?)] = [
+      ("sentence", fields.sentence), ("title", fields.title), ("start", fields.start),
+      ("end", fields.end), ("due", fields.due), ("calendarName", fields.calendarName),
+      ("url", fields.url), ("notes", fields.notes),
+    ]
+    for (name, value) in values {
+      if let value {
+        queryItems.append(percentEncodedQueryItem(name: name, value: value))
+      }
+    }
+    if fields.allDay {
+      queryItems.append(URLQueryItem(name: "allDay", value: "1"))
+    }
     if task {
       queryItems.append(URLQueryItem(name: "task", value: "1"))
     }
@@ -123,6 +146,7 @@ enum FantasticalSettings {
   static let addImmediatelyKey = "AddImmediately"
   static let useMiniWindowKey = "UseMiniWindow"
   static let calendarSetsKey = "CalendarSets"
+  static let fieldSeparatorKey = "FieldSeparator"
 
   static var addImmediately: Bool {
     boolValue(for: addImmediatelyKey, defaultValue: false)
@@ -130,6 +154,12 @@ enum FantasticalSettings {
 
   static var useMiniWindow: Bool {
     boolValue(for: useMiniWindowKey, defaultValue: true)
+  }
+
+  static var fieldSeparator: String {
+    FantasticalURLBuilder.normalize(
+      store.stringValue(for: fieldSeparatorKey, defaultValue: FantasticalFields.defaultSeparator))
+      ?? FantasticalFields.defaultSeparator
   }
 
   static var calendarSetNames: [String] {

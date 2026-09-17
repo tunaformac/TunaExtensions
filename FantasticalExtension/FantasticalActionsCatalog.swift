@@ -40,37 +40,23 @@ extension FantasticalActionsCatalog {
     items.append(show)
 
     items.append(
-      makeTextAction(
+      makeAddAction(
         id: "add-to-fantastical", title: "Add to Fantastical", symbolName: "plus.circle",
-        failure: "Nothing to add", activates: { !FantasticalSettings.addImmediately }
-      ) { text in
-        FantasticalURLBuilder.parseURL(
-          sentence: text, task: false,
-          addImmediately: FantasticalSettings.addImmediately,
-          miniWindow: FantasticalSettings.useMiniWindow)
-      })
-
+        task: false))
     items.append(
-      makeTextAction(
+      makeAddAction(
         id: "add-task-to-fantastical", title: "Add Task to Fantastical",
-        symbolName: "checkmark.circle", failure: "Nothing to add",
-        activates: { !FantasticalSettings.addImmediately }
-      ) { text in
-        FantasticalURLBuilder.parseURL(
-          sentence: text, task: true,
-          addImmediately: FantasticalSettings.addImmediately,
-          miniWindow: FantasticalSettings.useMiniWindow)
-      })
+        symbolName: "checkmark.circle", task: true))
 
     items.append(
-      makeTextAction(
+      makeQueryAction(
         id: "search-fantastical", title: "Search Fantastical", symbolName: "magnifyingglass",
         failure: "Missing search query"
       ) { text in
         FantasticalURLBuilder.searchURL(query: text, miniWindow: FantasticalSettings.useMiniWindow)
       })
 
-    let showDate = makeTextAction(
+    let showDate = makeQueryAction(
       id: "show-date-in-fantastical", title: "Show Date in Fantastical", symbolName: "calendar",
       failure: "Text is not a date"
     ) { text in
@@ -87,82 +73,106 @@ extension FantasticalActionsCatalog {
 
   static func appActions() -> [CatalogAction] {
     [
-      makeAppTextAction(
-        id: "new-event", title: "New Event", symbolName: "plus.circle",
-        failure: "Missing event text", activates: { !FantasticalSettings.addImmediately }
-      ) { text in
-        FantasticalURLBuilder.parseURL(
-          sentence: text, task: false,
-          addImmediately: FantasticalSettings.addImmediately,
-          miniWindow: FantasticalSettings.useMiniWindow)
+      makeAppAction(id: "new-event", title: "New Event", symbolName: "plus.circle") { target in
+        FantasticalActions.add(subject: target, task: false)
       },
-      makeAppTextAction(
-        id: "new-task", title: "New Task", symbolName: "checkmark.circle",
-        failure: "Missing task text", activates: { !FantasticalSettings.addImmediately }
-      ) { text in
-        FantasticalURLBuilder.parseURL(
-          sentence: text, task: true,
-          addImmediately: FantasticalSettings.addImmediately,
-          miniWindow: FantasticalSettings.useMiniWindow)
+      makeAppAction(id: "new-task", title: "New Task", symbolName: "checkmark.circle") { target in
+        FantasticalActions.add(subject: target, task: true)
       },
-      makeAppTextAction(
-        id: "search", title: "Search", symbolName: "magnifyingglass",
-        failure: "Missing search query"
-      ) { text in
-        FantasticalURLBuilder.searchURL(query: text, miniWindow: FantasticalSettings.useMiniWindow)
+      makeAppAction(id: "search", title: "Search", symbolName: "magnifyingglass") { target in
+        guard let text = FantasticalURLBuilder.textValue(for: target) else {
+          return .failure("Missing search query")
+        }
+        return FantasticalActions.open(
+          url: FantasticalURLBuilder.searchURL(
+            query: text, miniWindow: FantasticalSettings.useMiniWindow),
+          failure: "Missing search query")
       },
     ]
   }
 
-  private static func makeTextAction(
-    id: String,
-    title: String,
-    symbolName: String,
-    failure: String,
-    activates: @escaping () -> Bool = { true },
+  /// Typed text with inline fields, or a link item, becomes a Fantastical event or task.
+  private static func makeAddAction(
+    id: String, title: String, symbolName: String, task: Bool
+  ) -> PredicateAwareAction {
+    let action = PredicateAwareAction(id: id, title: title) { subject, _ in
+      FantasticalActions.add(subject: subject, task: task)
+    }
+    action.systemSymbolName = symbolName
+    action.supportedSubjectTypes = [.textSnippet, .url]
+    action.subjectPredicate = { FantasticalURLBuilder.textValue(for: $0) != nil }
+    return action
+  }
+
+  private static func makeQueryAction(
+    id: String, title: String, symbolName: String, failure: String,
     url: @escaping (String) -> URL?
   ) -> PredicateAwareAction {
     let action = PredicateAwareAction(id: id, title: title) { subject, _ in
       guard let text = FantasticalURLBuilder.textValue(for: subject) else {
         return .failure(failure)
       }
-      return FantasticalActions.open(url: url(text), failure: failure, activates: activates())
+      return FantasticalActions.open(url: url(text), failure: failure)
     }
     action.systemSymbolName = symbolName
     action.supportedSubjectTypes = [.textSnippet]
-    action.subjectPredicate = { subject in
-      FantasticalURLBuilder.textValue(for: subject) != nil
-    }
+    action.subjectPredicate = { FantasticalURLBuilder.textValue(for: $0) != nil }
     return action
   }
 
-  private static func makeAppTextAction(
-    id: String,
-    title: String,
-    symbolName: String,
-    failure: String,
-    activates: @escaping () -> Bool = { true },
-    url: @escaping (String) -> URL?
+  /// Subject is Fantastical.app, the typed text arrives as the target.
+  private static func makeAppAction(
+    id: String, title: String, symbolName: String,
+    perform: @escaping (CatalogItem?) -> ActionResult
   ) -> CatalogAction {
-    let action = PredicateAwareAction(id: id, title: title) { _, target in
-      guard let text = FantasticalURLBuilder.textValue(for: target) else {
-        return .failure(failure)
-      }
-      return FantasticalActions.open(url: url(text), failure: failure, activates: activates())
-    }
+    let action = PredicateAwareAction(id: id, title: title) { _, target in perform(target) }
     action.targetRequirement = .required
     action.systemSymbolName = symbolName
     action.supportedSubjectTypes = [.application]
     action.allowedTargetTypes = [.textSnippet]
     action.subjectPredicate = FantasticalActions.isFantasticalApplication
-    action.targetPredicate = { target in
-      FantasticalURLBuilder.textValue(for: target) != nil
-    }
+    action.targetPredicate = { FantasticalURLBuilder.textValue(for: $0) != nil }
     return action
   }
 }
 
 enum FantasticalActions {
+  static func add(subject: CatalogItem?, task: Bool) -> ActionResult {
+    let fields: FantasticalFields
+    do {
+      fields = try self.fields(for: subject)
+    } catch let error as FantasticalFields.ParseError {
+      return .failure(error.message)
+    } catch {
+      return .failure("Nothing to add")
+    }
+    let addImmediately = FantasticalSettings.addImmediately
+    return open(
+      url: FantasticalURLBuilder.parseURL(
+        fields: fields, task: task, addImmediately: addImmediately,
+        miniWindow: FantasticalSettings.useMiniWindow),
+      failure: "Nothing to add",
+      activates: !addImmediately)
+  }
+
+  static func fields(for item: CatalogItem?) throws -> FantasticalFields {
+    guard let item, let text = FantasticalURLBuilder.textValue(for: item) else {
+      throw FantasticalFields.ParseError.empty
+    }
+    if isLink(item) {
+      var fields = FantasticalFields()
+      fields.url = text
+      let title = item.title.trimmingCharacters(in: .whitespacesAndNewlines)
+      fields.sentence = title.isEmpty ? text : title
+      return fields
+    }
+    return try FantasticalFields.parse(text, separator: FantasticalSettings.fieldSeparator).get()
+  }
+
+  static func isLink(_ item: CatalogItem) -> Bool {
+    item is URLItem || TypeRegistry.shared.inherits(item.typeID, from: .url)
+  }
+
   static func open(url: URL?, failure: String, activates: Bool = true) -> ActionResult {
     guard let url else {
       return .failure(failure)

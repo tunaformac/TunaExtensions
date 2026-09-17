@@ -13,6 +13,30 @@ language parser, and jumps to Fantastical views without touching the mouse.
 - **Show Date in Fantastical**: available when the text is one date, either `2026-10-03` or natural
   language such as `tomorrow` or `next friday`. Reveals that day.
 
+## Fields
+
+Add details the parser cannot guess by appending fields after the separator (default `--`, change
+it in settings):
+
+```
+Dentist tomorrow 15h -- notes: bring the card -- cal: Perso -- url: https://doctolib.fr/x -- allday
+```
+
+- `title:` exact title. With no sentence before the separator nothing is parsed, so pair it with
+  `start:` / `end:`.
+- `start:` / `end:` (also `from:` / `to:`) and `due:` for tasks. Fantastical accepts
+  `2026-10-03 14:00`, `2026-10-03`, or natural language such as `next friday 9h`.
+- `allday` flag (or `allday: no`).
+- `cal:` or `calendar:` calendar name as shown in Fantastical.
+- `url:` or `link:`, and `notes:` or `note:`.
+
+Keys are case-insensitive. A misspelled key fails the action with "Unknown field" instead of
+silently landing in the title. The separator only counts when it stands alone between spaces, so
+`https://x.com/a--b` is safe.
+
+**Links**: Add to Fantastical and Add Task also take a link item (Safari tab, bookmark, a URL from
+the clipboard). Its title becomes the sentence and its address is attached as the event URL.
+
 ## Views
 
 The **Fantastical Views** source lists Today, Tomorrow, Calendar (main window), Mini Window, and one
@@ -28,6 +52,8 @@ Task**, and **Search** actions with typed text as the target.
   instead of showing Fantastical's parse preview.
 - **Use the Mini Window** (default on): parse and search open in the menu bar Mini Window
   (`x-fantastical-mini`). Turn off to use the main window.
+- **Field separator** (default `--`): the token that starts the fields block. Pick anything, `>>` or
+  `;;` work too.
 - **Calendar sets**: comma-separated names exactly as they appear in Fantastical. Fantastical does
   not expose sets programmatically, so they are typed once here. Rescan the source after editing.
 

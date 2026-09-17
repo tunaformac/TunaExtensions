@@ -12,6 +12,7 @@
 		FE000000000000000000B103 /* FantasticalCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A103 /* FantasticalCatalog.swift */; };
 		FE000000000000000000B104 /* FantasticalURLBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A104 /* FantasticalURLBuilder.swift */; };
 		FE000000000000000000B105 /* FantasticalActionsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A105 /* FantasticalActionsCatalog.swift */; };
+		FE000000000000000000B10B /* FantasticalFields.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A10B /* FantasticalFields.swift */; };
 		FE000000000000000000B106 /* FantasticalExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A106 /* FantasticalExtensionTests.swift */; };
 		FE000000000000000000B108 /* TunaFantastical.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A108 /* TunaFantastical.framework */; };
 		FE000000000000000000B10A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A10A /* Cocoa.framework */; };
@@ -33,6 +34,7 @@
 		FE000000000000000000A103 /* FantasticalCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalCatalog.swift; sourceTree = "<group>"; };
 		FE000000000000000000A104 /* FantasticalURLBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalURLBuilder.swift; sourceTree = "<group>"; };
 		FE000000000000000000A105 /* FantasticalActionsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalActionsCatalog.swift; sourceTree = "<group>"; };
+		FE000000000000000000A10B /* FantasticalFields.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalFields.swift; sourceTree = "<group>"; };
 		FE000000000000000000A106 /* FantasticalExtensionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FantasticalExtensionTests.swift; sourceTree = "<group>"; };
 		FE000000000000000000A107 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FE000000000000000000A108 /* TunaFantastical.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TunaFantastical.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -77,6 +79,7 @@
 				FE000000000000000000A103 /* FantasticalCatalog.swift */,
 				FE000000000000000000A104 /* FantasticalURLBuilder.swift */,
 				FE000000000000000000A105 /* FantasticalActionsCatalog.swift */,
+				FE000000000000000000A10B /* FantasticalFields.swift */,
 				FE000000000000000000A107 /* Info.plist */,
 				FE000000000000000000A106 /* FantasticalExtensionTests.swift */,
 			);
@@ -214,6 +217,7 @@
 				FE000000000000000000B103 /* FantasticalCatalog.swift in Sources */,
 				FE000000000000000000B104 /* FantasticalURLBuilder.swift in Sources */,
 				FE000000000000000000B105 /* FantasticalActionsCatalog.swift in Sources */,
+				FE000000000000000000B10B /* FantasticalFields.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
