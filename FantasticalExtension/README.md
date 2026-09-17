@@ -1,7 +1,27 @@
 # Fantastical
 
-Fantastical turns text typed in Tuna into calendar events and tasks through Fantastical's natural
-language parser, and jumps to Fantastical views without touching the mouse.
+Fantastical brings your agenda into Tuna and turns typed text into events and tasks through
+Fantastical's natural language parser.
+
+## Agenda
+
+Browse **Fantastical** (or select Fantastical.app and press →) for **Today**, **Tomorrow**,
+**Next 7 Days**, and **By Calendar** groups with counts. Type inside it to search every event and
+task by name. Each item shows its day, time, calendar, and location.
+
+Actions on an item:
+
+- **Show in Fantastical** (default): reveals the item's day.
+- **Reschedule...**, **Rename...**, **Change Location...**: type the new value as the target.
+  Reschedule takes natural language such as `tomorrow 15h` or `next monday 9h to 10h`.
+- **Delete from Fantastical**: asks for confirmation first.
+- **Add to Fantastical Calendar**: on typed text, pick one of your writable calendars as the
+  target. Fantastical parses the text and creates the item there.
+
+The agenda comes from Fantastical's built-in MCP helper (Fantastical 4.1.17 or later). The first
+time Tuna uses it, Fantastical asks whether to allow Tuna; refuse and the agenda shows a message
+instead. Fantastical does not expose notes, links, or a done flag through the helper, so those are
+not shown and tasks cannot be completed from Tuna.
 
 ## Actions on typed text
 
@@ -60,15 +80,17 @@ Task**, and **Search** actions with typed text as the target.
 
 ## Privacy and permissions
 
-Everything runs through Fantastical's documented URL scheme on this Mac. No network access, no
-credentials, no calendar reads, and nothing is cached or indexed. Writes only ever create items;
-nothing is edited or deleted.
+Everything stays on this Mac: the URL scheme for creating items and views, and Fantastical's own
+MCP helper (`Fantastical.app/Contents/Helpers/FantasticalMCP.app`) over standard input and output
+for the agenda. No network access from the extension, no credentials, no EventKit. Agenda results
+live in memory only while the browse or search is open. Writes: create, reschedule, rename, change
+location, and delete (confirmed) through the helper, and create through the URL scheme.
 
 ## Limitations
 
-- The extension cannot list your events. Tuna's host app declares no calendar usage description, so
-  EventKit access is unavailable to extensions. Event browsing would need Tuna to add
-  `NSCalendarsFullAccessUsageDescription`.
+- Agenda reads go through Fantastical's helper because Tuna's host app declares no calendar usage
+  description, so EventKit is unavailable to extensions. The helper needs a date range in plain
+  words; Tuna asks for the next 7 days. Items without a date only appear in search.
 - Verified against Fantastical 4.2 (`com.flexibits.fantastical2.mac`, direct download). The Mini
   Window scheme is registered by Fantastical's helper login item, which is enabled by default.
 

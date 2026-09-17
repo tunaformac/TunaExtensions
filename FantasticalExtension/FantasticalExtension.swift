@@ -11,7 +11,7 @@ public final class FantasticalExtension: Extension {
         description: "Add events and tasks to Fantastical, jump to its views.",
         iconName: "calendar"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.95", minTunaKit: "1.21.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.96", minTunaKit: "1.22.0"),
       settings: [
         CatalogSettingDefinition(
           key: FantasticalSettings.addImmediatelyKey,
@@ -47,8 +47,18 @@ public final class FantasticalExtension: Extension {
       ],
       catalogs: [
         CatalogDeclaration(
+          id: FantasticalIdentifiers.agendaCatalog, type: FantasticalAgendaCatalog.self,
+          name: "Fantastical", presentation: .liveSearch,
+          description: "Search events and tasks as you type, or browse the next days.",
+          enabledByDefault: true),
+        CatalogDeclaration(
           id: FantasticalIdentifiers.catalog, type: FantasticalCatalog.self, name: "Fantastical Views",
           presentation: .source, enabledByDefault: true),
+        CatalogDeclaration(
+          id: FantasticalIdentifiers.calendarsCatalog, type: FantasticalCalendarsCatalog.self,
+          name: "Fantastical Calendars", presentation: .source,
+          description: "Writable calendars, the targets of Add to Fantastical Calendar.",
+          enabledByDefault: true),
       ],
       actionCatalogs: [
         ActionCatalogDeclaration(
@@ -58,7 +68,13 @@ public final class FantasticalExtension: Extension {
       typeRegistrations: [
         TypeRegistrationDefinition(
           typeID: TypeID.fantasticalDestination, displayName: "Fantastical Views",
-          inheritsFrom: [TypeID("com.tuna.type.entity")])
+          inheritsFrom: [TypeID("com.tuna.type.entity")]),
+        TypeRegistrationDefinition(
+          typeID: TypeID.fantasticalItem, displayName: "Fantastical Items",
+          inheritsFrom: [TypeID("com.tuna.type.entity")]),
+        TypeRegistrationDefinition(
+          typeID: TypeID.fantasticalCalendar, displayName: "Fantastical Calendars",
+          inheritsFrom: [TypeID("com.tuna.type.entity")]),
       ],
       defaultActionRankings: [
         DefaultActionRankingDefinition(
@@ -68,12 +84,25 @@ public final class FantasticalExtension: Extension {
               catalogIdentifier: FantasticalIdentifiers.actionCatalog,
               actionID: FantasticalIdentifiers.showAction)
           ]
-        )
+        ),
+        DefaultActionRankingDefinition(
+          typeID: TypeID.fantasticalItem,
+          actions: [
+            ActionReference(
+              catalogIdentifier: FantasticalIdentifiers.actionCatalog,
+              actionID: FantasticalIdentifiers.showItemAction),
+            ActionReference(
+              catalogIdentifier: FantasticalIdentifiers.actionCatalog, actionID: "reschedule"),
+          ]
+        ),
       ],
       appBrowseEnrichments: [
         AppBrowseEnrichmentDefinition(
           bundleIdentifiers: [FantasticalIdentifiers.bundleIdentifier],
-          entries: [AppBrowseEnrichmentEntryDefinition(catalogIdentifier: FantasticalIdentifiers.catalog)]
+          entries: [
+            AppBrowseEnrichmentEntryDefinition(catalogIdentifier: FantasticalIdentifiers.agendaCatalog),
+            AppBrowseEnrichmentEntryDefinition(catalogIdentifier: FantasticalIdentifiers.catalog),
+          ]
         )
       ],
       appActionEnrichments: [
@@ -89,6 +118,9 @@ public final class FantasticalExtension: Extension {
 enum FantasticalIdentifiers {
   static let bundleIdentifier = "com.flexibits.fantastical2.mac"
   static let catalog = "fantastical"
+  static let agendaCatalog = "fantastical.agenda"
+  static let calendarsCatalog = "fantastical.calendars"
   static let actionCatalog = "fantastical.actions"
   static let showAction = "show-in-fantastical"
+  static let showItemAction = "show-item-in-fantastical"
 }

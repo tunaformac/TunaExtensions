@@ -13,6 +13,11 @@
 		FE000000000000000000B104 /* FantasticalURLBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A104 /* FantasticalURLBuilder.swift */; };
 		FE000000000000000000B105 /* FantasticalActionsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A105 /* FantasticalActionsCatalog.swift */; };
 		FE000000000000000000B10B /* FantasticalFields.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A10B /* FantasticalFields.swift */; };
+		FE000000000000000000B10C /* FantasticalMCPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A10C /* FantasticalMCPClient.swift */; };
+		FE000000000000000000B10D /* FantasticalAgendaModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A10D /* FantasticalAgendaModels.swift */; };
+		FE000000000000000000B10E /* FantasticalAgendaItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A10E /* FantasticalAgendaItems.swift */; };
+		FE000000000000000000B10F /* FantasticalAgendaCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A10F /* FantasticalAgendaCatalog.swift */; };
+		FE000000000000000000B110 /* FantasticalAgendaActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A110 /* FantasticalAgendaActions.swift */; };
 		FE000000000000000000B106 /* FantasticalExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A106 /* FantasticalExtensionTests.swift */; };
 		FE000000000000000000B108 /* TunaFantastical.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A108 /* TunaFantastical.framework */; };
 		FE000000000000000000B10A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A10A /* Cocoa.framework */; };
@@ -35,6 +40,11 @@
 		FE000000000000000000A104 /* FantasticalURLBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalURLBuilder.swift; sourceTree = "<group>"; };
 		FE000000000000000000A105 /* FantasticalActionsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalActionsCatalog.swift; sourceTree = "<group>"; };
 		FE000000000000000000A10B /* FantasticalFields.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalFields.swift; sourceTree = "<group>"; };
+		FE000000000000000000A10C /* FantasticalMCPClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalMCPClient.swift; sourceTree = "<group>"; };
+		FE000000000000000000A10D /* FantasticalAgendaModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalAgendaModels.swift; sourceTree = "<group>"; };
+		FE000000000000000000A10E /* FantasticalAgendaItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalAgendaItems.swift; sourceTree = "<group>"; };
+		FE000000000000000000A10F /* FantasticalAgendaCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalAgendaCatalog.swift; sourceTree = "<group>"; };
+		FE000000000000000000A110 /* FantasticalAgendaActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalAgendaActions.swift; sourceTree = "<group>"; };
 		FE000000000000000000A106 /* FantasticalExtensionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FantasticalExtensionTests.swift; sourceTree = "<group>"; };
 		FE000000000000000000A107 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FE000000000000000000A108 /* TunaFantastical.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TunaFantastical.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -80,6 +90,11 @@
 				FE000000000000000000A104 /* FantasticalURLBuilder.swift */,
 				FE000000000000000000A105 /* FantasticalActionsCatalog.swift */,
 				FE000000000000000000A10B /* FantasticalFields.swift */,
+				FE000000000000000000A10C /* FantasticalMCPClient.swift */,
+				FE000000000000000000A10D /* FantasticalAgendaModels.swift */,
+				FE000000000000000000A10E /* FantasticalAgendaItems.swift */,
+				FE000000000000000000A10F /* FantasticalAgendaCatalog.swift */,
+				FE000000000000000000A110 /* FantasticalAgendaActions.swift */,
 				FE000000000000000000A107 /* Info.plist */,
 				FE000000000000000000A106 /* FantasticalExtensionTests.swift */,
 			);
@@ -218,6 +233,11 @@
 				FE000000000000000000B104 /* FantasticalURLBuilder.swift in Sources */,
 				FE000000000000000000B105 /* FantasticalActionsCatalog.swift in Sources */,
 				FE000000000000000000B10B /* FantasticalFields.swift in Sources */,
+				FE000000000000000000B10C /* FantasticalMCPClient.swift in Sources */,
+				FE000000000000000000B10D /* FantasticalAgendaModels.swift in Sources */,
+				FE000000000000000000B10E /* FantasticalAgendaItems.swift in Sources */,
+				FE000000000000000000B10F /* FantasticalAgendaCatalog.swift in Sources */,
+				FE000000000000000000B110 /* FantasticalAgendaActions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

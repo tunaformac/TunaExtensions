@@ -6,7 +6,8 @@ public final class FantasticalActionsCatalog: NSObject, ActionCatalog {
   public let identifier: String
   public let name: String
 
-  public private(set) lazy var actions: [CatalogAction] = Self.actions() + Self.appActions()
+  public private(set) lazy var actions: [CatalogAction] =
+    Self.actions() + Self.appActions() + Self.agendaActions()
 
   public required init(definition: ActionCatalogDefinition) {
     self.identifier = definition.identifier

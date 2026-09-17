@@ -193,6 +193,103 @@ final class FantasticalExtensionTests: XCTestCase {
     XCTAssertNotNil(fields.sentence)
   }
 
+  func testAgendaParserReadsCalendarsAndItems() throws {
+    let calendars = try FantasticalAgendaParser.calendars(
+      from: #"[{"title":"Perso","isWritable":true,"supportsEvents":true,"sourceName":"Google","supportsTasks":false,"id":"cal1"}]"#)
+    XCTAssertEqual(calendars.count, 1)
+    XCTAssertEqual(calendars.first?.title, "Perso")
+    XCTAssertTrue(calendars.first?.supportsEvents == true)
+
+    let items = try FantasticalAgendaParser.items(
+      from: #"{"timezone":"Europe/Paris","items":[{"startDate":"2026-09-23T12:30:00+02:00","endDate":"2026-09-23T13:30:00+02:00","id":"cal1;abc","calendarId":"cal1","title":"Hypno","location":"Lyon"},{"id":"cal2;task","title":"buy cat food","calendarId":"cal2"}]}"#)
+    XCTAssertEqual(items.count, 2)
+    XCTAssertEqual(items[0].location, "Lyon")
+    XCTAssertNotNil(items[0].start)
+    XCTAssertNil(items[1].start)
+    XCTAssertEqual(items[1].calendarID, "cal2")
+
+    XCTAssertEqual(try FantasticalAgendaParser.items(from: "No results found."), [])
+    XCTAssertThrowsError(try FantasticalAgendaParser.items(from: "not json"))
+  }
+
+  func testWhenRangesUseTheSpellingFantasticalAccepts() throws {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "Europe/Paris")!
+    let start = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 9, day: 18, hour: 9)))
+    let end = try XCTUnwrap(calendar.date(byAdding: .day, value: 7, to: start))
+    XCTAssertEqual(
+      FantasticalWhen.range(from: start, to: end, calendar: calendar),
+      "September 18, 2026 to September 25, 2026")
+  }
+
+  func testAgendaBucketsAndSorting() throws {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "Europe/Paris")!
+    let now = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 9, day: 18, hour: 9)))
+    func item(_ id: String, dayOffset: Int?, hour: Int = 12) -> FantasticalAgendaItem {
+      let start = dayOffset.flatMap { calendar.date(byAdding: .day, value: $0, to: now) }
+        .flatMap { calendar.date(bySettingHour: hour, minute: 0, second: 0, of: $0) }
+      return FantasticalAgendaItem(id: id, title: id, calendarID: "c", start: start, end: start, location: nil)
+    }
+    XCTAssertEqual(FantasticalAgendaBucket.bucket(for: item("a", dayOffset: 0), now: now, calendar: calendar), .today)
+    XCTAssertEqual(FantasticalAgendaBucket.bucket(for: item("b", dayOffset: 1), now: now, calendar: calendar), .tomorrow)
+    XCTAssertEqual(FantasticalAgendaBucket.bucket(for: item("c", dayOffset: 4), now: now, calendar: calendar), .week)
+    XCTAssertNil(FantasticalAgendaBucket.bucket(for: item("d", dayOffset: -2), now: now, calendar: calendar))
+    XCTAssertNil(FantasticalAgendaBucket.bucket(for: item("e", dayOffset: nil), now: now, calendar: calendar))
+
+    let sorted = FantasticalAgendaSupport.sorted([item("z", dayOffset: nil), item("c", dayOffset: 4), item("a", dayOffset: 0)])
+    XCTAssertEqual(sorted.map(\.id), ["a", "c", "z"])
+  }
+
+  func testAgendaDetailFormatting() throws {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "Europe/Paris")!
+    calendar.locale = Locale(identifier: "en_US")
+    let now = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 9, day: 18, hour: 9)))
+    let start = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 9, day: 23, hour: 12, minute: 30)))
+    let end = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 9, day: 23, hour: 13, minute: 30)))
+    let timed = FantasticalAgendaItem(id: "1", title: "Hypno", calendarID: "c", start: start, end: end, location: "Lyon")
+    let detail = FantasticalAgendaFormat.detail(timed, calendarTitle: "Perso", now: now, calendar: calendar)
+    XCTAssertTrue(detail.contains("Sep 23") || detail.contains("23 Sep"), detail)
+    XCTAssertTrue(detail.hasSuffix("Perso · Lyon"), detail)
+
+    let midnight = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 9, day: 18)))
+    let allDay = FantasticalAgendaItem(id: "2", title: "buy cat food", calendarID: "t", start: midnight, end: midnight, location: nil)
+    XCTAssertTrue(allDay.isAllDay)
+    XCTAssertEqual(FantasticalAgendaFormat.detail(allDay, calendarTitle: nil, now: now, calendar: calendar), "Today, all day")
+
+    let undated = FantasticalAgendaItem(id: "3", title: "x", calendarID: "t", start: nil, end: nil, location: nil)
+    XCTAssertEqual(FantasticalAgendaFormat.detail(undated, calendarTitle: "My Tasks", now: now, calendar: calendar), "No date · My Tasks")
+  }
+
+  func testMCPRequestsAreJSONRPC() throws {
+    let request = FantasticalMCPClient.makeRequest(id: 7, method: "tools/call", params: ["name": "queryCalendars"])
+    XCTAssertEqual(request["jsonrpc"] as? String, "2.0")
+    XCTAssertEqual(request["id"] as? Int, 7)
+    XCTAssertEqual(request["method"] as? String, "tools/call")
+    XCTAssertNil(FantasticalMCPClient.makeRequest(id: nil, method: "notifications/initialized", params: [:])["id"])
+    XCTAssertEqual(
+      FantasticalAgendaActions.itemType(for: FantasticalCalendar(id: "t", title: "Tasks", isWritable: true, supportsEvents: false, supportsTasks: true, sourceName: "")),
+      "task")
+  }
+
+  func testAgendaActionGrammar() throws {
+    let catalog = FantasticalActionsCatalog(
+      definition: ActionCatalogDefinition(identifier: FantasticalIdentifiers.actionCatalog, name: "Fantastical"))
+    for id in FantasticalActionsCatalog.agendaActionIDs {
+      XCTAssertNotNil(catalog.actions.first { $0.id == id }, "missing \(id)")
+    }
+    let reschedule = try XCTUnwrap(catalog.actions.first { $0.id == "reschedule" })
+    XCTAssertEqual(reschedule.supportedSubjectTypes, [.fantasticalItem])
+    XCTAssertEqual(reschedule.allowedTargetTypes, [.textSnippet])
+
+    let addToCalendar = try XCTUnwrap(catalog.actions.first { $0.id == "add-to-fantastical-calendar" })
+    XCTAssertEqual(addToCalendar.allowedTargetTypes, [.fantasticalCalendar])
+    XCTAssertEqual(
+      addToCalendar.targetSearchScope,
+      .catalogs([FantasticalIdentifiers.calendarsCatalog], preparation: .refresh))
+  }
+
   func testActionsCatalogDeclaresEveryActionAndTheDefaultRanking() throws {
     let catalog = FantasticalActionsCatalog(
       definition: ActionCatalogDefinition(

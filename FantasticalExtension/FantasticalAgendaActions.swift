@@ -1,0 +1,153 @@
+import AppKit
+import Foundation
+import TunaKit
+
+extension FantasticalActionsCatalog {
+  static let agendaActionIDs = [
+    FantasticalIdentifiers.showItemAction, "reschedule", "rename", "change-location", "delete-item",
+    "add-to-fantastical-calendar",
+  ]
+
+  static func agendaActions() -> [CatalogAction] {
+    var items: [CatalogAction] = []
+
+    let showItem = PredicateAwareAction(
+      id: FantasticalIdentifiers.showItemAction, title: "Show in Fantastical"
+    ) { subject, _ in
+      guard let entity = subject as? FantasticalAgendaEntity else {
+        return .failure("No Fantastical item selected")
+      }
+      let url =
+        entity.item.start.flatMap { FantasticalURLBuilder.dateURL($0) }
+        ?? FantasticalURLBuilder.searchURL(query: entity.title, miniWindow: false)
+      return FantasticalActions.open(url: url, failure: "Invalid Fantastical URL")
+    }
+    showItem.systemSymbolName = "arrow.up.right.square"
+    showItem.supportedSubjectTypes = [.fantasticalItem]
+    showItem.subjectPredicate = { $0 is FantasticalAgendaEntity }
+    items.append(showItem)
+
+    items.append(
+      makeModifyAction(
+        id: "reschedule", title: "Reschedule...", symbolName: "clock.arrow.circlepath",
+        field: "when", failure: "Type the new time, for example tomorrow 15h"))
+    items.append(
+      makeModifyAction(
+        id: "rename", title: "Rename...", symbolName: "pencil", field: "title",
+        failure: "Type the new title"))
+    items.append(
+      makeModifyAction(
+        id: "change-location", title: "Change Location...", symbolName: "mappin.and.ellipse",
+        field: "location", failure: "Type the new location"))
+
+    let delete = PredicateAwareAction(id: "delete-item", title: "Delete from Fantastical") {
+      subject, _ in
+      guard let entity = subject as? FantasticalAgendaEntity else {
+        return .failure("No Fantastical item selected")
+      }
+      let itemID = entity.item.id
+      return .review(
+        ActionReviewSession(
+          presentation: ActionReviewPresentation(
+            title: "Delete from Fantastical?",
+            message: "This removes the item from its calendar. Fantastical cannot undo it.",
+            sections: [
+              ActionReviewSection(
+                id: "item", title: "Item",
+                rows: [ActionReviewRow(id: itemID, title: entity.title, detail: entity.detail)])
+            ],
+            confirmButtonTitle: "Delete",
+            isDestructive: true),
+          handler: { response in
+            guard case .confirm = response else { return .cancelled }
+            return await FantasticalAgendaActions.delete(id: itemID)
+          }))
+    }
+    delete.systemSymbolName = "trash"
+    delete.executionPolicy = .keepVisible
+    delete.supportedSubjectTypes = [.fantasticalItem]
+    delete.subjectPredicate = { $0 is FantasticalAgendaEntity }
+    items.append(delete)
+
+    let addToCalendar = PredicateAwareAction(
+      id: "add-to-fantastical-calendar", title: "Add to Fantastical Calendar"
+    ) { subject, target in
+      guard let text = FantasticalURLBuilder.textValue(for: subject) else {
+        return .failure("Nothing to add")
+      }
+      guard let calendar = target as? FantasticalCalendarEntity else {
+        return .failure("Choose a Fantastical calendar")
+      }
+      return await FantasticalAgendaActions.create(description: text, calendar: calendar.calendar)
+    }
+    addToCalendar.targetRequirement = .required
+    addToCalendar.systemSymbolName = "calendar.badge.plus"
+    addToCalendar.supportedSubjectTypes = [.textSnippet]
+    addToCalendar.allowedTargetTypes = [.fantasticalCalendar]
+    addToCalendar.targetSearchScope = .catalogs(
+      [FantasticalIdentifiers.calendarsCatalog], preparation: .refresh)
+    addToCalendar.subjectPredicate = { FantasticalURLBuilder.textValue(for: $0) != nil }
+    addToCalendar.targetPredicate = { $0 is FantasticalCalendarEntity }
+    items.append(addToCalendar)
+
+    return items
+  }
+
+  /// Subject is an agenda item, the typed text becomes one field of `modifyCalendarItem`.
+  private static func makeModifyAction(
+    id: String, title: String, symbolName: String, field: String, failure: String
+  ) -> PredicateAwareAction {
+    let action = PredicateAwareAction(id: id, title: title) { subject, target in
+      guard let entity = subject as? FantasticalAgendaEntity else {
+        return .failure("No Fantastical item selected")
+      }
+      guard let value = FantasticalURLBuilder.textValue(for: target) else {
+        return .failure(failure)
+      }
+      return await FantasticalAgendaActions.modify(id: entity.item.id, field: field, value: value)
+    }
+    action.targetRequirement = .required
+    action.systemSymbolName = symbolName
+    action.supportedSubjectTypes = [.fantasticalItem]
+    action.allowedTargetTypes = [.textSnippet]
+    action.subjectPredicate = { $0 is FantasticalAgendaEntity }
+    action.targetPredicate = { FantasticalURLBuilder.textValue(for: $0) != nil }
+    return action
+  }
+}
+
+enum FantasticalAgendaActions {
+  static func modify(id: String, field: String, value: String) async -> ActionResult {
+    await perform("modifyCalendarItem", arguments: ["id": id, field: value])
+  }
+
+  static func delete(id: String) async -> ActionResult {
+    await perform("deleteCalendarItem", arguments: ["id": id])
+  }
+
+  static func create(description: String, calendar: FantasticalCalendar) async -> ActionResult {
+    var arguments: [String: Any] = ["description": description, "calendarId": calendar.id]
+    if let type = itemType(for: calendar) {
+      arguments["type"] = type
+    }
+    return await perform("createCalendarItem", arguments: arguments)
+  }
+
+  static func itemType(for calendar: FantasticalCalendar) -> String? {
+    switch (calendar.supportsEvents, calendar.supportsTasks) {
+    case (true, false): return "event"
+    case (false, true): return "task"
+    default: return nil
+    }
+  }
+
+  private static func perform(_ tool: String, arguments: [String: Any]) async -> ActionResult {
+    do {
+      _ = try await FantasticalMCPClient.shared.call(tool, arguments: arguments)
+    } catch {
+      return .failure(error.localizedDescription)
+    }
+    FantasticalAgendaSupport.postDataDidChange()
+    return .success
+  }
+}
