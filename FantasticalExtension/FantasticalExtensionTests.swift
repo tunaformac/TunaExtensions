@@ -132,6 +132,19 @@ final class FantasticalExtensionTests: XCTestCase {
     XCTAssertFalse(fields.allDay)
   }
 
+  func testFieldsAcceptSmartDashesForTheDoubleHyphenSeparator() throws {
+    let emDash = try FantasticalFields.parse("dentist tomorrow \u{2014} notes: testing").get()
+    XCTAssertEqual(emDash.sentence, "dentist tomorrow")
+    XCTAssertEqual(emDash.notes, "testing")
+
+    let enDash = try FantasticalFields.parse("dentist tomorrow \u{2013} cal: Perso").get()
+    XCTAssertEqual(enDash.calendarName, "Perso")
+
+    let custom = try FantasticalFields.parse("a \u{2014} notes: x", separator: ">>").get()
+    XCTAssertEqual(custom.sentence, "a \u{2014} notes: x")
+    XCTAssertNil(custom.notes)
+  }
+
   func testFieldsUseTheConfiguredSeparator() throws {
     let fields = try FantasticalFields.parse("Call Sam -- not a field >> notes: hi", separator: ">>").get()
     XCTAssertEqual(fields.sentence, "Call Sam -- not a field")

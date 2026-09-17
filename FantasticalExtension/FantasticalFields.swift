@@ -77,8 +77,10 @@ struct FantasticalFields: Equatable, Sendable {
   /// text boundaries), so "https://x.com/a--b" survives a "--" separator.
   private static func split(_ text: String, separator: String) -> [String] {
     guard let separator = normalize(separator) else { return [text] }
-    let escaped = NSRegularExpression.escapedPattern(for: separator)
-    guard let regex = try? NSRegularExpression(pattern: "(?:^|\\s+)\(escaped)(?:\\s+|$)")
+    let alternatives = separatorVariants(separator)
+      .map(NSRegularExpression.escapedPattern(for:))
+      .joined(separator: "|")
+    guard let regex = try? NSRegularExpression(pattern: "(?:^|\\s+)(?:\(alternatives))(?:\\s+|$)")
     else { return [text] }
     let nsText = text as NSString
     var pieces: [String] = []
@@ -89,6 +91,12 @@ struct FantasticalFields: Equatable, Sendable {
     }
     pieces.append(nsText.substring(from: cursor))
     return pieces
+  }
+
+  /// macOS smart dashes rewrite "--" as an em dash while typing, so a double-hyphen separator
+  /// also matches the em and en dashes it turns into.
+  static func separatorVariants(_ separator: String) -> [String] {
+    separator == "--" ? ["--", "\u{2014}", "\u{2013}"] : [separator]
   }
 
   private static func normalize(_ value: String?) -> String? {

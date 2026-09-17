@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.2.1
+
+- Accept the em and en dashes macOS smart-dash substitution produces when the separator is `--`.
+
 ## 0.2
 
 - Inline fields after a configurable separator (default `--`): title, start, end, due, allday,
