@@ -93,6 +93,7 @@ final class FantasticalExtensionTests: XCTestCase {
         "fantastical.view.mini", "fantastical.set.Work",
       ])
     XCTAssertTrue(items.allSatisfy { $0.typeID == .fantasticalDestination })
+    XCTAssertEqual(items.first?.searchText, "Fantastical Today")
   }
 
   func testActionsCatalogDeclaresEveryActionAndTheDefaultRanking() throws {

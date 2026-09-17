@@ -67,6 +67,10 @@ final class FantasticalDestinationItem: CatalogItem, CopyRepresentationProviding
 
   var copyRepresentation: String? { textValue }
 
+  override var searchText: String {
+    "Fantastical \(destination.title)"
+  }
+
   override var detail: String? { destination.detail }
 
   override func preview(maxDimension: CGFloat) -> CatalogItemPreview {
