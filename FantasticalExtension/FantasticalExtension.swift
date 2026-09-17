@@ -8,7 +8,7 @@ public final class FantasticalExtension: Extension {
       metadata: ExtensionMetadata(
         displayName: "Fantastical",
         author: "Miira",
-        description: "Create events and tasks with Fantastical's parser and jump to its views.",
+        description: "Add events and tasks to Fantastical, jump to its views.",
         iconName: "calendar"
       ),
       compatibility: ExtensionDeclarationCompatibility(minTuna: "0.95", minTunaKit: "1.21.0"),
