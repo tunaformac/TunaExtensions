@@ -3,7 +3,7 @@ import Foundation
 
 enum FantasticalMCPError: LocalizedError, Equatable {
   case helperNotFound
-  case notRunning
+  case notRunning(detail: String?)
   case timeout
   case invalidResponse
   case tool(String)
@@ -22,8 +22,10 @@ enum FantasticalMCPError: LocalizedError, Equatable {
     switch self {
     case .helperNotFound:
       return "Install Fantastical in /Applications. Its built-in MCP helper provides the agenda."
-    case .notRunning: return "Open Fantastical and try again."
-    case .timeout: return "Fantastical did not answer within 15 seconds."
+    case .notRunning(let detail):
+      guard let detail, !detail.isEmpty else { return "Open Fantastical and try again." }
+      return "Fantastical's helper stopped: \(detail)"
+    case .timeout: return "Fantastical did not answer within 60 seconds."
     case .invalidResponse: return "The helper returned something Tuna could not read."
     case .tool(let message): return message
     }
@@ -43,10 +45,13 @@ actor FantasticalMCPClient {
   private var process: Process?
   private var input: FileHandle?
   private var reader: Task<Void, Never>?
+  private var errorReader: Task<Void, Never>?
+  private var startup: Task<Void, Error>?
   private var pending: [Int: CheckedContinuation<[String: Any], Error>] = [:]
   private var nextID = 1
   private var initialized = false
-  private let timeoutSeconds: UInt64 = 15
+  private var lastStderrLine: String?
+  private let timeoutSeconds: UInt64 = 60
 
   static func helperURL() -> URL? {
     guard
@@ -85,27 +90,51 @@ actor FantasticalMCPClient {
   func shutdown() {
     reader?.cancel()
     reader = nil
-    process?.terminate()
+    errorReader?.cancel()
+    errorReader = nil
+    if let process {
+      process.terminationHandler = nil
+      try? input?.close()
+      process.terminate()
+      DispatchQueue.global().asyncAfter(deadline: .now() + 2) {
+        if process.isRunning { kill(process.processIdentifier, SIGKILL) }
+      }
+    }
     process = nil
     input = nil
     initialized = false
-    failAllPending(with: FantasticalMCPError.notRunning)
+    failAllPending(with: FantasticalMCPError.notRunning(detail: lastStderrLine))
   }
 
   // MARK: Process lifecycle
 
+  /// Concurrent callers share one startup; the actor is reentrant at every await, so without
+  /// this a second caller would see a process that is running but not yet initialized.
   private func ensureRunning() async throws {
     if let process, process.isRunning, initialized { return }
+    if let startup {
+      try await startup.value
+      return
+    }
+    let task = Task { try await self.start() }
+    startup = task
+    defer { startup = nil }
+    try await task.value
+  }
+
+  private func start() async throws {
     shutdown()
+    lastStderrLine = nil
     guard let url = Self.helperURL() else { throw FantasticalMCPError.helperNotFound }
 
     let process = Process()
     process.executableURL = url
     let stdin = Pipe()
     let stdout = Pipe()
+    let stderr = Pipe()
     process.standardInput = stdin
     process.standardOutput = stdout
-    process.standardError = FileHandle.nullDevice
+    process.standardError = stderr
     process.terminationHandler = { [weak self] _ in
       Task { await self?.handleTermination() }
     }
@@ -116,6 +145,13 @@ actor FantasticalMCPClient {
       do {
         for try await line in stdout.fileHandleForReading.bytes.lines {
           await self?.deliver(line: line)
+        }
+      } catch {}
+    }
+    errorReader = Task { [weak self] in
+      do {
+        for try await line in stderr.fileHandleForReading.bytes.lines {
+          await self?.remember(stderrLine: line)
         }
       } catch {}
     }
@@ -135,7 +171,14 @@ actor FantasticalMCPClient {
     process = nil
     input = nil
     initialized = false
-    failAllPending(with: FantasticalMCPError.notRunning)
+    failAllPending(with: FantasticalMCPError.notRunning(detail: lastStderrLine))
+  }
+
+  private func remember(stderrLine: String) {
+    let trimmed = stderrLine.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmed.isEmpty else { return }
+    lastStderrLine = trimmed.replacingOccurrences(
+      of: #"^\S+ \S+ \S+: \[FantasticalMCP\] "#, with: "", options: .regularExpression)
   }
 
   private func failAllPending(with error: Error) {
@@ -181,7 +224,7 @@ actor FantasticalMCPClient {
   }
 
   private func send(_ payload: [String: Any]) throws {
-    guard let input else { throw FantasticalMCPError.notRunning }
+    guard let input else { throw FantasticalMCPError.notRunning(detail: lastStderrLine) }
     var data = try JSONSerialization.data(withJSONObject: payload)
     data.append(0x0A)
     try input.write(contentsOf: data)

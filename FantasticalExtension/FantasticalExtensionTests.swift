@@ -273,6 +273,15 @@ final class FantasticalExtensionTests: XCTestCase {
       "task")
   }
 
+  func testMCPErrorMessagesCarryHelperDetail() {
+    XCTAssertEqual(
+      FantasticalMCPError.notRunning(detail: nil).errorDescription, "Open Fantastical and try again.")
+    XCTAssertEqual(
+      FantasticalMCPError.notRunning(detail: "host denied").errorDescription,
+      "Fantastical's helper stopped: host denied")
+    XCTAssertEqual(FantasticalMCPError.tool("nope").errorDescription, "nope")
+  }
+
   func testAgendaActionGrammar() throws {
     let catalog = FantasticalActionsCatalog(
       definition: ActionCatalogDefinition(identifier: FantasticalIdentifiers.actionCatalog, name: "Fantastical"))
