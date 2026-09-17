@@ -7,7 +7,7 @@ public final class FantasticalExtension: Extension {
     ExtensionDeclaration(
       metadata: ExtensionMetadata(
         displayName: "Fantastical",
-        author: "Miira",
+        author: "miiraheart",
         description: "Add events and tasks to Fantastical, jump to its views.",
         iconName: "calendar"
       ),
