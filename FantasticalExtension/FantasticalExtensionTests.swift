@@ -89,11 +89,31 @@ final class FantasticalExtensionTests: XCTestCase {
     XCTAssertEqual(
       items.map(\.id),
       [
-        "fantastical.view.today", "fantastical.view.tomorrow", "fantastical.view.calendar",
-        "fantastical.view.mini", "fantastical.set.Work",
+        "fantastical.new-event", "fantastical.new-task", "fantastical.view.today",
+        "fantastical.view.tomorrow", "fantastical.view.calendar", "fantastical.view.mini",
+        "fantastical.set.Work",
       ])
-    XCTAssertTrue(items.allSatisfy { $0.typeID == .fantasticalDestination })
-    XCTAssertEqual(items.first?.searchText, "Fantastical Today")
+    XCTAssertTrue(items.dropFirst(2).allSatisfy { $0.typeID == .fantasticalDestination })
+    XCTAssertEqual(items.first?.searchText, "Fantastical New Event")
+    XCTAssertEqual(items[2].searchText, "Fantastical Today")
+  }
+
+  func testNewEntriesTakeTypedTextThroughTheAddAction() throws {
+    let catalog = FantasticalActionsCatalog(
+      definition: ActionCatalogDefinition(identifier: FantasticalIdentifiers.actionCatalog, name: "Fantastical"))
+    let add = try XCTUnwrap(
+      catalog.actions.first { $0.id == FantasticalIdentifiers.addTypedAction } as? PredicateAwareAction)
+    XCTAssertEqual(add.targetRequirement, .required)
+    XCTAssertEqual(add.allowedTargetTypes, [.textSnippet])
+
+    let task = FantasticalNewItemEntry(task: true)
+    XCTAssertTrue(task.isTask)
+    XCTAssertEqual(task.typeID, .searchCatalogEntry)
+    XCTAssertTrue(task.allowsAction(add, catalogIdentifier: FantasticalIdentifiers.actionCatalog))
+    let show = try XCTUnwrap(catalog.actions.first { $0.id == FantasticalIdentifiers.showAction })
+    XCTAssertFalse(task.allowsAction(show, catalogIdentifier: FantasticalIdentifiers.actionCatalog))
+    XCTAssertTrue(add.subjectPredicate?(task) ?? false)
+    XCTAssertFalse(add.subjectPredicate?(FantasticalDestinationItem(destination: .today)) ?? true)
   }
 
   func testFieldsParseSentenceOnly() throws {

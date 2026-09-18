@@ -82,6 +82,45 @@ final class FantasticalDestinationItem: CatalogItem, CopyRepresentationProviding
   }
 }
 
+/// "New Event" and "New Task" search entries; the typed text is the action's target.
+final class FantasticalNewItemEntry: CatalogEntity, ActionFilteringProviding, @unchecked Sendable {
+  let isTask: Bool
+
+  init(task: Bool) {
+    isTask = task
+    super.init(
+      id: task ? "fantastical.new-task" : "fantastical.new-event",
+      title: task ? "New Task" : "New Event", path: nil)
+    typeID = .searchCatalogEntry
+  }
+
+  override var searchText: String { "Fantastical \(title)" }
+
+  override var detail: String? {
+    isTask ? "Add a task to Fantastical from typed text" : "Add an event to Fantastical from typed text"
+  }
+
+  override func preview(maxDimension: CGFloat) -> CatalogItemPreview {
+    if let icon = Self.fantasticalIcon { return CatalogItemPreview(image: icon) }
+    return .systemSymbol(isTask ? "checkmark.circle" : "plus.circle")
+  }
+
+  override func placeholderPreview(maxDimension: CGFloat) -> CatalogItemPreview {
+    preview(maxDimension: maxDimension)
+  }
+
+  func allowsAction(_ action: CatalogAction, catalogIdentifier: String?) -> Bool {
+    catalogIdentifier == FantasticalIdentifiers.actionCatalog
+      && action.id == FantasticalIdentifiers.addTypedAction
+  }
+
+  private static var fantasticalIcon: NSImage? {
+    NSWorkspace.shared
+      .urlForApplication(withBundleIdentifier: FantasticalIdentifiers.bundleIdentifier)
+      .map { NSWorkspace.shared.icon(forFile: $0.path) }
+  }
+}
+
 extension TypeID {
   static let fantasticalDestination = TypeID("com.tuna.type.fantastical-destination")
 }

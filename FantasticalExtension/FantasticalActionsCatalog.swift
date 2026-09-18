@@ -18,6 +18,7 @@ public final class FantasticalActionsCatalog: NSObject, ActionCatalog {
 extension FantasticalActionsCatalog {
   static let textActionIDs = [
     "add-to-fantastical", "add-task-to-fantastical", "search-fantastical", "show-date-in-fantastical",
+    FantasticalIdentifiers.addTypedAction,
   ]
 
   static func actions() -> [CatalogAction] {
@@ -71,6 +72,20 @@ extension FantasticalActionsCatalog {
       return FantasticalURLBuilder.parseDate(from: text) != nil
     }
     items.append(showDate)
+
+    let addTyped = PredicateAwareAction(id: FantasticalIdentifiers.addTypedAction, title: "Add...") { subject, target in
+      guard let entry = subject as? FantasticalNewItemEntry else {
+        return .failure("Select New Event or New Task first")
+      }
+      return FantasticalActions.add(subject: target, task: entry.isTask)
+    }
+    addTyped.targetRequirement = .required
+    addTyped.systemSymbolName = "plus.circle"
+    addTyped.supportedSubjectTypes = [.searchCatalogEntry]
+    addTyped.allowedTargetTypes = [.textSnippet]
+    addTyped.subjectPredicate = { $0 is FantasticalNewItemEntry }
+    addTyped.targetPredicate = { FantasticalURLBuilder.textValue(for: $0) != nil }
+    items.append(addTyped)
 
     return items
   }

@@ -122,4 +122,5 @@ enum FantasticalIdentifiers {
   static let calendarsCatalog = "fantastical.calendars"
   static let actionCatalog = "fantastical.actions"
   static let showAction = "show-in-fantastical"
+  static let addTypedAction = "add-typed"
 }
