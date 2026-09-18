@@ -45,6 +45,21 @@ enum FantasticalAgendaRange: CaseIterable, Sendable {
 
   var tasksOnly: Bool { self == .tasks }
 
+  /// Display order in the root: Today, Tomorrow, week, month, quarter, Tasks, year; By Calendar
+  /// and Next 7 Days follow.
+  var sortOrder: Int {
+    switch self {
+    case .today: return 0
+    case .tomorrow: return 1
+    case .thisWeek: return 2
+    case .thisMonth: return 3
+    case .thisQuarter: return 4
+    case .tasks: return 5
+    case .thisYear: return 6
+    case .next7Days: return 8
+    }
+  }
+
   func interval(now: Date, calendar: Calendar = .autoupdatingCurrent) -> DateInterval {
     let day = calendar.startOfDay(for: now)
     func days(_ n: Int, from start: Date) -> DateInterval {
@@ -74,7 +89,12 @@ enum FantasticalAgendaRange: CaseIterable, Sendable {
 }
 
 /// A group that fetches its events and tasks the first time it is browsed.
-final class FantasticalRangeSectionItem: CatalogEntity, CatalogHierarchyNode, @unchecked Sendable {
+final class FantasticalRangeSectionItem: CatalogEntity, CatalogHierarchyNode, TimestampedCatalogItem,
+  ScoredCatalogItem, @unchecked Sendable
+{
+  let sortOrder: Int
+  var sortScore: Double { FantasticalAgendaSort.sectionScore(sortOrder) }
+  var capturedAtDate: Date { FantasticalAgendaSort.sectionTimestamp(sortOrder) }
   private let symbolName: String
   private let iconColor: CatalogIconColor
   private let catalogIdentifier: String
@@ -85,9 +105,10 @@ final class FantasticalRangeSectionItem: CatalogEntity, CatalogHierarchyNode, @u
   private let loadTask = LockedValue<Task<Void, Never>?>(nil)
 
   init(
-    title: String, id: String, symbolName: String, iconColor: CatalogIconColor,
+    title: String, id: String, symbolName: String, iconColor: CatalogIconColor, sortOrder: Int,
     catalogIdentifier: String, loader: @escaping @Sendable () async throws -> [CatalogItem]
   ) {
+    self.sortOrder = sortOrder
     self.symbolName = symbolName
     self.iconColor = iconColor
     self.catalogIdentifier = catalogIdentifier
@@ -138,5 +159,38 @@ final class FantasticalRangeSectionItem: CatalogEntity, CatalogHierarchyNode, @u
         FantasticalAgendaSupport.postScanFinished(identifier: catalogIdentifier)
       }
     }
+  }
+}
+
+/// Sections keep their declared order and outrank items; items go soonest first. Tuna's time
+/// sort shows the newest `capturedAtDate` first, so timestamps are mirrored.
+enum FantasticalAgendaSort {
+  static let optionID = "fantastical.agenda-order"
+  private static let mirrorPoint = Date(timeIntervalSinceReferenceDate: 1_500_000_000)
+
+  static func sectionScore(_ order: Int) -> Double { 1_000_000_000_000 - Double(max(0, min(order, 10_000))) }
+  static func sectionTimestamp(_ order: Int) -> Date {
+    Date.distantFuture.addingTimeInterval(-Double(max(0, min(order, 10_000))))
+  }
+  static func itemScore(start: Date?) -> Double {
+    guard let start else { return 0 }
+    return 1_000 + max(0, 2 * mirrorPoint.timeIntervalSinceReferenceDate - start.timeIntervalSinceReferenceDate)
+  }
+  static func itemTimestamp(start: Date?) -> Date {
+    guard let start else { return .distantPast }
+    return Date(timeIntervalSinceReferenceDate: 2 * mirrorPoint.timeIntervalSinceReferenceDate - start.timeIntervalSinceReferenceDate)
+  }
+
+  static let options: [CatalogSortOption] = [
+    CatalogSortOption(id: optionID, title: "Agenda", detail: "Groups in order, then soonest first", comparator: compare),
+    .nameAscending,
+    .nameDescending,
+  ]
+
+  static func compare(_ lhs: CatalogItem, _ rhs: CatalogItem) -> Bool {
+    let l = (lhs as? ScoredCatalogItem)?.sortScore ?? -1
+    let r = (rhs as? ScoredCatalogItem)?.sortScore ?? -1
+    if l != r { return l > r }
+    return lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
   }
 }

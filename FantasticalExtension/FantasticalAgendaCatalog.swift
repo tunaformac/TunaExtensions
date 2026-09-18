@@ -6,10 +6,17 @@ import TunaKit
 let FantasticalAgendaDidChange = Notification.Name("com.brnbw.tuna.plugins.fantastical.agendaDidChange")
 
 /// Live-search root: type to search events and tasks, or browse the next days.
-public final class FantasticalAgendaCatalog: Catalog, StartupScanningCatalog {
+public final class FantasticalAgendaCatalog: Catalog, StartupScanningCatalog, CatalogSortingProviding,
+  CatalogResultsSortModeProviding
+{
   public let identifier: String
   public let name: String
   public let scansOnStartup = false
+  public var sortOptions: [CatalogSortOption] { FantasticalAgendaSort.options }
+  public var defaultSortOptionID: String { FantasticalAgendaSort.optionID }
+  public func resultsSortMode(forSortOptionID sortOptionID: String) -> ResultsSortMode? {
+    sortOptionID == FantasticalAgendaSort.optionID ? .time : nil
+  }
 
   private var changeObserver: NSObjectProtocol?
 
@@ -118,17 +125,17 @@ enum FantasticalAgendaSupport {
     var sections: [CatalogItem] = FantasticalAgendaRange.allCases.map { range in
       FantasticalRangeSectionItem(
         title: range.title, id: "fantastical.agenda.\(range)", symbolName: range.symbolName,
-        iconColor: range.iconColor, catalogIdentifier: identifier
+        iconColor: range.iconColor, sortOrder: range.sortOrder, catalogIdentifier: identifier
       ) {
         try await load(range: range, calendars: calendars)
       }
     }
 
-    let perCalendar: [CatalogItem] = calendars.filter(\.isWritable).map { cal in
+    let perCalendar: [CatalogItem] = calendars.filter(\.isWritable).enumerated().map { index, cal in
       FantasticalRangeSectionItem(
         title: cal.title, id: "fantastical.agenda.calendar.\(cal.id)",
         symbolName: cal.supportsTasks ? "checklist" : "calendar",
-        iconColor: cal.supportsTasks ? .blue : .red, catalogIdentifier: identifier
+        iconColor: cal.supportsTasks ? .blue : .red, sortOrder: index, catalogIdentifier: identifier
       ) {
         try await load(range: .next7Days, calendars: calendars, calendarID: cal.id)
       }
@@ -138,7 +145,7 @@ enum FantasticalAgendaSupport {
         FantasticalSectionItem(
           title: "By Calendar", id: "fantastical.agenda.by-calendar",
           detail: "\(perCalendar.count) calendars, next 7 days", symbolName: "folder",
-          iconColor: .gray, children: perCalendar))
+          iconColor: .gray, children: perCalendar, sortOrder: 7))
     }
     return sections
   }

@@ -255,6 +255,26 @@ final class FantasticalExtensionTests: XCTestCase {
       ["a", "c", "z"])
   }
 
+  func testAgendaSortKeepsGroupOrderThenSoonestItems() {
+    let today = FantasticalRangeSectionItem(
+      title: "Today", id: "t", symbolName: "sun.max", iconColor: .orange, sortOrder: 0,
+      catalogIdentifier: "x") { [] }
+    let year = FantasticalRangeSectionItem(
+      title: "This Year", id: "y", symbolName: "calendar", iconColor: .gray, sortOrder: 6,
+      catalogIdentifier: "x") { [] }
+    let byCalendar = FantasticalSectionItem(
+      title: "By Calendar", id: "b", detail: nil, symbolName: "folder", iconColor: .gray, children: [],
+      sortOrder: 7)
+    let soon = FantasticalAgendaEntity(
+      item: FantasticalAgendaItem(id: "1", title: "Zed", calendarID: "c", start: Date(timeIntervalSinceNow: 3600), end: nil, location: nil),
+      calendarTitle: nil, isTask: false)
+    let later = FantasticalAgendaEntity(
+      item: FantasticalAgendaItem(id: "2", title: "Alpha", calendarID: "c", start: Date(timeIntervalSinceNow: 7200), end: nil, location: nil),
+      calendarTitle: nil, isTask: false)
+    let sorted = FantasticalAgendaSort.options[0].sort([later, byCalendar, year, soon, today])
+    XCTAssertEqual(sorted.map(\.id), ["t", "y", "b", "fantastical.item.1", "fantastical.item.2"])
+  }
+
   func testAgendaDetailFormatting() throws {
     var calendar = Calendar(identifier: .gregorian)
     calendar.timeZone = TimeZone(identifier: "Europe/Paris")!

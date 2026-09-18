@@ -3,7 +3,11 @@ import Foundation
 import TunaKit
 
 /// One event or task from Fantastical's agenda.
-final class FantasticalAgendaEntity: CatalogEntity, CopyRepresentationProviding, @unchecked Sendable {
+final class FantasticalAgendaEntity: CatalogEntity, CopyRepresentationProviding, TimestampedCatalogItem,
+  ScoredCatalogItem, @unchecked Sendable
+{
+  var sortScore: Double { FantasticalAgendaSort.itemScore(start: item.start) }
+  var capturedAtDate: Date { FantasticalAgendaSort.itemTimestamp(start: item.start) }
   let item: FantasticalAgendaItem
   let calendarTitle: String?
   let isTask: Bool
@@ -73,7 +77,12 @@ final class FantasticalCalendarEntity: CatalogEntity, @unchecked Sendable {
 }
 
 /// Grouping node for Today / Tomorrow / Next 7 Days / By Calendar.
-final class FantasticalSectionItem: CatalogEntity, CatalogHierarchyNode, @unchecked Sendable {
+final class FantasticalSectionItem: CatalogEntity, CatalogHierarchyNode, TimestampedCatalogItem,
+  ScoredCatalogItem, @unchecked Sendable
+{
+  let sortOrder: Int
+  var sortScore: Double { FantasticalAgendaSort.sectionScore(sortOrder) }
+  var capturedAtDate: Date { FantasticalAgendaSort.sectionTimestamp(sortOrder) }
   private let children: [CatalogItem]
   private let symbolName: String
   private let iconColor: CatalogIconColor
@@ -81,8 +90,9 @@ final class FantasticalSectionItem: CatalogEntity, CatalogHierarchyNode, @unchec
 
   init(
     title: String, id: String, detail: String?, symbolName: String, iconColor: CatalogIconColor,
-    children: [CatalogItem]
+    children: [CatalogItem], sortOrder: Int = 0
   ) {
+    self.sortOrder = sortOrder
     self.children = children
     self.symbolName = symbolName
     self.iconColor = iconColor

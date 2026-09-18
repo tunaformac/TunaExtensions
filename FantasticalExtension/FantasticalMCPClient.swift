@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import OSLog
 
 enum FantasticalMCPError: LocalizedError, Equatable {
   case helperNotFound
@@ -41,6 +42,7 @@ struct FantasticalMCPResult: Sendable {
 /// session; Fantastical asks the user once to allow the host app.
 actor FantasticalMCPClient {
   static let shared = FantasticalMCPClient()
+  static let log = Logger(subsystem: "com.brnbw.tuna.plugins.fantastical", category: "mcp")
 
   private var process: Process?
   private var input: FileHandle?
@@ -69,6 +71,7 @@ actor FantasticalMCPClient {
   }
 
   func call(_ tool: String, arguments: [String: Any] = [:]) async throws -> FantasticalMCPResult {
+    Self.log.info("call \(tool, privacy: .public)")
     try await ensureRunning()
     let response = try await request(
       method: "tools/call", params: ["name": tool, "arguments": arguments])
@@ -139,6 +142,7 @@ actor FantasticalMCPClient {
       Task { await self?.handleTermination() }
     }
     try process.run()
+    Self.log.info("helper started pid \(process.processIdentifier, privacy: .public)")
     self.process = process
     self.input = stdin.fileHandleForWriting
     output = stdout.fileHandleForReading
@@ -162,6 +166,7 @@ actor FantasticalMCPClient {
   }
 
   private func handleTermination() {
+    Self.log.error("helper exited: \(self.lastStderrLine ?? "no stderr", privacy: .public)")
     process = nil
     input = nil
     initialized = false
@@ -171,6 +176,7 @@ actor FantasticalMCPClient {
   private func remember(stderrLine: String) {
     let trimmed = stderrLine.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !trimmed.isEmpty else { return }
+    Self.log.info("helper stderr: \(trimmed, privacy: .public)")
     lastStderrLine = trimmed.replacingOccurrences(
       of: #"^\S+ \S+ \S+: \[FantasticalMCP\] "#, with: "", options: .regularExpression)
   }
@@ -222,6 +228,7 @@ actor FantasticalMCPClient {
     var data = try JSONSerialization.data(withJSONObject: payload)
     data.append(0x0A)
     try input.write(contentsOf: data)
+    Self.log.info("sent \(payload["method"] as? String ?? "?", privacy: .public) id \(payload["id"] as? Int ?? -1, privacy: .public)")
   }
 
   /// Splits the pipe into lines on Foundation's reader queue, never on the actor, so a
@@ -241,6 +248,7 @@ actor FantasticalMCPClient {
   }
 
   private func deliver(line: String) {
+    Self.log.info("received \(line.count, privacy: .public) bytes")
     guard let data = line.data(using: .utf8),
       let message = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
       let id = message["id"] as? Int,
