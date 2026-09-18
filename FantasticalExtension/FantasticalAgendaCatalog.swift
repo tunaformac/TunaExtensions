@@ -126,18 +126,17 @@ enum FantasticalAgendaSupport {
   static func browseChildren() async throws -> [CatalogItem] {
     let now = Date()
     let calendar = Calendar.autoupdatingCurrent
-    async let calendarsTask = calendars()
-    let perRange = try await withThrowingTaskGroup(
-      of: (FantasticalAgendaRange, [FantasticalAgendaItem]).self
-    ) { group in
-      for range in FantasticalAgendaRange.allCases {
-        group.addTask { (range, try await items(when: range.when(now: now, calendar: calendar))) }
-      }
-      var results: [FantasticalAgendaRange: [FantasticalAgendaItem]] = [:]
-      for try await (range, found) in group { results[range] = found }
-      return results
+    let calendars = try await calendars()
+    var perRange: [FantasticalAgendaRange: [FantasticalAgendaItem]] = [:]
+    for range in FantasticalAgendaRange.queried {
+      perRange[range] = try await items(when: range.when(now: now, calendar: calendar))
     }
-    return sections(from: perRange, calendars: try await calendarsTask, now: now, calendar: calendar)
+    let week = perRange[.next7Days] ?? []
+    for derived in [FantasticalAgendaRange.today, .tomorrow] {
+      let interval = derived.interval(now: now, calendar: calendar)
+      perRange[derived] = week.filter { $0.start.map(interval.contains) ?? false }
+    }
+    return sections(from: perRange, calendars: calendars, now: now, calendar: calendar)
   }
 
   static func sections(

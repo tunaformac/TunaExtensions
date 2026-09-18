@@ -245,6 +245,8 @@ final class FantasticalExtensionTests: XCTestCase {
       FantasticalAgendaRange.thisYear.when(now: now, calendar: calendar),
       "January 1, 2026 to December 31, 2026")
     XCTAssertTrue(FantasticalAgendaRange.tasks.tasksOnly)
+    XCTAssertFalse(FantasticalAgendaRange.queried.contains(.today))
+    XCTAssertEqual(FantasticalAgendaRange.queried.count, 6)
 
     func item(_ id: String, day: Int?) -> FantasticalAgendaItem {
       let start = day.flatMap { calendar.date(from: DateComponents(year: 2026, month: 9, day: $0, hour: 12)) }

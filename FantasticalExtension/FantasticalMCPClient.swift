@@ -53,6 +53,7 @@ actor FantasticalMCPClient {
   private var nextID = 1
   private var initialized = false
   private var lastStderrLine: String?
+  private var chain: Task<Void, Never>?
   private let timeoutSeconds: UInt64 = 60
 
   static func helperURL() -> URL? {
@@ -70,7 +71,19 @@ actor FantasticalMCPClient {
     return request
   }
 
+  /// The helper answers one request at a time; parallel calls make it drop its connection to
+  /// Fantastical, so calls queue behind each other.
   func call(_ tool: String, arguments: [String: Any] = [:]) async throws -> FantasticalMCPResult {
+    let prior = chain
+    let task = Task<FantasticalMCPResult, Error> {
+      await prior?.value
+      return try await self.performCall(tool, arguments: arguments)
+    }
+    chain = Task { _ = try? await task.value }
+    return try await task.value
+  }
+
+  private func performCall(_ tool: String, arguments: [String: Any]) async throws -> FantasticalMCPResult {
     Self.log.info("call \(tool, privacy: .public)")
     try await ensureRunning()
     let response = try await request(

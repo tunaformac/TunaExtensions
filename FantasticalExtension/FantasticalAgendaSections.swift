@@ -45,6 +45,9 @@ enum FantasticalAgendaRange: CaseIterable, Sendable {
 
   var tasksOnly: Bool { self == .tasks }
 
+  /// Groups that need their own query. Today and Tomorrow are sliced from Next 7 Days.
+  static let queried: [FantasticalAgendaRange] = [.next7Days, .thisWeek, .thisMonth, .thisQuarter, .thisYear, .tasks]
+
   /// Display order in the root: Today, Tomorrow, week, month, quarter, Tasks, year; By Calendar
   /// and Next 7 Days follow.
   var sortOrder: Int {
