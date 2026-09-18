@@ -13,6 +13,7 @@ struct FantasticalFields: Equatable, Sendable {
   var calendarName: String?
   var url: String?
   var notes: String?
+  var alerts: [String] = []
 
   static let defaultSeparator = "--"
   static let allDayKeys: Set<String> = ["allday", "all-day", "all day"]
@@ -65,6 +66,7 @@ struct FantasticalFields: Equatable, Sendable {
       case "cal", "calendar": fields.calendarName = value
       case "url", "link": fields.url = value
       case "note", "notes": fields.notes = value
+      case "alert", "alarm": fields.alerts.append(value)
       default: return .failure(.unknownField(key))
       }
     }

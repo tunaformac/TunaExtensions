@@ -18,7 +18,7 @@ enum FantasticalURLBuilder {
   /// Fantastical 4.2 applies only `sentence`, `notes`, `url`, and `add` from a parse URL while
   /// the preview is shown; the other documented parameters are ignored. Every other field is
   /// therefore written in the parser's own grammar: `todo`, a quoted title, `from … to …`, dates
-  /// as text, `all day`, and `/Calendar`.
+  /// as text, `all day`, `alert 30 minutes`, and `/Calendar`.
   static func parseURL(
     fields: FantasticalFields, task: Bool, addImmediately: Bool, miniWindow: Bool
   ) -> URL? {
@@ -52,6 +52,7 @@ enum FantasticalURLBuilder {
     }
     if let due = fields.due { parts.append(due) }
     if fields.allDay { parts.append("all day") }
+    parts.append(contentsOf: fields.alerts.map { "alert " + $0 })
     if let calendar = fields.calendarName { parts.append("/" + calendar) }
     return parts.joined(separator: " ")
   }

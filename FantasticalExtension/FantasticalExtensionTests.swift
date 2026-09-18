@@ -367,6 +367,15 @@ final class FantasticalExtensionTests: XCTestCase {
       .catalogs([FantasticalIdentifiers.calendarsCatalog], preparation: .refresh))
   }
 
+  func testAlertsRepeatInTheSentenceBeforeTheCalendar() throws {
+    let fields = try FantasticalFields.parse(
+      "Dentist tomorrow 15h -- alert: 30 minutes -- alarm: 1 day before at 9am -- cal: Perso").get()
+    XCTAssertEqual(fields.alerts, ["30 minutes", "1 day before at 9am"])
+    XCTAssertEqual(
+      FantasticalURLBuilder.sentence(for: fields, task: false),
+      "Dentist tomorrow 15h alert 30 minutes alert 1 day before at 9am /Perso")
+  }
+
   func testAddToCalendarUsesTheParseURLWithThePickedCalendar() throws {
     let fields = try FantasticalFields.parse("buy printer paper -- due: next friday -- cal: Perso").get()
     let tasks = FantasticalCalendar(

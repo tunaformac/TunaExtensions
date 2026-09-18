@@ -55,8 +55,11 @@ Dentist tomorrow 15h -- notes: bring the card -- cal: Perso -- url: https://doct
 - `allday` flag (or `allday: no`).
 - `cal:` or `calendar:` calendar name as shown in Fantastical.
 - `url:` or `link:`, and `notes:` or `note:`.
+- `alert:` (or `alarm:`), repeatable: `alert: 30 minutes -- alert: 1 day before at 9am`.
 
-macOS may auto-convert `--` into an em dash while you type; both are accepted. Keys are
+Emoji badges (the emoji button next to the title) are private Flexibits data with no URL, AppleScript,
+Shortcuts, or helper access, so they cannot be set from Tuna; an emoji typed in the text stays in
+the title. macOS may auto-convert `--` into an em dash while you type; both are accepted. Keys are
 case-insensitive. A misspelled key fails the action with "Unknown field" instead of
 silently landing in the title. The separator only counts when it stands alone between spaces, so
 `https://x.com/a--b` is safe.

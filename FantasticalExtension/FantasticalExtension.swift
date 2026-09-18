@@ -34,7 +34,7 @@ public final class FantasticalExtension: Extension {
           label: "Field separator",
           defaultValue: FantasticalFields.defaultSeparator,
           description:
-            "Separates the sentence from fields: title, start, end, due, allday, cal, url, notes. Example: Dentist tomorrow 15h -- notes: bring card -- cal: Perso"
+            "Separates the sentence from fields: title, start, end, due, allday, alert, cal, url, notes. Example: Dentist tomorrow 15h -- alert: 30 minutes -- cal: Perso"
         ),
         CatalogSettingDefinition(
           key: FantasticalSettings.calendarSetsKey,
