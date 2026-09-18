@@ -44,8 +44,8 @@ actor FantasticalMCPClient {
 
   private var process: Process?
   private var input: FileHandle?
-  private var reader: Task<Void, Never>?
-  private var errorReader: Task<Void, Never>?
+  private var output: FileHandle?
+  private var errorOutput: FileHandle?
   private var startup: Task<Void, Error>?
   private var pending: [Int: CheckedContinuation<[String: Any], Error>] = [:]
   private var nextID = 1
@@ -88,10 +88,10 @@ actor FantasticalMCPClient {
   }
 
   func shutdown() {
-    reader?.cancel()
-    reader = nil
-    errorReader?.cancel()
-    errorReader = nil
+    output?.readabilityHandler = nil
+    output = nil
+    errorOutput?.readabilityHandler = nil
+    errorOutput = nil
     if let process {
       process.terminationHandler = nil
       try? input?.close()
@@ -141,19 +141,13 @@ actor FantasticalMCPClient {
     try process.run()
     self.process = process
     self.input = stdin.fileHandleForWriting
-    reader = Task { [weak self] in
-      do {
-        for try await line in stdout.fileHandleForReading.bytes.lines {
-          await self?.deliver(line: line)
-        }
-      } catch {}
+    output = stdout.fileHandleForReading
+    errorOutput = stderr.fileHandleForReading
+    Self.readLines(from: stdout.fileHandleForReading) { [weak self] line in
+      Task { await self?.deliver(line: line) }
     }
-    errorReader = Task { [weak self] in
-      do {
-        for try await line in stderr.fileHandleForReading.bytes.lines {
-          await self?.remember(stderrLine: line)
-        }
-      } catch {}
+    Self.readLines(from: stderr.fileHandleForReading) { [weak self] line in
+      Task { await self?.remember(stderrLine: line) }
     }
 
     _ = try await request(
@@ -230,6 +224,22 @@ actor FantasticalMCPClient {
     try input.write(contentsOf: data)
   }
 
+  /// Splits the pipe into lines on Foundation's reader queue, never on the actor, so a
+  /// waiting read can never stall the request that would produce the reply.
+  nonisolated private static func readLines(from handle: FileHandle, _ onLine: @escaping @Sendable (String) -> Void) {
+    let buffer = LineBuffer()
+    handle.readabilityHandler = { handle in
+      let data = handle.availableData
+      guard !data.isEmpty else {
+        handle.readabilityHandler = nil
+        return
+      }
+      for line in buffer.append(data) {
+        onLine(line)
+      }
+    }
+  }
+
   private func deliver(line: String) {
     guard let data = line.data(using: .utf8),
       let message = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -237,5 +247,26 @@ actor FantasticalMCPClient {
       let continuation = pending.removeValue(forKey: id)
     else { return }
     continuation.resume(returning: message)
+  }
+}
+
+/// Accumulates pipe chunks and hands back complete lines.
+final class LineBuffer: @unchecked Sendable {
+  private var pending = Data()
+  private let lock = NSLock()
+
+  func append(_ data: Data) -> [String] {
+    lock.lock()
+    defer { lock.unlock() }
+    pending.append(data)
+    var lines: [String] = []
+    while let newline = pending.firstIndex(of: 0x0A) {
+      let chunk = pending.subdata(in: pending.startIndex..<newline)
+      pending.removeSubrange(pending.startIndex...newline)
+      if let line = String(data: chunk, encoding: .utf8) {
+        lines.append(line)
+      }
+    }
+    return lines
   }
 }

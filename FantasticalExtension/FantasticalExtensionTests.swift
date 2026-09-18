@@ -282,6 +282,13 @@ final class FantasticalExtensionTests: XCTestCase {
     XCTAssertEqual(FantasticalMCPError.tool("nope").errorDescription, "nope")
   }
 
+  func testLineBufferSplitsChunksIntoCompleteLines() {
+    let buffer = LineBuffer()
+    XCTAssertEqual(buffer.append(Data("{\"a\":1}\n{\"b\"".utf8)), ["{\"a\":1}"])
+    XCTAssertEqual(buffer.append(Data(":2}\n\n".utf8)), ["{\"b\":2}", ""])
+    XCTAssertEqual(buffer.append(Data("tail".utf8)), [])
+  }
+
   func testAgendaActionGrammar() throws {
     let catalog = FantasticalActionsCatalog(
       definition: ActionCatalogDefinition(identifier: FantasticalIdentifiers.actionCatalog, name: "Fantastical"))
