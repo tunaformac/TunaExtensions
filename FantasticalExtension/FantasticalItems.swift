@@ -82,27 +82,34 @@ final class FantasticalDestinationItem: CatalogItem, CopyRepresentationProviding
   }
 }
 
-/// "New Event" and "New Task" search entries; the typed text is the action's target.
-final class FantasticalNewItemEntry: CatalogEntity, ActionFilteringProviding, @unchecked Sendable {
+/// "New Event" and "New Task" search entries; the typed text is the action's target. With a
+/// calendar the entry adds into that calendar instead of Fantastical's default.
+class FantasticalNewItemEntry: CatalogEntity, ActionFilteringProviding, @unchecked Sendable {
   let isTask: Bool
+  let calendar: FantasticalCalendar?
 
-  init(task: Bool) {
+  init(task: Bool, calendar: FantasticalCalendar? = nil) {
     isTask = task
+    self.calendar = calendar
+    let kind = task ? "New Task" : "New Event"
+    let base = task ? "fantastical.new-task" : "fantastical.new-event"
     super.init(
-      id: task ? "fantastical.new-task" : "fantastical.new-event",
-      title: task ? "New Task" : "New Event", path: nil)
+      id: calendar.map { "\(base).\($0.id)" } ?? base,
+      title: calendar.map { "\(kind) in \($0.title)" } ?? kind, path: nil)
     typeID = .searchCatalogEntry
   }
 
   override var searchText: String { "Fantastical \(title)" }
 
   override var detail: String? {
-    isTask ? "Add a task to Fantastical from typed text" : "Add an event to Fantastical from typed text"
+    if let calendar { return calendar.sourceName }
+    return isTask
+      ? "Add a task to Fantastical from typed text; browse to pick the list"
+      : "Add an event to Fantastical from typed text; browse to pick the calendar"
   }
 
   override func preview(maxDimension: CGFloat) -> CatalogItemPreview {
-    if let icon = Self.fantasticalIcon { return CatalogItemPreview(image: icon) }
-    return .systemSymbol(isTask ? "checkmark.circle" : "plus.circle")
+    .systemSymbol(isTask ? "checkmark.circle" : "calendar.badge.plus")
   }
 
   override func placeholderPreview(maxDimension: CGFloat) -> CatalogItemPreview {
@@ -113,11 +120,22 @@ final class FantasticalNewItemEntry: CatalogEntity, ActionFilteringProviding, @u
     catalogIdentifier == FantasticalIdentifiers.actionCatalog
       && action.id == FantasticalIdentifiers.addTypedAction
   }
+}
 
-  private static var fantasticalIcon: NSImage? {
-    NSWorkspace.shared
-      .urlForApplication(withBundleIdentifier: FantasticalIdentifiers.bundleIdentifier)
-      .map { NSWorkspace.shared.icon(forFile: $0.path) }
+/// The two searchable roots; browsing one lists the writable calendars of its kind.
+final class FantasticalNewItemRoot: FantasticalNewItemEntry, CatalogHierarchyNode, @unchecked Sendable {
+  func hierarchyChildren() -> [CatalogItem] {
+    let matching = FantasticalAgendaSupport.knownCalendars.readValue { $0 }
+      .filter { $0.isWritable && (isTask ? $0.supportsTasks : $0.supportsEvents) }
+    guard !matching.isEmpty else {
+      Task { _ = try? await FantasticalAgendaSupport.calendars() }
+      return [
+        FantasticalAgendaSupport.messageItem(
+          title: "Calendars Not Loaded Yet", message: "Try again in a moment.",
+          symbolName: "arrow.clockwise", tint: .secondaryLabelColor)
+      ]
+    }
+    return matching.map { FantasticalNewItemEntry(task: isTask, calendar: $0) }
   }
 }
 

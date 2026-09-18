@@ -106,9 +106,14 @@ public final class FantasticalCalendarsCatalog: NSObject, Catalog, StartupScanni
 enum FantasticalAgendaSupport {
   static let agendaDays = 7
 
+  /// Last calendars the helper returned, so browse children can be built without awaiting.
+  static let knownCalendars = LockedValue<[FantasticalCalendar]>([])
+
   static func calendars() async throws -> [FantasticalCalendar] {
     let result = try await FantasticalMCPClient.shared.call("queryCalendars")
-    return try FantasticalAgendaParser.calendars(from: result.text)
+    let calendars = try FantasticalAgendaParser.calendars(from: result.text)
+    knownCalendars.value = calendars
+    return calendars
   }
 
   static func items(when: String?, query: String? = nil) async throws -> [FantasticalAgendaItem] {

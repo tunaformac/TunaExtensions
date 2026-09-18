@@ -77,6 +77,9 @@ extension FantasticalActionsCatalog {
       guard let entry = subject as? FantasticalNewItemEntry else {
         return .failure("Select New Event or New Task first")
       }
+      if let calendar = entry.calendar {
+        return FantasticalActions.add(subject: target, calendar: calendar)
+      }
       return FantasticalActions.add(subject: target, task: entry.isTask)
     }
     addTyped.targetRequirement = .required

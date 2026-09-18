@@ -116,6 +116,24 @@ final class FantasticalExtensionTests: XCTestCase {
     XCTAssertFalse(add.subjectPredicate?(FantasticalDestinationItem(destination: .today)) ?? true)
   }
 
+  @MainActor
+  func testNewEntryRootsBrowseOnlyMatchingCalendars() {
+    FantasticalAgendaSupport.knownCalendars.value = [
+      FantasticalCalendar(id: "e", title: "Perso", isWritable: true, supportsEvents: true, supportsTasks: false, sourceName: "iCloud"),
+      FantasticalCalendar(id: "t", title: "My Tasks", isWritable: true, supportsEvents: false, supportsTasks: true, sourceName: "Google"),
+      FantasticalCalendar(id: "r", title: "Holidays", isWritable: false, supportsEvents: true, supportsTasks: false, sourceName: "iCloud"),
+    ]
+    let tasks = FantasticalNewItemRoot(task: true).hierarchyChildren()
+    XCTAssertEqual(tasks.map(\.id), ["fantastical.new-task.t"])
+    XCTAssertEqual(tasks.first?.title, "New Task in My Tasks")
+    XCTAssertEqual(tasks.first?.detail, "Google")
+
+    let events = FantasticalNewItemRoot(task: false).hierarchyChildren()
+    XCTAssertEqual(events.map(\.id), ["fantastical.new-event.e"])
+    XCTAssertEqual((events.first as? FantasticalNewItemEntry)?.calendar?.title, "Perso")
+    XCTAssertTrue((events.first as? FantasticalNewItemEntry).map { $0.isTask == false } ?? false)
+  }
+
   func testFieldsParseSentenceOnly() throws {
     let fields = try FantasticalFields.parse("Dentist tomorrow 15h").get()
     XCTAssertEqual(fields.sentence, "Dentist tomorrow 15h")

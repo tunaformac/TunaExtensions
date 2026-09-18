@@ -73,9 +73,10 @@ The **Fantastical Views** source lists Today, Tomorrow, Calendar (main window), 
 `Set: Name` entry per calendar set you add in settings. Select one to open it; its Fantastical URL is
 the copy and text value.
 
-The same source has **New Event** and **New Task** entries, shown with Fantastical's icon: select
-one, press Enter, type the sentence (fields allowed), Enter. Same result as Add to Fantastical and
-Add Task to Fantastical, for when you prefer to pick the action before typing.
+The same source has **New Event** and **New Task** entries: select one, press Enter, type the
+sentence (fields allowed), Enter. Press → on the entry instead to pick where it goes first: New
+Task lists your task lists, New Event your event calendars; pick one, Enter, type, Enter. Same
+result as Add to Fantastical and Add Task to Fantastical, for when you prefer to choose first.
 
 Select Fantastical.app in Tuna and press → to browse the agenda and the views.
 

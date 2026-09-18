@@ -21,7 +21,7 @@ public final class FantasticalCatalog: NSObject, Catalog {
     var destinations: [FantasticalDestination] = [.today, .tomorrow, .calendar, .miniWindow]
     destinations.append(contentsOf: calendarSets.map(FantasticalDestination.calendarSet))
     let entries: [CatalogItem] = [
-      FantasticalNewItemEntry(task: false), FantasticalNewItemEntry(task: true),
+      FantasticalNewItemRoot(task: false), FantasticalNewItemRoot(task: true),
     ]
     return entries + destinations.map(FantasticalDestinationItem.init(destination:))
   }
