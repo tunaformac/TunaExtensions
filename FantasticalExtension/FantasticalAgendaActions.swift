@@ -55,13 +55,10 @@ extension FantasticalActionsCatalog {
     let addToCalendar = PredicateAwareAction(
       id: "add-to-fantastical-calendar", title: "Add to Fantastical Calendar"
     ) { subject, target in
-      guard let text = FantasticalURLBuilder.textValue(for: subject) else {
-        return .failure("Nothing to add")
-      }
       guard let calendar = target as? FantasticalCalendarEntity else {
         return .failure("Choose a Fantastical calendar")
       }
-      return await FantasticalAgendaActions.create(description: text, calendar: calendar.calendar)
+      return FantasticalActions.add(subject: subject, calendar: calendar.calendar)
     }
     addToCalendar.targetRequirement = .required
     addToCalendar.systemSymbolName = "calendar.badge.plus"
@@ -106,22 +103,6 @@ enum FantasticalAgendaActions {
 
   static func delete(id: String) async -> ActionResult {
     await perform("deleteCalendarItem", arguments: ["id": id])
-  }
-
-  static func create(description: String, calendar: FantasticalCalendar) async -> ActionResult {
-    var arguments: [String: Any] = ["description": description, "calendarId": calendar.id]
-    if let type = itemType(for: calendar) {
-      arguments["type"] = type
-    }
-    return await perform("createCalendarItem", arguments: arguments)
-  }
-
-  static func itemType(for calendar: FantasticalCalendar) -> String? {
-    switch (calendar.supportsEvents, calendar.supportsTasks) {
-    case (true, false): return "event"
-    case (false, true): return "task"
-    default: return nil
-    }
   }
 
   private static func perform(_ tool: String, arguments: [String: Any]) async -> ActionResult {

@@ -18,7 +18,9 @@ Actions on an item:
   Reschedule takes natural language such as `tomorrow 15h` or `next monday 9h to 10h`.
 - **Delete from Fantastical**: asks for confirmation first.
 - **Add to Fantastical Calendar**: on typed text, pick one of your writable calendars as the
-  target. Fantastical parses the text and creates the item there.
+  target. The text goes through the same parser and fields as Add to Fantastical, into that
+  calendar; a task list makes it a task. The calendar list lives only inside this picker, not in
+  global search.
 
 The agenda comes from Fantastical's built-in MCP helper (Fantastical 4.1.17 or later). The first
 time Tuna uses it, Fantastical asks whether to allow Tuna; refuse and the agenda shows a message
@@ -84,8 +86,8 @@ Select Fantastical.app in Tuna and press → to browse the agenda and the views.
 Everything stays on this Mac: the URL scheme for creating items and views, and Fantastical's own
 MCP helper (`Fantastical.app/Contents/Helpers/FantasticalMCP.app`) over standard input and output
 for the agenda. No network access from the extension, no credentials, no EventKit. Agenda results
-live in memory only while the browse or search is open. Writes: create, reschedule, rename, change
-location, and delete (confirmed) through the helper, and create through the URL scheme.
+live in memory only while the browse or search is open. Writes: reschedule, rename, change
+location, and delete (confirmed) through the helper; every create goes through the URL scheme.
 
 ## Limitations
 

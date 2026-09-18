@@ -332,9 +332,6 @@ final class FantasticalExtensionTests: XCTestCase {
     XCTAssertEqual(request["id"] as? Int, 7)
     XCTAssertEqual(request["method"] as? String, "tools/call")
     XCTAssertNil(FantasticalMCPClient.makeRequest(id: nil, method: "notifications/initialized", params: [:])["id"])
-    XCTAssertEqual(
-      FantasticalAgendaActions.itemType(for: FantasticalCalendar(id: "t", title: "Tasks", isWritable: true, supportsEvents: false, supportsTasks: true, sourceName: "")),
-      "task")
   }
 
   func testMCPErrorMessagesCarryHelperDetail() {
@@ -368,6 +365,34 @@ final class FantasticalExtensionTests: XCTestCase {
     XCTAssertEqual(
       addToCalendar.targetSearchScope,
       .catalogs([FantasticalIdentifiers.calendarsCatalog], preparation: .refresh))
+  }
+
+  func testAddToCalendarUsesTheParseURLWithThePickedCalendar() throws {
+    let fields = try FantasticalFields.parse("buy printer paper -- due: next friday -- cal: Perso").get()
+    let tasks = FantasticalCalendar(
+      id: "t", title: "My Tasks", isWritable: true, supportsEvents: false, supportsTasks: true, sourceName: "")
+    let taskURL = try XCTUnwrap(
+      FantasticalActions.parseURL(fields: fields, calendar: tasks, addImmediately: false, miniWindow: false))
+    XCTAssertEqual(
+      taskURL.query, "sentence=buy%20printer%20paper&due=next%20friday&calendarName=My%20Tasks&task=1")
+
+    let events = FantasticalCalendar(
+      id: "e", title: "Perso", isWritable: true, supportsEvents: true, supportsTasks: false, sourceName: "")
+    let eventURL = try XCTUnwrap(
+      FantasticalActions.parseURL(
+        fields: try FantasticalFields.parse("Lunch friday 12h30").get(), calendar: events,
+        addImmediately: true, miniWindow: true))
+    XCTAssertEqual(eventURL.query, "sentence=Lunch%20friday%2012h30&calendarName=Perso&add=1")
+  }
+
+  @MainActor
+  func testCalendarsCatalogIsHiddenTargetPlumbing() throws {
+    let instance = try FantasticalExtension(bundle: Bundle(for: FantasticalExtension.self))
+    let declaration = try XCTUnwrap(instance.declaration)
+    try declaration.validate()
+    let calendars = try XCTUnwrap(
+      declaration.catalogs.first { $0.id == FantasticalIdentifiers.calendarsCatalog })
+    XCTAssertEqual(calendars.presentation, .hidden)
   }
 
   func testActionsCatalogDeclaresEveryActionAndTheDefaultRanking() throws {

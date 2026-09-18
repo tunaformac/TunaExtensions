@@ -56,7 +56,7 @@ public final class FantasticalExtension: Extension {
           presentation: .source, enabledByDefault: true),
         CatalogDeclaration(
           id: FantasticalIdentifiers.calendarsCatalog, type: FantasticalCalendarsCatalog.self,
-          name: "Fantastical Calendars", presentation: .source,
+          name: "Fantastical Calendars", presentation: .hidden,
           description: "Writable calendars, the targets of Add to Fantastical Calendar.",
           enabledByDefault: true),
       ],

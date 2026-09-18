@@ -107,6 +107,33 @@ extension FantasticalActionsCatalog {
 
 enum FantasticalActions {
   static func add(subject: CatalogItem?, task: Bool) -> ActionResult {
+    add(subject: subject) { fields in
+      FantasticalURLBuilder.parseURL(
+        fields: fields, task: task, addImmediately: FantasticalSettings.addImmediately,
+        miniWindow: FantasticalSettings.useMiniWindow)
+    }
+  }
+
+  static func add(subject: CatalogItem?, calendar: FantasticalCalendar) -> ActionResult {
+    add(subject: subject) { fields in
+      parseURL(
+        fields: fields, calendar: calendar, addImmediately: FantasticalSettings.addImmediately,
+        miniWindow: FantasticalSettings.useMiniWindow)
+    }
+  }
+
+  /// The picked calendar replaces any `cal:` field; a task list turns the item into a task.
+  static func parseURL(
+    fields: FantasticalFields, calendar: FantasticalCalendar, addImmediately: Bool, miniWindow: Bool
+  ) -> URL? {
+    var fields = fields
+    fields.calendarName = calendar.title
+    let task = calendar.supportsTasks && (!calendar.supportsEvents || fields.due != nil)
+    return FantasticalURLBuilder.parseURL(
+      fields: fields, task: task, addImmediately: addImmediately, miniWindow: miniWindow)
+  }
+
+  private static func add(subject: CatalogItem?, url: (FantasticalFields) -> URL?) -> ActionResult {
     let fields: FantasticalFields
     do {
       fields = try self.fields(for: subject)
@@ -115,13 +142,8 @@ enum FantasticalActions {
     } catch {
       return .failure("Nothing to add")
     }
-    let addImmediately = FantasticalSettings.addImmediately
     return open(
-      url: FantasticalURLBuilder.parseURL(
-        fields: fields, task: task, addImmediately: addImmediately,
-        miniWindow: FantasticalSettings.useMiniWindow),
-      failure: "Nothing to add",
-      activates: !addImmediately)
+      url: url(fields), failure: "Nothing to add", activates: !FantasticalSettings.addImmediately)
   }
 
   static func fields(for item: CatalogItem?) throws -> FantasticalFields {
