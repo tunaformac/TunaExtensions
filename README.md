@@ -39,7 +39,7 @@ below rather than a generic template, and include the new project in `TunaExtens
 | ChromeExtension | Browse Chrome bookmarks and launch profiles |
 | CleanShotExtension | Browse recent CleanShot images and run capture commands |
 | FancyTextExtension | Turn text into searchable Unicode styles |
-| FantasticalExtension | Add events and tasks to Fantastical, jump to its views |
+| FantasticalExtension | Add events and tasks to Fantastical, browse and search its agenda |
 | GitHubExtension | Repos, issues, and pull requests |
 | GiphyExtension | Search, preview, and paste GIFs from GIPHY |
 | Messages2FAExtension | Find recent authentication codes from Apple Messages |
