@@ -7,8 +7,8 @@ Fantastical's natural language parser.
 
 Browse **Fantastical** (or select Fantastical.app and press →) for **Today**, **Tomorrow**,
 **This Week**, **Next 7 Days**, **This Month**, **This Quarter**, **This Year**, **Tasks**, and
-**By Calendar**, each with its count. Opening the root fetches the year once, so groups open
-instantly. Type inside the root to search every event and task by name. Each item shows its day,
+**By Calendar**, each with its count. Opening the root runs one query per group, so groups open instantly.
+Fantastical answers at most 99 items per query; a group at that limit says so. Type inside the root to search every event and task by name. Each item shows its day,
 time, calendar, and location.
 
 Actions on an item:

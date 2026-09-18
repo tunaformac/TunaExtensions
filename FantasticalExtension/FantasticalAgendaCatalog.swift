@@ -119,50 +119,56 @@ enum FantasticalAgendaSupport {
     return try FantasticalAgendaParser.items(from: result.text)
   }
 
+  /// The helper returns at most this many items per query, so each group gets its own query
+  /// instead of slicing one long range (which would run out before today).
+  static let resultCap = 99
+
   static func browseChildren() async throws -> [CatalogItem] {
     let now = Date()
     let calendar = Calendar.autoupdatingCurrent
     async let calendarsTask = calendars()
-    async let yearTask = items(when: FantasticalAgendaRange.thisYear.when(now: now, calendar: calendar))
-    let calendars = try await calendarsTask
-    let year = sorted(try await yearTask)
-    return sections(from: year, calendars: calendars, now: now, calendar: calendar)
+    let perRange = try await withThrowingTaskGroup(
+      of: (FantasticalAgendaRange, [FantasticalAgendaItem]).self
+    ) { group in
+      for range in FantasticalAgendaRange.allCases {
+        group.addTask { (range, try await items(when: range.when(now: now, calendar: calendar))) }
+      }
+      var results: [FantasticalAgendaRange: [FantasticalAgendaItem]] = [:]
+      for try await (range, found) in group { results[range] = found }
+      return results
+    }
+    return sections(from: perRange, calendars: try await calendarsTask, now: now, calendar: calendar)
   }
 
-  /// One year of items is fetched once; every group is a filter over it, so counts are known up
-  /// front and browsing a group never waits on Fantastical.
   static func sections(
-    from items: [FantasticalAgendaItem], calendars: [FantasticalCalendar], now: Date,
-    calendar: Calendar = .autoupdatingCurrent
+    from perRange: [FantasticalAgendaRange: [FantasticalAgendaItem]], calendars: [FantasticalCalendar],
+    now: Date, calendar: Calendar = .autoupdatingCurrent
   ) -> [CatalogItem] {
     let taskCalendars = Set(calendars.filter { $0.supportsTasks && !$0.supportsEvents }.map(\.id))
     func entities(_ subset: [FantasticalAgendaItem]) -> [CatalogItem] {
       subset.map { entity(for: $0, calendars: calendars, now: now) }
     }
-    func within(_ range: FantasticalAgendaRange) -> [FantasticalAgendaItem] {
-      let interval = range.interval(now: now, calendar: calendar)
-      return items.filter { item in
-        guard let start = item.start, interval.contains(start) else { return false }
-        return !range.tasksOnly || taskCalendars.contains(item.calendarID)
-      }
+    func subset(_ range: FantasticalAgendaRange) -> [FantasticalAgendaItem] {
+      let found = sorted(perRange[range] ?? [])
+      return range.tasksOnly ? found.filter { taskCalendars.contains($0.calendarID) } : found
     }
 
     var sections: [CatalogItem] = FantasticalAgendaRange.allCases.map { range in
-      let subset = within(range)
+      let found = subset(range)
       return FantasticalSectionItem(
-        title: range.title, id: "fantastical.agenda.\(range)", detail: count(subset.count),
-        symbolName: range.symbolName, iconColor: range.iconColor, children: entities(subset),
+        title: range.title, id: "fantastical.agenda.\(range)", detail: count(found.count),
+        symbolName: range.symbolName, iconColor: range.iconColor, children: entities(found),
         sortOrder: range.sortOrder)
     }
 
-    let week = within(.next7Days)
+    let week = subset(.next7Days)
     let perCalendar: [CatalogItem] = calendars.filter(\.isWritable).enumerated().compactMap { index, cal in
-      let subset = week.filter { $0.calendarID == cal.id }
-      guard !subset.isEmpty else { return nil }
+      let mine = week.filter { $0.calendarID == cal.id }
+      guard !mine.isEmpty else { return nil }
       return FantasticalSectionItem(
-        title: cal.title, id: "fantastical.agenda.calendar.\(cal.id)", detail: count(subset.count),
+        title: cal.title, id: "fantastical.agenda.calendar.\(cal.id)", detail: count(mine.count),
         symbolName: cal.supportsTasks ? "checklist" : "calendar",
-        iconColor: cal.supportsTasks ? .blue : .red, children: entities(subset), sortOrder: index)
+        iconColor: cal.supportsTasks ? .blue : .red, children: entities(mine), sortOrder: index)
     }
     if !perCalendar.isEmpty {
       sections.append(
@@ -222,7 +228,10 @@ enum FantasticalAgendaSupport {
     }
   }
 
-  static func count(_ n: Int) -> String { n == 1 ? "1 item" : "\(n) items" }
+  static func count(_ n: Int) -> String {
+    if n >= resultCap { return "\(resultCap)+ items, Fantastical returns the first \(resultCap)" }
+    return n == 1 ? "1 item" : "\(n) items"
+  }
 
   static func messageItem(title: String, message: String, symbolName: String, tint: NSColor) -> CatalogItem {
     CatalogMessageItem(title: title, message: message, symbolName: symbolName, tintColor: tint)
