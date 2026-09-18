@@ -6,8 +6,10 @@ Fantastical's natural language parser.
 ## Agenda
 
 Browse **Fantastical** (or select Fantastical.app and press →) for **Today**, **Tomorrow**,
-**Next 7 Days**, and **By Calendar** groups with counts. Type inside it to search every event and
-task by name. Each item shows its day, time, calendar, and location.
+**This Week**, **Next 7 Days**, **This Month**, **This Quarter**, **This Year**, **Tasks**, and
+**By Calendar**. Each group fetches its events and tasks when you browse into it and then shows
+its count. Type inside the root to search every event and task by name. Each item shows its day,
+time, calendar, and location.
 
 Actions on an item:
 

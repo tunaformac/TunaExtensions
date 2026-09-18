@@ -108,17 +108,3 @@ extension TypeID {
   static let fantasticalItem = TypeID("com.tuna.type.fantastical-item")
   static let fantasticalCalendar = TypeID("com.tuna.type.fantastical-calendar")
 }
-
-extension CatalogIconColorValue {
-  var tunaColor: CatalogIconColor {
-    switch self {
-    case .blue: return .blue
-    case .gray: return .gray
-    case .green: return .green
-    case .orange: return .orange
-    case .red: return .red
-    case .yellow: return .yellow
-    case .purple: return .purple
-    }
-  }
-}

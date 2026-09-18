@@ -113,52 +113,49 @@ enum FantasticalAgendaSupport {
   }
 
   static func browseChildren() async throws -> [CatalogItem] {
-    let now = Date()
-    let calendar = Calendar.autoupdatingCurrent
-    let end = calendar.date(byAdding: .day, value: agendaDays, to: now) ?? now
-    async let calendarsTask = calendars()
-    async let itemsTask = items(when: FantasticalWhen.range(from: now, to: end, calendar: calendar))
-    let calendars = try await calendarsTask
-    let items = sorted(try await itemsTask)
-    let entities = items.map { entity(for: $0, calendars: calendars, now: now) }
-
-    var grouped: [FantasticalAgendaBucket: [CatalogItem]] = [:]
-    for (item, entity) in zip(items, entities) {
-      guard let bucket = FantasticalAgendaBucket.bucket(for: item, now: now, calendar: calendar) else { continue }
-      grouped[bucket, default: []].append(entity)
-    }
-    var sections: [CatalogItem] = FantasticalAgendaBucket.allCases.compactMap { bucket in
-      guard let children = grouped[bucket], !children.isEmpty else { return nil }
-      return FantasticalSectionItem(
-        title: bucket.title, id: "fantastical.agenda.\(bucket)",
-        detail: count(children.count), symbolName: bucket.symbolName,
-        iconColor: bucket.iconColor.tunaColor, children: children)
+    let calendars = try await calendars()
+    let identifier = FantasticalIdentifiers.agendaCatalog
+    var sections: [CatalogItem] = FantasticalAgendaRange.allCases.map { range in
+      FantasticalRangeSectionItem(
+        title: range.title, id: "fantastical.agenda.\(range)", symbolName: range.symbolName,
+        iconColor: range.iconColor, catalogIdentifier: identifier
+      ) {
+        try await load(range: range, calendars: calendars)
+      }
     }
 
-    let byCalendar: [CatalogItem] = calendars.filter(\.isWritable).compactMap { cal in
-      let children = zip(items, entities).filter { $0.0.calendarID == cal.id }.map(\.1)
-      guard !children.isEmpty else { return nil }
-      return FantasticalSectionItem(
-        title: cal.title, id: "fantastical.agenda.calendar.\(cal.id)", detail: count(children.count),
+    let perCalendar: [CatalogItem] = calendars.filter(\.isWritable).map { cal in
+      FantasticalRangeSectionItem(
+        title: cal.title, id: "fantastical.agenda.calendar.\(cal.id)",
         symbolName: cal.supportsTasks ? "checklist" : "calendar",
-        iconColor: cal.supportsTasks ? .blue : .red, children: children)
+        iconColor: cal.supportsTasks ? .blue : .red, catalogIdentifier: identifier
+      ) {
+        try await load(range: .next7Days, calendars: calendars, calendarID: cal.id)
+      }
     }
-    if !byCalendar.isEmpty {
+    if !perCalendar.isEmpty {
       sections.append(
         FantasticalSectionItem(
           title: "By Calendar", id: "fantastical.agenda.by-calendar",
-          detail: "\(byCalendar.count) calendars", symbolName: "folder", iconColor: .gray,
-          children: byCalendar))
-    }
-
-    guard !sections.isEmpty else {
-      return [
-        messageItem(
-          title: "Nothing scheduled", message: "No events or tasks in the next \(agendaDays) days.",
-          symbolName: "calendar", tint: .secondaryLabelColor)
-      ]
+          detail: "\(perCalendar.count) calendars, next 7 days", symbolName: "folder",
+          iconColor: .gray, children: perCalendar))
     }
     return sections
+  }
+
+  static func load(
+    range: FantasticalAgendaRange, calendars: [FantasticalCalendar], calendarID: String? = nil,
+    now: Date = Date()
+  ) async throws -> [CatalogItem] {
+    var arguments: [String: Any] = ["when": range.when(now: now)]
+    if let calendarID { arguments["calendarId"] = calendarID }
+    let result = try await FantasticalMCPClient.shared.call("queryCalendarItems", arguments: arguments)
+    var items = try FantasticalAgendaParser.items(from: result.text)
+    if range.tasksOnly {
+      let taskCalendars = Set(calendars.filter { $0.supportsTasks && !$0.supportsEvents }.map(\.id))
+      items = items.filter { taskCalendars.contains($0.calendarID) }
+    }
+    return sorted(items).map { entity(for: $0, calendars: calendars, now: now) }
   }
 
   static func search(query: String) async throws -> [CatalogItem] {

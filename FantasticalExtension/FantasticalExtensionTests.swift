@@ -222,23 +222,37 @@ final class FantasticalExtensionTests: XCTestCase {
       "September 18, 2026 to September 25, 2026")
   }
 
-  func testAgendaBucketsAndSorting() throws {
+  func testAgendaRangesProduceTheWhenStringsTheHelperAccepts() throws {
     var calendar = Calendar(identifier: .gregorian)
     calendar.timeZone = TimeZone(identifier: "Europe/Paris")!
+    calendar.firstWeekday = 2
     let now = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 9, day: 18, hour: 9)))
-    func item(_ id: String, dayOffset: Int?, hour: Int = 12) -> FantasticalAgendaItem {
-      let start = dayOffset.flatMap { calendar.date(byAdding: .day, value: $0, to: now) }
-        .flatMap { calendar.date(bySettingHour: hour, minute: 0, second: 0, of: $0) }
+    XCTAssertEqual(FantasticalAgendaRange.today.when(now: now, calendar: calendar), "September 18, 2026")
+    XCTAssertEqual(FantasticalAgendaRange.tomorrow.when(now: now, calendar: calendar), "September 19, 2026")
+    XCTAssertEqual(
+      FantasticalAgendaRange.thisWeek.when(now: now, calendar: calendar),
+      "September 14, 2026 to September 20, 2026")
+    XCTAssertEqual(
+      FantasticalAgendaRange.next7Days.when(now: now, calendar: calendar),
+      "September 18, 2026 to September 24, 2026")
+    XCTAssertEqual(
+      FantasticalAgendaRange.thisMonth.when(now: now, calendar: calendar),
+      "September 1, 2026 to September 30, 2026")
+    XCTAssertEqual(
+      FantasticalAgendaRange.thisQuarter.when(now: now, calendar: calendar),
+      "July 1, 2026 to September 30, 2026")
+    XCTAssertEqual(
+      FantasticalAgendaRange.thisYear.when(now: now, calendar: calendar),
+      "January 1, 2026 to December 31, 2026")
+    XCTAssertTrue(FantasticalAgendaRange.tasks.tasksOnly)
+
+    func item(_ id: String, day: Int?) -> FantasticalAgendaItem {
+      let start = day.flatMap { calendar.date(from: DateComponents(year: 2026, month: 9, day: $0, hour: 12)) }
       return FantasticalAgendaItem(id: id, title: id, calendarID: "c", start: start, end: start, location: nil)
     }
-    XCTAssertEqual(FantasticalAgendaBucket.bucket(for: item("a", dayOffset: 0), now: now, calendar: calendar), .today)
-    XCTAssertEqual(FantasticalAgendaBucket.bucket(for: item("b", dayOffset: 1), now: now, calendar: calendar), .tomorrow)
-    XCTAssertEqual(FantasticalAgendaBucket.bucket(for: item("c", dayOffset: 4), now: now, calendar: calendar), .week)
-    XCTAssertNil(FantasticalAgendaBucket.bucket(for: item("d", dayOffset: -2), now: now, calendar: calendar))
-    XCTAssertNil(FantasticalAgendaBucket.bucket(for: item("e", dayOffset: nil), now: now, calendar: calendar))
-
-    let sorted = FantasticalAgendaSupport.sorted([item("z", dayOffset: nil), item("c", dayOffset: 4), item("a", dayOffset: 0)])
-    XCTAssertEqual(sorted.map(\.id), ["a", "c", "z"])
+    XCTAssertEqual(
+      FantasticalAgendaSupport.sorted([item("z", day: nil), item("c", day: 22), item("a", day: 18)]).map(\.id),
+      ["a", "c", "z"])
   }
 
   func testAgendaDetailFormatting() throws {

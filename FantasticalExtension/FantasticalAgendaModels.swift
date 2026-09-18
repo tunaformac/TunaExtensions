@@ -101,54 +101,6 @@ enum FantasticalWhen {
   }
 }
 
-enum FantasticalAgendaBucket: Int, CaseIterable, Sendable {
-  case today
-  case tomorrow
-  case week
-
-  var title: String {
-    switch self {
-    case .today: return "Today"
-    case .tomorrow: return "Tomorrow"
-    case .week: return "Next 7 Days"
-    }
-  }
-
-  var symbolName: String {
-    switch self {
-    case .today: return "sun.max"
-    case .tomorrow: return "sunrise"
-    case .week: return "calendar"
-    }
-  }
-
-  var iconColor: CatalogIconColorValue {
-    switch self {
-    case .today: return .orange
-    case .tomorrow: return .yellow
-    case .week: return .blue
-    }
-  }
-
-  static func bucket(for item: FantasticalAgendaItem, now: Date, calendar: Calendar = .autoupdatingCurrent)
-    -> FantasticalAgendaBucket?
-  {
-    guard let start = item.start else { return nil }
-    if calendar.isDate(start, inSameDayAs: now) { return .today }
-    if let tomorrow = calendar.date(byAdding: .day, value: 1, to: now),
-      calendar.isDate(start, inSameDayAs: tomorrow)
-    {
-      return .tomorrow
-    }
-    return start > now ? .week : nil
-  }
-}
-
-/// Mirror of TunaKit's icon colors so models stay framework-free and testable.
-enum CatalogIconColorValue: Sendable {
-  case blue, gray, green, orange, red, yellow, purple
-}
-
 enum FantasticalAgendaFormat {
   static func detail(
     _ item: FantasticalAgendaItem, calendarTitle: String?, now: Date = Date(),
