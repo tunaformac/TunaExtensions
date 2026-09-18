@@ -2,7 +2,7 @@ import Foundation
 import TunaKit
 
 enum FantasticalURLBuilder {
-  static let mainScheme = "x-fantastical3"
+  static let mainScheme = "x-fantastical"
   static let miniScheme = "x-fantastical-mini"
 
   static func parseURL(
@@ -15,31 +15,45 @@ enum FantasticalURLBuilder {
       fields: fields, task: task, addImmediately: addImmediately, miniWindow: miniWindow)
   }
 
+  /// Fantastical 4.2 applies only `sentence`, `notes`, `url`, and `add` from a parse URL while
+  /// the preview is shown; the other documented parameters are ignored. Every other field is
+  /// therefore written in the parser's own grammar: `todo`, a quoted title, `from … to …`, dates
+  /// as text, `all day`, and `/Calendar`.
   static func parseURL(
     fields: FantasticalFields, task: Bool, addImmediately: Bool, miniWindow: Bool
   ) -> URL? {
     guard fields.hasContent else { return nil }
-    var queryItems: [URLQueryItem] = []
-    let values: [(String, String?)] = [
-      ("sentence", fields.sentence), ("title", fields.title), ("start", fields.start),
-      ("end", fields.end), ("due", fields.due), ("calendarName", fields.calendarName),
-      ("url", fields.url), ("notes", fields.notes),
+    var queryItems = [
+      percentEncodedQueryItem(name: "sentence", value: sentence(for: fields, task: task))
     ]
-    for (name, value) in values {
+    for (name, value) in [("url", fields.url), ("notes", fields.notes)] {
       if let value {
         queryItems.append(percentEncodedQueryItem(name: name, value: value))
       }
-    }
-    if fields.allDay {
-      queryItems.append(URLQueryItem(name: "allDay", value: "1"))
-    }
-    if task {
-      queryItems.append(URLQueryItem(name: "task", value: "1"))
     }
     if addImmediately {
       queryItems.append(URLQueryItem(name: "add", value: "1"))
     }
     return url(miniWindow: miniWindow, host: "parse", path: "", queryItems: queryItems)
+  }
+
+  static func sentence(for fields: FantasticalFields, task: Bool) -> String {
+    var parts: [String] = []
+    if task { parts.append("todo") }
+    if let title = fields.title {
+      parts.append("\"" + title.replacingOccurrences(of: "\"", with: "'") + "\"")
+    }
+    if let sentence = fields.sentence { parts.append(sentence) }
+    switch (fields.start, fields.end) {
+    case (let start?, let end?): parts.append("from \(start) to \(end)")
+    case (let start?, nil): parts.append(start)
+    case (nil, let end?): parts.append("until \(end)")
+    case (nil, nil): break
+    }
+    if let due = fields.due { parts.append(due) }
+    if fields.allDay { parts.append("all day") }
+    if let calendar = fields.calendarName { parts.append("/" + calendar) }
+    return parts.joined(separator: " ")
   }
 
   static func searchURL(query: String, miniWindow: Bool) -> URL? {

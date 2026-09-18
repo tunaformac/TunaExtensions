@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.5.3
+## 0.5.4
 
 - Initial release.
 - Agenda: search events and tasks as you type, or browse Today, Tomorrow, Next 7 Days, and By

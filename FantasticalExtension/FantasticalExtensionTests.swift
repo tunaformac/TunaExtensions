@@ -11,7 +11,7 @@ final class FantasticalExtensionTests: XCTestCase {
         sentence: " Lunch with Sam friday 12h30 +1 ", task: false, addImmediately: false,
         miniWindow: false))
 
-    XCTAssertEqual(url.scheme, "x-fantastical3")
+    XCTAssertEqual(url.scheme, "x-fantastical")
     XCTAssertEqual(url.host, "parse")
     XCTAssertEqual(url.query, "sentence=Lunch%20with%20Sam%20friday%2012h30%20%2B1")
   }
@@ -22,7 +22,7 @@ final class FantasticalExtensionTests: XCTestCase {
         sentence: "Call bank", task: true, addImmediately: true, miniWindow: true))
 
     XCTAssertEqual(url.scheme, "x-fantastical-mini")
-    XCTAssertEqual(url.query, "sentence=Call%20bank&task=1&add=1")
+    XCTAssertEqual(url.query, "sentence=todo%20Call%20bank&add=1")
   }
 
   func testParseURLRejectsBlankText() {
@@ -39,25 +39,25 @@ final class FantasticalExtensionTests: XCTestCase {
 
     XCTAssertEqual(
       FantasticalURLBuilder.showURL(for: .today, now: now, calendar: calendar)?.absoluteString,
-      "x-fantastical3://date/2026-09-17")
+      "x-fantastical://date/2026-09-17")
     XCTAssertEqual(
       FantasticalURLBuilder.showURL(for: .tomorrow, now: now, calendar: calendar)?.absoluteString,
-      "x-fantastical3://date/2026-09-18")
+      "x-fantastical://date/2026-09-18")
     XCTAssertEqual(
       FantasticalURLBuilder.showURL(for: .calendar)?.absoluteString,
-      "x-fantastical3://show/calendar")
+      "x-fantastical://show/calendar")
     XCTAssertEqual(
       FantasticalURLBuilder.showURL(for: .miniWindow)?.absoluteString,
       "x-fantastical-mini://show/mini")
     XCTAssertEqual(
       FantasticalURLBuilder.showURL(for: .calendarSet("Work Week"))?.absoluteString,
-      "x-fantastical3://show/set?name=Work%20Week")
+      "x-fantastical://show/set?name=Work%20Week")
   }
 
   func testSearchURL() {
     XCTAssertEqual(
       FantasticalURLBuilder.searchURL(query: "dentist", miniWindow: false)?.absoluteString,
-      "x-fantastical3://search?s=dentist")
+      "x-fantastical://search?s=dentist")
   }
 
   func testParseDateAcceptsISOAndWholeTextDates() throws {
@@ -182,8 +182,8 @@ final class FantasticalExtensionTests: XCTestCase {
 
     XCTAssertEqual(
       url.query,
-      "sentence=Dentist&title=Dentist%20visit&start=2026-10-03%2014%3A00&calendarName=Perso"
-        + "&url=https%3A%2F%2Fx.com&notes=bring%20card&allDay=1&task=1")
+      "sentence=todo%20%22Dentist%20visit%22%20Dentist%202026-10-03%2014%3A00%20all%20day%20%2FPerso"
+        + "&url=https%3A%2F%2Fx.com&notes=bring%20card")
   }
 
   func testLinkItemsBecomeSentencePlusURL() throws {
@@ -374,7 +374,7 @@ final class FantasticalExtensionTests: XCTestCase {
     let taskURL = try XCTUnwrap(
       FantasticalActions.parseURL(fields: fields, calendar: tasks, addImmediately: false, miniWindow: false))
     XCTAssertEqual(
-      taskURL.query, "sentence=buy%20printer%20paper&due=next%20friday&calendarName=My%20Tasks&task=1")
+      taskURL.query, "sentence=todo%20buy%20printer%20paper%20next%20friday%20%2FMy%20Tasks")
 
     let events = FantasticalCalendar(
       id: "e", title: "Perso", isWritable: true, supportsEvents: true, supportsTasks: false, sourceName: "")
@@ -382,7 +382,7 @@ final class FantasticalExtensionTests: XCTestCase {
       FantasticalActions.parseURL(
         fields: try FantasticalFields.parse("Lunch friday 12h30").get(), calendar: events,
         addImmediately: true, miniWindow: true))
-    XCTAssertEqual(eventURL.query, "sentence=Lunch%20friday%2012h30&calendarName=Perso&add=1")
+    XCTAssertEqual(eventURL.query, "sentence=Lunch%20friday%2012h30%20%2FPerso&add=1")
   }
 
   @MainActor

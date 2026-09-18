@@ -40,7 +40,9 @@ not shown and tasks cannot be completed from Tuna.
 ## Fields
 
 Add details the parser cannot guess by appending fields after the separator (default `--`, change
-it in settings):
+it in settings). Fantastical ignores most structured URL parameters while its preview is open, so
+the fields are written into the sentence in its own grammar (`todo`, a quoted title, `from X to Y`,
+`all day`, `/Calendar`); only `notes:` and `url:` travel as parameters.
 
 ```
 Dentist tomorrow 15h -- notes: bring the card -- cal: Perso -- url: https://doctolib.fr/x -- allday
