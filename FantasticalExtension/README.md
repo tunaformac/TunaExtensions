@@ -61,6 +61,10 @@ without spaces works, for example `>>` or `;;`. The separator only counts when i
 between spaces, so `https://x.com/a--b` is safe. macOS may turn `--` into an em dash while you type;
 both are accepted.
 
+Fantastical's own words (`/Calendar`, `at Place`, `alert 30 minutes`, `todo`) belong in the sentence,
+before the first separator; text after a field key is taken literally, so `notes: test /Perso` puts
+`/Perso` in the note. A partial calendar name is enough: `cal: Perso` picks "Personnel".
+
 Fields are translated into Fantastical's own grammar (`todo`, a quoted title, `from X to Y`,
 `all day`, `alert`, `/Calendar`) because Fantastical ignores most structured URL parameters while
 its preview is open; only notes and the URL travel as parameters.
