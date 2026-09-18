@@ -256,12 +256,12 @@ final class FantasticalExtensionTests: XCTestCase {
   }
 
   func testAgendaSortKeepsGroupOrderThenSoonestItems() {
-    let today = FantasticalRangeSectionItem(
-      title: "Today", id: "t", symbolName: "sun.max", iconColor: .orange, sortOrder: 0,
-      catalogIdentifier: "x") { [] }
-    let year = FantasticalRangeSectionItem(
-      title: "This Year", id: "y", symbolName: "calendar", iconColor: .gray, sortOrder: 6,
-      catalogIdentifier: "x") { [] }
+    let today = FantasticalSectionItem(
+      title: "Today", id: "t", detail: nil, symbolName: "sun.max", iconColor: .orange, children: [],
+      sortOrder: 0)
+    let year = FantasticalSectionItem(
+      title: "This Year", id: "y", detail: nil, symbolName: "calendar", iconColor: .gray, children: [],
+      sortOrder: 6)
     let byCalendar = FantasticalSectionItem(
       title: "By Calendar", id: "b", detail: nil, symbolName: "folder", iconColor: .gray, children: [],
       sortOrder: 7)
@@ -273,6 +273,32 @@ final class FantasticalExtensionTests: XCTestCase {
       calendarTitle: nil, isTask: false)
     let sorted = FantasticalAgendaSort.options[0].sort([later, byCalendar, year, soon, today])
     XCTAssertEqual(sorted.map(\.id), ["t", "y", "b", "fantastical.item.1", "fantastical.item.2"])
+  }
+
+  func testSectionsAreBuiltFromOneYearOfItemsWithCounts() throws {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "Europe/Paris")!
+    let now = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 9, day: 18, hour: 9)))
+    let cals = [
+      FantasticalCalendar(id: "e", title: "Perso", isWritable: true, supportsEvents: true, supportsTasks: false, sourceName: "G"),
+      FantasticalCalendar(id: "t", title: "Tasks", isWritable: true, supportsEvents: false, supportsTasks: true, sourceName: "G"),
+    ]
+    func item(_ id: String, cal: String, day: Int, month: Int = 9) -> FantasticalAgendaItem {
+      let start = calendar.date(from: DateComponents(year: 2026, month: month, day: day, hour: 12))
+      return FantasticalAgendaItem(id: id, title: id, calendarID: cal, start: start, end: start, location: nil)
+    }
+    let sections = FantasticalAgendaSupport.sections(
+      from: [item("a", cal: "e", day: 18), item("b", cal: "t", day: 19), item("c", cal: "e", day: 30, month: 11)],
+      calendars: cals, now: now, calendar: calendar)
+    let byID = Dictionary(uniqueKeysWithValues: sections.map { ($0.id, $0) })
+    XCTAssertEqual(byID["fantastical.agenda.today"]?.detail, "1 item")
+    XCTAssertEqual(byID["fantastical.agenda.tomorrow"]?.detail, "1 item")
+    XCTAssertEqual(byID["fantastical.agenda.tasks"]?.detail, "1 item")
+    XCTAssertEqual(byID["fantastical.agenda.thisYear"]?.detail, "3 items")
+    XCTAssertEqual(byID["fantastical.agenda.by-calendar"]?.detail, "2 calendars, next 7 days")
+    XCTAssertEqual(
+      (byID["fantastical.agenda.today"] as? FantasticalSectionItem)?.hierarchyChildren().map(\.id),
+      ["fantastical.item.a"])
   }
 
   func testAgendaDetailFormatting() throws {
@@ -347,21 +373,14 @@ final class FantasticalExtensionTests: XCTestCase {
     let ids = catalog.actions.map(\.id)
 
     XCTAssertTrue(ids.contains(FantasticalIdentifiers.showAction))
-    for id in FantasticalActionsCatalog.textActionIDs + FantasticalActionsCatalog.appActionIDs {
+    for id in FantasticalActionsCatalog.textActionIDs {
       XCTAssertTrue(ids.contains(id), "missing action \(id)")
     }
     XCTAssertEqual(ids.count, Set(ids).count, "action ids must be unique")
 
     let add = try XCTUnwrap(catalog.actions.first { $0.id == "add-to-fantastical" })
     XCTAssertEqual(add.supportedSubjectTypes, [.textSnippet, .url])
-
-    let newEvent = try XCTUnwrap(catalog.actions.first { $0.id == "new-event" })
-    XCTAssertEqual(newEvent.supportedSubjectTypes, [.application])
-    XCTAssertEqual(newEvent.allowedTargetTypes, [.textSnippet])
-    if case .required = newEvent.targetRequirement {
-      // Expected.
-    } else {
-      XCTFail("App-scoped actions must require typed text as target")
-    }
+    let show = try XCTUnwrap(catalog.actions.first { $0.id == FantasticalIdentifiers.showAction })
+    XCTAssertEqual(show.supportedSubjectTypes, [.fantasticalDestination, .fantasticalItem])
   }
 }

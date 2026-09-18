@@ -4,28 +4,11 @@ import TunaKit
 
 extension FantasticalActionsCatalog {
   static let agendaActionIDs = [
-    FantasticalIdentifiers.showItemAction, "reschedule", "rename", "change-location", "delete-item",
-    "add-to-fantastical-calendar",
+    "reschedule", "rename", "change-location", "delete-item", "add-to-fantastical-calendar",
   ]
 
   static func agendaActions() -> [CatalogAction] {
     var items: [CatalogAction] = []
-
-    let showItem = PredicateAwareAction(
-      id: FantasticalIdentifiers.showItemAction, title: "Show in Fantastical"
-    ) { subject, _ in
-      guard let entity = subject as? FantasticalAgendaEntity else {
-        return .failure("No Fantastical item selected")
-      }
-      let url =
-        entity.item.start.flatMap { FantasticalURLBuilder.dateURL($0) }
-        ?? FantasticalURLBuilder.searchURL(query: entity.title, miniWindow: false)
-      return FantasticalActions.open(url: url, failure: "Invalid Fantastical URL")
-    }
-    showItem.systemSymbolName = "arrow.up.right.square"
-    showItem.supportedSubjectTypes = [.fantasticalItem]
-    showItem.subjectPredicate = { $0 is FantasticalAgendaEntity }
-    items.append(showItem)
 
     items.append(
       makeModifyAction(

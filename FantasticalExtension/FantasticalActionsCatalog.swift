@@ -6,8 +6,7 @@ public final class FantasticalActionsCatalog: NSObject, ActionCatalog {
   public let identifier: String
   public let name: String
 
-  public private(set) lazy var actions: [CatalogAction] =
-    Self.actions() + Self.appActions() + Self.agendaActions()
+  public private(set) lazy var actions: [CatalogAction] = Self.actions() + Self.agendaActions()
 
   public required init(definition: ActionCatalogDefinition) {
     self.identifier = definition.identifier
@@ -20,7 +19,6 @@ extension FantasticalActionsCatalog {
   static let textActionIDs = [
     "add-to-fantastical", "add-task-to-fantastical", "search-fantastical", "show-date-in-fantastical",
   ]
-  static let appActionIDs = ["new-event", "new-task", "search"]
 
   static func actions() -> [CatalogAction] {
     var items: [CatalogAction] = []
@@ -28,16 +26,21 @@ extension FantasticalActionsCatalog {
     let show = PredicateAwareAction(
       id: FantasticalIdentifiers.showAction, title: "Show in Fantastical"
     ) { subject, _ in
-      guard let item = subject as? FantasticalDestinationItem else {
-        return .failure("No Fantastical view selected")
+      if let view = subject as? FantasticalDestinationItem {
+        return FantasticalActions.open(
+          url: FantasticalURLBuilder.showURL(for: view.destination), failure: "Invalid Fantastical URL")
       }
-      return FantasticalActions.open(
-        url: FantasticalURLBuilder.showURL(for: item.destination),
-        failure: "Invalid Fantastical URL")
+      if let entity = subject as? FantasticalAgendaEntity {
+        let url =
+          entity.item.start.flatMap { FantasticalURLBuilder.dateURL($0) }
+          ?? FantasticalURLBuilder.searchURL(query: entity.title, miniWindow: false)
+        return FantasticalActions.open(url: url, failure: "Invalid Fantastical URL")
+      }
+      return .failure("Nothing to show")
     }
     show.systemSymbolName = "arrow.up.right.square"
-    show.supportedSubjectTypes = [.fantasticalDestination]
-    show.subjectPredicate = { $0 is FantasticalDestinationItem }
+    show.supportedSubjectTypes = [.fantasticalDestination, .fantasticalItem]
+    show.subjectPredicate = { $0 is FantasticalDestinationItem || $0 is FantasticalAgendaEntity }
     items.append(show)
 
     items.append(
@@ -72,26 +75,6 @@ extension FantasticalActionsCatalog {
     return items
   }
 
-  static func appActions() -> [CatalogAction] {
-    [
-      makeAppAction(id: "new-event", title: "New Event", symbolName: "plus.circle") { target in
-        FantasticalActions.add(subject: target, task: false)
-      },
-      makeAppAction(id: "new-task", title: "New Task", symbolName: "checkmark.circle") { target in
-        FantasticalActions.add(subject: target, task: true)
-      },
-      makeAppAction(id: "search", title: "Search", symbolName: "magnifyingglass") { target in
-        guard let text = FantasticalURLBuilder.textValue(for: target) else {
-          return .failure("Missing search query")
-        }
-        return FantasticalActions.open(
-          url: FantasticalURLBuilder.searchURL(
-            query: text, miniWindow: FantasticalSettings.useMiniWindow),
-          failure: "Missing search query")
-      },
-    ]
-  }
-
   /// Typed text with inline fields, or a link item, becomes a Fantastical event or task.
   private static func makeAddAction(
     id: String, title: String, symbolName: String, task: Bool
@@ -118,21 +101,6 @@ extension FantasticalActionsCatalog {
     action.systemSymbolName = symbolName
     action.supportedSubjectTypes = [.textSnippet]
     action.subjectPredicate = { FantasticalURLBuilder.textValue(for: $0) != nil }
-    return action
-  }
-
-  /// Subject is Fantastical.app, the typed text arrives as the target.
-  private static func makeAppAction(
-    id: String, title: String, symbolName: String,
-    perform: @escaping (CatalogItem?) -> ActionResult
-  ) -> CatalogAction {
-    let action = PredicateAwareAction(id: id, title: title) { _, target in perform(target) }
-    action.targetRequirement = .required
-    action.systemSymbolName = symbolName
-    action.supportedSubjectTypes = [.application]
-    action.allowedTargetTypes = [.textSnippet]
-    action.subjectPredicate = FantasticalActions.isFantasticalApplication
-    action.targetPredicate = { FantasticalURLBuilder.textValue(for: $0) != nil }
     return action
   }
 }

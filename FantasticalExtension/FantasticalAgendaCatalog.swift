@@ -120,25 +120,49 @@ enum FantasticalAgendaSupport {
   }
 
   static func browseChildren() async throws -> [CatalogItem] {
-    let calendars = try await calendars()
-    let identifier = FantasticalIdentifiers.agendaCatalog
-    var sections: [CatalogItem] = FantasticalAgendaRange.allCases.map { range in
-      FantasticalRangeSectionItem(
-        title: range.title, id: "fantastical.agenda.\(range)", symbolName: range.symbolName,
-        iconColor: range.iconColor, sortOrder: range.sortOrder, catalogIdentifier: identifier
-      ) {
-        try await load(range: range, calendars: calendars)
+    let now = Date()
+    let calendar = Calendar.autoupdatingCurrent
+    async let calendarsTask = calendars()
+    async let yearTask = items(when: FantasticalAgendaRange.thisYear.when(now: now, calendar: calendar))
+    let calendars = try await calendarsTask
+    let year = sorted(try await yearTask)
+    return sections(from: year, calendars: calendars, now: now, calendar: calendar)
+  }
+
+  /// One year of items is fetched once; every group is a filter over it, so counts are known up
+  /// front and browsing a group never waits on Fantastical.
+  static func sections(
+    from items: [FantasticalAgendaItem], calendars: [FantasticalCalendar], now: Date,
+    calendar: Calendar = .autoupdatingCurrent
+  ) -> [CatalogItem] {
+    let taskCalendars = Set(calendars.filter { $0.supportsTasks && !$0.supportsEvents }.map(\.id))
+    func entities(_ subset: [FantasticalAgendaItem]) -> [CatalogItem] {
+      subset.map { entity(for: $0, calendars: calendars, now: now) }
+    }
+    func within(_ range: FantasticalAgendaRange) -> [FantasticalAgendaItem] {
+      let interval = range.interval(now: now, calendar: calendar)
+      return items.filter { item in
+        guard let start = item.start, interval.contains(start) else { return false }
+        return !range.tasksOnly || taskCalendars.contains(item.calendarID)
       }
     }
 
-    let perCalendar: [CatalogItem] = calendars.filter(\.isWritable).enumerated().map { index, cal in
-      FantasticalRangeSectionItem(
-        title: cal.title, id: "fantastical.agenda.calendar.\(cal.id)",
+    var sections: [CatalogItem] = FantasticalAgendaRange.allCases.map { range in
+      let subset = within(range)
+      return FantasticalSectionItem(
+        title: range.title, id: "fantastical.agenda.\(range)", detail: count(subset.count),
+        symbolName: range.symbolName, iconColor: range.iconColor, children: entities(subset),
+        sortOrder: range.sortOrder)
+    }
+
+    let week = within(.next7Days)
+    let perCalendar: [CatalogItem] = calendars.filter(\.isWritable).enumerated().compactMap { index, cal in
+      let subset = week.filter { $0.calendarID == cal.id }
+      guard !subset.isEmpty else { return nil }
+      return FantasticalSectionItem(
+        title: cal.title, id: "fantastical.agenda.calendar.\(cal.id)", detail: count(subset.count),
         symbolName: cal.supportsTasks ? "checklist" : "calendar",
-        iconColor: cal.supportsTasks ? .blue : .red, sortOrder: index, catalogIdentifier: identifier
-      ) {
-        try await load(range: .next7Days, calendars: calendars, calendarID: cal.id)
-      }
+        iconColor: cal.supportsTasks ? .blue : .red, children: entities(subset), sortOrder: index)
     }
     if !perCalendar.isEmpty {
       sections.append(
@@ -148,21 +172,6 @@ enum FantasticalAgendaSupport {
           iconColor: .gray, children: perCalendar, sortOrder: 7))
     }
     return sections
-  }
-
-  static func load(
-    range: FantasticalAgendaRange, calendars: [FantasticalCalendar], calendarID: String? = nil,
-    now: Date = Date()
-  ) async throws -> [CatalogItem] {
-    var arguments: [String: Any] = ["when": range.when(now: now)]
-    if let calendarID { arguments["calendarId"] = calendarID }
-    let result = try await FantasticalMCPClient.shared.call("queryCalendarItems", arguments: arguments)
-    var items = try FantasticalAgendaParser.items(from: result.text)
-    if range.tasksOnly {
-      let taskCalendars = Set(calendars.filter { $0.supportsTasks && !$0.supportsEvents }.map(\.id))
-      items = items.filter { taskCalendars.contains($0.calendarID) }
-    }
-    return sorted(items).map { entity(for: $0, calendars: calendars, now: now) }
   }
 
   static func search(query: String) async throws -> [CatalogItem] {

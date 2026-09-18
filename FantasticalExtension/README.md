@@ -7,8 +7,8 @@ Fantastical's natural language parser.
 
 Browse **Fantastical** (or select Fantastical.app and press →) for **Today**, **Tomorrow**,
 **This Week**, **Next 7 Days**, **This Month**, **This Quarter**, **This Year**, **Tasks**, and
-**By Calendar**. Each group fetches its events and tasks when you browse into it and then shows
-its count. Type inside the root to search every event and task by name. Each item shows its day,
+**By Calendar**, each with its count. Opening the root fetches the year once, so groups open
+instantly. Type inside the root to search every event and task by name. Each item shows its day,
 time, calendar, and location.
 
 Actions on an item:
@@ -66,8 +66,7 @@ The **Fantastical Views** source lists Today, Tomorrow, Calendar (main window), 
 `Set: Name` entry per calendar set you add in settings. Select one to open it; its Fantastical URL is
 the copy and text value.
 
-Select Fantastical.app in Tuna to browse the views, or use the app-scoped **New Event**, **New
-Task**, and **Search** actions with typed text as the target.
+Select Fantastical.app in Tuna and press → to browse the agenda and the views.
 
 ## Settings
 

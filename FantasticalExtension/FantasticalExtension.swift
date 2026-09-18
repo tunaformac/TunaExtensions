@@ -90,7 +90,7 @@ public final class FantasticalExtension: Extension {
           actions: [
             ActionReference(
               catalogIdentifier: FantasticalIdentifiers.actionCatalog,
-              actionID: FantasticalIdentifiers.showItemAction),
+              actionID: FantasticalIdentifiers.showAction),
             ActionReference(
               catalogIdentifier: FantasticalIdentifiers.actionCatalog, actionID: "reschedule"),
           ]
@@ -122,5 +122,4 @@ enum FantasticalIdentifiers {
   static let calendarsCatalog = "fantastical.calendars"
   static let actionCatalog = "fantastical.actions"
   static let showAction = "show-in-fantastical"
-  static let showItemAction = "show-item-in-fantastical"
 }
