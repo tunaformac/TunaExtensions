@@ -11,7 +11,7 @@ public final class FantasticalExtension: Extension {
         description: "Add events and tasks to Fantastical, browse and search your agenda.",
         iconName: "calendar"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.96", minTunaKit: "1.22.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.99", minTunaKit: "1.22.0"),
       settings: [
         CatalogSettingDefinition(
           key: FantasticalSettings.addImmediatelyKey,
