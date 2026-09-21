@@ -459,4 +459,54 @@ final class FantasticalExtensionTests: XCTestCase {
     let show = try XCTUnwrap(catalog.actions.first { $0.id == FantasticalIdentifiers.showAction })
     XCTAssertEqual(show.supportedSubjectTypes, [.fantasticalDestination, .fantasticalItem])
   }
+
+  func testAllDayCoversBothHelperShapes() throws {
+    let calendar = Calendar.autoupdatingCurrent
+    let midnight = calendar.startOfDay(for: Date())
+    let nextMidnight = try XCTUnwrap(calendar.date(byAdding: .day, value: 1, to: midnight))
+
+    func item(start: Date?, end: Date?) -> FantasticalAgendaItem {
+      FantasticalAgendaItem(id: "x", title: "x", calendarID: "c", start: start, end: end, location: nil)
+    }
+
+    XCTAssertTrue(item(start: midnight, end: midnight).isAllDay, "one midnight instant")
+    XCTAssertTrue(item(start: midnight, end: nextMidnight).isAllDay, "midnight through next midnight")
+    XCTAssertTrue(item(start: midnight, end: nil).isAllDay, "midnight with no end")
+    XCTAssertFalse(item(start: midnight.addingTimeInterval(3600), end: nil).isAllDay, "timed start, no end")
+    XCTAssertFalse(item(start: midnight.addingTimeInterval(3600), end: nextMidnight).isAllDay)
+    XCTAssertFalse(item(start: nil, end: nil).isAllDay, "undated")
+  }
+
+  @MainActor func testCalendarsCatalogScanKeepsOnlyWritableCalendars() async {
+    let catalog = FantasticalCalendarsCatalog(
+      definition: CatalogDefinition(
+        identifier: FantasticalIdentifiers.calendarsCatalog, name: "Fantastical Calendars",
+        enabledByDefault: true, settings: []))
+    catalog.loadCalendars = {
+      [
+        FantasticalCalendar(
+          id: "1", title: "Perso", isWritable: true, supportsEvents: true, supportsTasks: false,
+          sourceName: "iCloud"),
+        FantasticalCalendar(
+          id: "2", title: "Jours feries", isWritable: false, supportsEvents: true,
+          supportsTasks: false, sourceName: "Subscribed"),
+      ]
+    }
+
+    await catalog.scan()
+
+    XCTAssertEqual(catalog.objects.map(\.title), ["Perso"])
+  }
+
+  @MainActor func testCalendarsCatalogScanExplainsAnEmptyResult() async {
+    let catalog = FantasticalCalendarsCatalog(
+      definition: CatalogDefinition(
+        identifier: FantasticalIdentifiers.calendarsCatalog, name: "Fantastical Calendars",
+        enabledByDefault: true, settings: []))
+    catalog.loadCalendars = { [] }
+
+    await catalog.scan()
+
+    XCTAssertEqual(catalog.objects.map(\.title), ["No Writable Calendars"])
+  }
 }

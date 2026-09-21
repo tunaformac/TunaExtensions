@@ -17,10 +17,14 @@ struct FantasticalAgendaItem: Equatable, Sendable {
   let end: Date?
   let location: String?
 
+  /// The helper spells an all-day item either as a single midnight instant or as midnight through
+  /// midnight on a later day, so both shapes count. A start that is not midnight is a timed item
+  /// even when the helper sends no end.
   var isAllDay: Bool {
-    guard let start, let end else { return start != nil && end == nil }
     let calendar = Calendar.autoupdatingCurrent
-    return start == end && calendar.dateComponents([.hour, .minute], from: start) == DateComponents(hour: 0, minute: 0)
+    guard let start, calendar.startOfDay(for: start) == start else { return false }
+    guard let end else { return true }
+    return end == start || calendar.startOfDay(for: end) == end
   }
 }
 

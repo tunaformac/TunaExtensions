@@ -72,6 +72,12 @@ public final class FantasticalCalendarsCatalog: NSObject, Catalog, StartupScanni
 
   private let itemsStore = LockedValue<[CatalogItem]>([])
 
+  /// Where the writable calendars come from. Tests substitute a loader so a scan never reaches
+  /// Fantastical's helper.
+  var loadCalendars: () async throws -> [FantasticalCalendar] = {
+    try await FantasticalAgendaSupport.calendars()
+  }
+
   public var objects: [CatalogItem] { itemsStore.readValue { $0 } }
 
   public required init(definition: CatalogDefinition) {
@@ -81,13 +87,8 @@ public final class FantasticalCalendarsCatalog: NSObject, Catalog, StartupScanni
   }
 
   public func scan() async {
-    if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil {
-      itemsStore.value = []
-      reportScanFinished()
-      return
-    }
     do {
-      let calendars = try await FantasticalAgendaSupport.calendars().filter(\.isWritable)
+      let calendars = try await loadCalendars().filter(\.isWritable)
       itemsStore.value = calendars.map(FantasticalCalendarEntity.init(calendar:))
       if calendars.isEmpty {
         itemsStore.value = [
