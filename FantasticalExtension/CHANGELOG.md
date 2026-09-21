@@ -3,9 +3,9 @@
 ## 0.5.7
 
 - Initial release.
-- Agenda: search events and tasks as you type, or browse Today, Tomorrow, Next 7 Days, and By
-  Calendar, through Fantastical's built-in MCP helper. Reschedule, rename, change location, and
-  delete (with confirmation) items.
+- Agenda: search events and tasks as you type, or browse Today, Tomorrow, This Week, Next 7 Days,
+  This Month, This Quarter, This Year, Tasks, and By Calendar, through Fantastical's built-in MCP
+  helper. Reschedule, rename, change location, and delete (with confirmation) items.
 - Add to Fantastical, Add Task to Fantastical, Add to Fantastical Calendar, Search Fantastical, and
   Show Date in Fantastical text actions with inline fields (title, start, end, due, allday, alert,
   cal, url, notes) after a configurable separator; link items become events with the address attached.
