@@ -72,15 +72,20 @@ actor FantasticalMCPClient {
   }
 
   /// The helper answers one request at a time; parallel calls make it drop its connection to
-  /// Fantastical, so calls queue behind each other.
+  /// Fantastical, so calls queue. Cancelling drops queued work; in-flight calls hit the deadline.
   func call(_ tool: String, arguments: [String: Any] = [:]) async throws -> FantasticalMCPResult {
     let prior = chain
     let task = Task<FantasticalMCPResult, Error> {
       await prior?.value
+      try Task.checkCancellation()
       return try await self.performCall(tool, arguments: arguments)
     }
     chain = Task { _ = try? await task.value }
-    return try await task.value
+    return try await withTaskCancellationHandler {
+      try await task.value
+    } onCancel: {
+      task.cancel()
+    }
   }
 
   private func performCall(_ tool: String, arguments: [String: Any]) async throws -> FantasticalMCPResult {
@@ -208,20 +213,22 @@ actor FantasticalMCPClient {
     let id = nextID
     nextID += 1
     let payload = Self.makeRequest(id: id, method: method, params: params)
-    return try await withThrowingTaskGroup(of: [String: Any].self) { group in
-      group.addTask {
-        try await withCheckedThrowingContinuation { continuation in
-          Task { await self.register(id: id, continuation: continuation, payload: payload) }
-        }
-      }
-      group.addTask { [timeoutSeconds] in
-        try await Task.sleep(nanoseconds: timeoutSeconds * 1_000_000_000)
-        throw FantasticalMCPError.timeout
-      }
-      guard let first = try await group.next() else { throw FantasticalMCPError.invalidResponse }
-      group.cancelAll()
-      return first
+    let deadline = Task { [timeoutSeconds] in
+      try await Task.sleep(nanoseconds: timeoutSeconds * 1_000_000_000)
+      await self.expire(id: id)
     }
+    defer { deadline.cancel() }
+    return try await withCheckedThrowingContinuation { continuation in
+      Task { await self.register(id: id, continuation: continuation, payload: payload) }
+    }
+  }
+
+  /// Frees a caller the helper never answered: `withCheckedThrowingContinuation` ignores
+  /// cancellation, so the continuation is resumed here instead of raced against a sleep.
+  private func expire(id: Int) {
+    guard let continuation = pending.removeValue(forKey: id) else { return }
+    Self.log.error("request \(id, privacy: .public) timed out")
+    continuation.resume(throwing: FantasticalMCPError.timeout)
   }
 
   private func register(
