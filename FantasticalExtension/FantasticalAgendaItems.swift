@@ -10,12 +10,19 @@ final class FantasticalAgendaEntity: CatalogEntity, CopyRepresentationProviding,
   let item: FantasticalAgendaItem
   let calendarTitle: String?
   let isTask: Bool
+  /// Whether the item's calendar accepts writes. An item Tuna cannot match to a known calendar
+  /// stays editable, so the helper, not a guess here, has the last word.
+  let isEditable: Bool
   private let detailText: String
 
-  init(item: FantasticalAgendaItem, calendarTitle: String?, isTask: Bool, now: Date = Date()) {
+  init(
+    item: FantasticalAgendaItem, calendarTitle: String?, isTask: Bool, isEditable: Bool = true,
+    now: Date = Date()
+  ) {
     self.item = item
     self.calendarTitle = calendarTitle
     self.isTask = isTask
+    self.isEditable = isEditable
     self.detailText = FantasticalAgendaFormat.detail(item, calendarTitle: calendarTitle, now: now)
     super.init(id: "fantastical.item.\(item.id)", title: item.title, path: nil)
     typeID = .fantasticalItem
@@ -36,7 +43,7 @@ final class FantasticalAgendaEntity: CatalogEntity, CopyRepresentationProviding,
     if isTask {
       return .systemSymbol("checkmark.circle", tintColor: .systemBlue)
     }
-    if let end = item.end, end < Date() {
+    if let span = item.span(), span.upperBound < Date() {
       return .systemSymbol("calendar", tintColor: .secondaryLabelColor)
     }
     return .systemSymbol("calendar", tintColor: .systemRed)
@@ -81,6 +88,7 @@ final class FantasticalSectionItem: CatalogEntity, CatalogHierarchyNode, Timesta
   var sortScore: Double { FantasticalAgendaSort.sectionScore(sortOrder) }
   var capturedAtDate: Date { FantasticalAgendaSort.sectionTimestamp(sortOrder) }
   private let children: [CatalogItem]
+  private let generation: Int
   private let symbolName: String
   private let iconColor: CatalogIconColor
   private let detailText: String?
@@ -91,6 +99,7 @@ final class FantasticalSectionItem: CatalogEntity, CatalogHierarchyNode, Timesta
   ) {
     self.sortOrder = sortOrder
     self.children = children
+    self.generation = FantasticalAgendaSupport.dataGeneration.value
     self.symbolName = symbolName
     self.iconColor = iconColor
     self.detailText = detail
@@ -100,7 +109,14 @@ final class FantasticalSectionItem: CatalogEntity, CatalogHierarchyNode, Timesta
 
   override var detail: String? { detailText }
 
-  func hierarchyChildren() -> [CatalogItem] { children }
+  /// An open pane keeps the rows it was built with. When a write has landed since, ask the host
+  /// to rebuild this node rather than leaving those rows on screen for the rest of the session.
+  func hierarchyChildren() -> [CatalogItem] {
+    if generation != FantasticalAgendaSupport.dataGeneration.value {
+      FantasticalAgendaSupport.postScanFinished(identifier: FantasticalIdentifiers.agendaCatalog)
+    }
+    return children
+  }
 
   override func preview(maxDimension: CGFloat) -> CatalogItemPreview {
     .catalogIcon(symbolName: symbolName, color: iconColor, maxDimension: maxDimension)

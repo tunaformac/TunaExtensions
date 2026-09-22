@@ -136,10 +136,10 @@ enum FantasticalAgendaSupport {
     for range in FantasticalAgendaRange.queried {
       perRange[range] = try await items(when: range.when(now: now, calendar: calendar))
     }
-    let week = perRange[.next7Days] ?? []
+    let pool = dayPool(from: perRange)
     for derived in [FantasticalAgendaRange.today, .tomorrow] {
       let interval = derived.interval(now: now, calendar: calendar)
-      perRange[derived] = week.filter { $0.overlaps(interval) }
+      perRange[derived] = pool.filter { $0.overlaps(interval, calendar: calendar) }
     }
     return sections(from: perRange, calendars: calendars, now: now, calendar: calendar)
   }
@@ -217,8 +217,23 @@ enum FantasticalAgendaSupport {
   {
     let cal = calendars.first { $0.id == item.calendarID }
     return FantasticalAgendaEntity(
-      item: item, calendarTitle: cal?.title, isTask: cal?.supportsTasks == true && cal?.supportsEvents == false,
-      now: now)
+      item: item, calendarTitle: cal?.title,
+      isTask: cal?.supportsTasks == true && cal?.supportsEvents == false,
+      isEditable: cal?.isWritable ?? true, now: now)
+  }
+
+  /// What Today and Tomorrow are sliced from: every window that already reaches back before
+  /// today, so an item that started earlier and is still running is not lost with the seven day
+  /// query it falls outside of.
+  static func dayPool(from perRange: [FantasticalAgendaRange: [FantasticalAgendaItem]])
+    -> [FantasticalAgendaItem]
+  {
+    deduplicated([.next7Days, .thisWeek, .thisMonth].flatMap { perRange[$0] ?? [] })
+  }
+
+  static func deduplicated(_ items: [FantasticalAgendaItem]) -> [FantasticalAgendaItem] {
+    var seen = Set<String>()
+    return items.filter { seen.insert($0.id).inserted }
   }
 
   static func sorted(_ items: [FantasticalAgendaItem]) -> [FantasticalAgendaItem] {
@@ -259,21 +274,13 @@ enum FantasticalAgendaSupport {
     NotificationCenter.default.post(name: CatalogDidFinishScan, object: identifier)
   }
 
+  /// Counts the writes this extension has made, so a browse node built before one can tell the
+  /// rows it is holding are out of date.
+  static let dataGeneration = LockedValue<Int>(0)
+
   static func postDataDidChange() {
+    dataGeneration.withValue { $0 += 1 }
     FantasticalNewItemRoot.invalidateCalendars()
     NotificationCenter.default.post(name: FantasticalAgendaDidChange, object: nil)
-  }
-
-  static let previewGraceSeconds = 5
-
-  /// A create lands when Fantastical writes it: at once with "Add without confirmation", only
-  /// after the user's Enter in the parse preview otherwise, which the second drop covers.
-  static func postDataDidChangeAfterCreate(previewShown: Bool) {
-    postDataDidChange()
-    guard previewShown else { return }
-    Task {
-      try? await Task.sleep(for: .seconds(previewGraceSeconds))
-      postDataDidChange()
-    }
   }
 }

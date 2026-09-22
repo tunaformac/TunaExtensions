@@ -28,6 +28,7 @@ extension FantasticalActionsCatalog {
       guard let entity = subject as? FantasticalAgendaEntity else {
         return .failure("No Fantastical item selected")
       }
+      guard entity.isEditable else { return .failure(readOnlyFailure(entity)) }
       let itemID = entity.item.id
       return .review(
         ActionReviewSession(
@@ -49,7 +50,7 @@ extension FantasticalActionsCatalog {
     delete.systemSymbolName = "trash"
     delete.executionPolicy = .keepVisible
     delete.supportedSubjectTypes = [.fantasticalItem]
-    delete.subjectPredicate = { $0 is FantasticalAgendaEntity }
+    delete.subjectPredicate = { ($0 as? FantasticalAgendaEntity)?.isEditable == true }
     items.append(delete)
 
     let addToCalendar = PredicateAwareAction(
@@ -80,6 +81,7 @@ extension FantasticalActionsCatalog {
       guard let entity = subject as? FantasticalAgendaEntity else {
         return .failure("No Fantastical item selected")
       }
+      guard entity.isEditable else { return .failure(readOnlyFailure(entity)) }
       guard let value = FantasticalURLBuilder.textValue(for: target) else {
         return .failure(failure)
       }
@@ -89,9 +91,16 @@ extension FantasticalActionsCatalog {
     action.systemSymbolName = symbolName
     action.supportedSubjectTypes = [.fantasticalItem]
     action.allowedTargetTypes = [.textSnippet]
-    action.subjectPredicate = { $0 is FantasticalAgendaEntity }
+    action.subjectPredicate = { ($0 as? FantasticalAgendaEntity)?.isEditable == true }
     action.targetPredicate = { FantasticalURLBuilder.textValue(for: $0) != nil }
     return action
+  }
+}
+
+extension FantasticalActionsCatalog {
+  static func readOnlyFailure(_ entity: FantasticalAgendaEntity) -> String {
+    let name = entity.calendarTitle.flatMap { $0.isEmpty ? nil : $0 } ?? "That calendar"
+    return "\(name) is read-only in Fantastical"
   }
 }
 
