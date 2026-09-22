@@ -19,10 +19,14 @@ actor FantasticalMCPClient {
   /// Bumped on every teardown, so a termination callback from a helper we already replaced
   /// cannot clear the state of the one running now.
   private var generation = 0
+  /// A helper on its way out. The helper serves one client at a time, so a replacement launched
+  /// while this one is still winding down would fight it for Fantastical's connection.
+  private var retiring: Process?
   private var lastStderrLine: String?
   private var chain: Task<Void, Never>?
   private let timeoutSeconds: UInt64 = 60
   static let stderrDetailLimit = 200
+  static let toolMessageLimit = 400
 
   static func helperURL() -> URL? {
     guard
@@ -71,7 +75,8 @@ actor FantasticalMCPClient {
     let text = content.compactMap { $0["text"] as? String }.joined(separator: "\n")
     let isError = result["isError"] as? Bool ?? false
     if isError {
-      throw FantasticalMCPError.tool(text.isEmpty ? "Fantastical reported an error." : text)
+      throw FantasticalMCPError.tool(
+        text.isEmpty ? "Fantastical reported an error." : String(text.prefix(Self.toolMessageLimit)))
     }
     return FantasticalMCPResult(text: text, isError: false)
   }
@@ -86,6 +91,7 @@ actor FantasticalMCPClient {
       process.terminationHandler = nil
       try? input?.close()
       process.terminate()
+      retiring = process
       DispatchQueue.global().asyncAfter(deadline: .now() + 2) {
         if process.isRunning { kill(process.processIdentifier, SIGKILL) }
       }
@@ -114,6 +120,10 @@ actor FantasticalMCPClient {
 
   private func start() async throws {
     shutdown()
+    if let retiring {
+      await Self.waitForExit(retiring)
+      self.retiring = nil
+    }
     lastStderrLine = nil
     guard let url = Self.helperURL() else { throw FantasticalMCPError.helperNotFound }
 
@@ -153,9 +163,22 @@ actor FantasticalMCPClient {
     initialized = true
   }
 
+  nonisolated private static func waitForExit(_ process: Process) async {
+    await withCheckedContinuation { continuation in
+      DispatchQueue.global().async {
+        process.waitUntilExit()
+        continuation.resume()
+      }
+    }
+  }
+
   private func handleTermination(generation: Int) {
     guard generation == self.generation else { return }
-    Self.log.error("helper exited: \(self.lastStderrLine ?? "no stderr", privacy: .private)")
+    if let lastStderrLine {
+      Self.log.error("helper exited: \(lastStderrLine, privacy: .private)")
+    } else {
+      Self.log.error("helper exited with no stderr")
+    }
     process = nil
     input = nil
     initialized = false
@@ -165,10 +188,12 @@ actor FantasticalMCPClient {
   private func remember(stderrLine: String) {
     let trimmed = stderrLine.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !trimmed.isEmpty else { return }
-    Self.log.info("helper stderr: \(trimmed, privacy: .private)")
-    let stripped = trimmed.replacingOccurrences(
-      of: #"^\S+ \S+ \S+: \[FantasticalMCP\] "#, with: "", options: .regularExpression)
-    lastStderrLine = String(stripped.prefix(Self.stderrDetailLimit))
+    let stripped = String(
+      trimmed.replacingOccurrences(
+        of: #"^\S+ \S+ \S+: \[FantasticalMCP\] "#, with: "", options: .regularExpression
+      ).prefix(Self.stderrDetailLimit))
+    Self.log.info("helper stderr: \(stripped, privacy: .private)")
+    lastStderrLine = stripped
   }
 
   private func failAllPending(with error: Error) {
@@ -249,6 +274,7 @@ actor FantasticalMCPClient {
       let id = message["id"] as? Int,
       let continuation = pending.removeValue(forKey: id)
     else { return }
+    lastStderrLine = nil
     continuation.resume(returning: message)
   }
 }

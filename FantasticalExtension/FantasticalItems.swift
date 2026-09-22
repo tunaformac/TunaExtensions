@@ -132,9 +132,23 @@ final class FantasticalNewItemRoot: FantasticalNewItemEntry, CatalogHierarchyNod
     guard matching.isEmpty else {
       return matching.map { FantasticalNewItemEntry(task: isTask, calendar: $0) }
     }
-    if let error = Self.lastLoadError.value {
-      Self.lastLoadError.value = nil
-      return [FantasticalAgendaSupport.errorItem(error)]
+    let failure = Self.lastLoadError.withValue { pending -> Error? in
+      let error = pending
+      pending = nil
+      return error
+    }
+    if let failure {
+      return [FantasticalAgendaSupport.errorItem(failure)]
+    }
+    guard !Self.calendarLoad.didCompleteLoad else {
+      return [
+        FantasticalAgendaSupport.messageItem(
+          title: isTask ? "No Writable Task Lists" : "No Writable Calendars",
+          message: isTask
+            ? "Fantastical has no task list Tuna can add to."
+            : "Fantastical has no calendar Tuna can add to.",
+          symbolName: "calendar.badge.exclamationmark", tint: .secondaryLabelColor)
+      ]
     }
     Self.loadCalendars()
     return [
