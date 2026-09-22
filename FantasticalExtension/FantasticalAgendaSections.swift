@@ -44,10 +44,21 @@ enum FantasticalAgendaRange: CaseIterable, Sendable {
   var tasksOnly: Bool { self == .tasks }
 
   static let taskWindowDays = 30
+  static let overdueYears = 5
 
   /// Stated in the row because "Tasks" implies no window of its own.
   var windowDescription: String? {
     self == .tasks ? "next \(Self.taskWindowDays) days" : nil
+  }
+
+  /// Everything already due gets its own query, so a long tail of stragglers cannot spend the
+  /// helper's per-query limit on the days ahead.
+  static func overdueWhen(now: Date, calendar: Calendar = .autoupdatingCurrent) -> String? {
+    let day = calendar.startOfDay(for: now)
+    guard let start = calendar.date(byAdding: .year, value: -overdueYears, to: day),
+      let yesterday = calendar.date(byAdding: .day, value: -1, to: day)
+    else { return nil }
+    return FantasticalWhen.range(from: start, to: yesterday, calendar: calendar)
   }
 
   /// Groups that need their own query. Today and Tomorrow are sliced from Next 7 Days.
