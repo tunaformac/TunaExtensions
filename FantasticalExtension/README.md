@@ -77,6 +77,13 @@ Search for **Fantastical** and press â†’ (or select Fantastical.app and press â†
 task by name. Each item shows its day, time, calendar, and location. Fantastical answers at most 99
 items per query; a group at that limit says so.
 
+- **Tasks** covers the next 30 days, which the group says in its row.
+- **Today** and **Tomorrow** split at midnight, and an item that runs across midnight or over
+  several days is listed under every day it covers.
+- **By Calendar** groups the next 7 days by calendar, read-only calendars included. Writability
+  only decides where a new item can be created.
+- All-day items keep the day Fantastical gives them, even when this Mac is in another timezone.
+
 Actions on an item:
 
 - **Show in Fantastical** (default): reveals the item's day.
@@ -94,6 +101,8 @@ cannot be completed from Tuna.
 The **Fantastical Views** source lists Today, Tomorrow, Calendar (main window), Mini Window, one
 `Set: Name` entry per calendar set you add in settings, plus the New Event and New Task entries.
 Select a view to open it; its Fantastical URL is the copy and text value.
+
+Selecting **Fantastical.app** itself adds **Open Mini Window** to its actions.
 
 ## Settings
 
@@ -114,6 +123,7 @@ MCP helper (`Fantastical.app/Contents/Helpers/FantasticalMCP.app`) over standard
 for the agenda. No network access from the extension, no credentials, no EventKit. Agenda results
 live in memory only while the browse or search is open. Writes: reschedule, rename, change
 location, and delete (confirmed) through the helper; every create goes through the URL scheme.
+Helper diagnostics are logged privately, so event and calendar text never reaches the public log.
 
 ## Limitations
 

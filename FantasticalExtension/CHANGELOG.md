@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.5.8
+
+- Today and Tomorrow split at midnight, and an item running across midnight or over several days
+  now appears under every day it covers.
+- All-day items keep the day Fantastical gives them, whatever timezone this Mac is in.
+- By Calendar lists every calendar with items in the next 7 days, read-only ones included.
+  Writability now only decides where a new item can be created.
+- The Tasks group states its 30-day window in its row.
+- Creating an item refreshes the agenda, as renaming, rescheduling and deleting already did.
+- New Event and New Task show their calendars as soon as Fantastical answers, instead of asking
+  you to leave the pane and come back.
+- Fantastical.app gains an Open Mini Window action.
+- A stalled request no longer affects the ones after it: the helper is restarted. Helper
+  diagnostics stay out of the public log.
+
 ## 0.5.7
 
 - Initial release.
