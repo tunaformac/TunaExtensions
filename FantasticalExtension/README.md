@@ -71,18 +71,23 @@ its preview is open; only notes and the URL travel as parameters.
 
 ## Agenda
 
-Search for **Fantastical** and press → (or select Fantastical.app and press →) to browse **Today**,
-**Tomorrow**, **This Week**, **Next 7 Days**, **This Month**, **This Quarter**, **This Year**,
-**Tasks**, and **By Calendar**, each with its count. Type inside the root to search every event and
-task by name. Each item shows its day, time, calendar, and location. Fantastical answers at most 99
-items per query; a group at that limit says so.
+Search for **Fantastical** and press → to browse **Today**, **Tomorrow**, **This Week**,
+**This Month**, **This Quarter**, **Tasks**, **This Year**, **By Calendar** and **Next 7 Days**,
+each with its count. Selecting Fantastical.app and pressing → reaches the same groups, one level
+further in. Type inside the root to search events and tasks by name; search shows the first 60
+matches. Each item shows its day, time, calendar, and location.
 
-- **Tasks** covers the next 30 days, which the group says in its row.
+- **Tasks** covers the next 30 days, which the group says in its row. Overdue tasks, undated
+  tasks, and tasks kept in a calendar that also holds events are not in it; search finds them by
+  name.
 - **Today** and **Tomorrow** split at midnight, and an item that runs across midnight or over
   several days is listed under every day it covers.
 - **By Calendar** groups the next 7 days by calendar, read-only calendars included. Writability
-  only decides where a new item can be created.
+  only decides where a new item can be created, and which items can be edited or deleted.
 - All-day items keep the day Fantastical gives them, even when this Mac is in another timezone.
+- Fantastical answers at most 99 items per query, and a group at that limit says so. Today,
+  Tomorrow, Tasks and By Calendar are drawn from those answers, so a very busy period can leave
+  them short without a warning of their own.
 
 Actions on an item:
 
@@ -90,6 +95,9 @@ Actions on an item:
 - **Reschedule...**, **Rename...**, **Change Location...**: type the new value as the target.
   Reschedule takes words such as `tomorrow 15h` or `next monday 9h to 10h`.
 - **Delete from Fantastical**: asks for confirmation first.
+
+Reschedule, Rename, Change Location and Delete are offered only on items in calendars Fantastical
+can write to. An item in a read-only calendar keeps Show in Fantastical and nothing else.
 
 The agenda comes from Fantastical's built-in MCP helper (Fantastical 4.1.17 or later). The first
 time Tuna uses it, Fantastical asks whether to allow Tuna; refuse and the agenda shows a message

@@ -6,9 +6,14 @@
   now appears under every day it covers.
 - All-day items keep the day Fantastical gives them, whatever timezone this Mac is in.
 - By Calendar lists every calendar with items in the next 7 days, read-only ones included.
-  Writability now only decides where a new item can be created.
+  Writability now only decides where a new item can be created, and which items can be edited or
+  deleted: Reschedule, Rename, Change Location and Delete are no longer offered on items
+  Fantastical will refuse to change.
 - The Tasks group states its 30-day window in its row.
-- Creating an item refreshes the agenda, as renaming, rescheduling and deleting already did.
+- Creating an item refreshes the agenda, as renaming, rescheduling and deleting already did, and
+  an open group refreshes itself once a write lands instead of holding its old rows.
+- Items running from before today are kept when filling Today and Tomorrow, and timestamps
+  carrying fractional seconds or no offset at all are read instead of dropped.
 - New Event and New Task show their calendars as soon as Fantastical answers, instead of asking
   you to leave the pane and come back.
 - Fantastical.app gains an Open Mini Window action.
