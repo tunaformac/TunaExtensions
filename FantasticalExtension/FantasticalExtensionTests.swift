@@ -300,6 +300,51 @@ final class FantasticalExtensionTests: XCTestCase {
       ["a", "c", "z"])
   }
 
+  func testCompletedTasksAreRecognisedAndDropped() throws {
+    let payload =
+      #"{"items":[{"id":"1","title":"done","calendarId":"t","isCompleted":true},"#
+      + #"{"id":"2","title":"open","calendarId":"t"},"#
+      + #"{"id":"3","title":"finished","calendarId":"t","completionDate":"2026-09-01T10:00:00+02:00"},"#
+      + #"{"id":"4","title":"marked","calendarId":"t","status":"completed"}]}"#
+    let items = try FantasticalAgendaParser.items(from: payload)
+    XCTAssertEqual(items.filter(\.isCompleted).map(\.id), ["1", "3", "4"])
+    XCTAssertEqual(items.filter { !$0.isCompleted }.map(\.id), ["2"], "no flag means still open")
+
+    let calendars = [
+      FantasticalCalendar(
+        id: "t", title: "Tasks", isWritable: true, supportsEvents: false, supportsTasks: true,
+        sourceName: "G")
+    ]
+    let sections = FantasticalAgendaSupport.sections(
+      from: [.tasks: items], calendars: calendars, now: Date())
+    let tasks = sections.first { $0.id == "fantastical.agenda.tasks" } as? FantasticalSectionItem
+    XCTAssertEqual(tasks?.hierarchyChildren().count, 1, "a completed task is not listed")
+  }
+
+  func testTasksRowNamesTheOverdueShare() throws {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "Europe/Paris"))
+    let now = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 9, day: 18, hour: 9)))
+    func task(_ id: String, day: Int) -> FantasticalAgendaItem {
+      FantasticalAgendaItem(
+        id: id, title: id, calendarID: "t",
+        start: calendar.date(from: DateComponents(year: 2026, month: 9, day: day, hour: 12)),
+        end: nil, location: nil, timeZone: calendar.timeZone)
+    }
+
+    XCTAssertEqual(
+      FantasticalAgendaSupport.tasksDetail(
+        [task("late", day: 10), task("later", day: 17), task("soon", day: 19)], now: now,
+        calendar: calendar),
+      "2 overdue, 1 next 30 days")
+    XCTAssertEqual(
+      FantasticalAgendaSupport.tasksDetail([task("soon", day: 19)], now: now, calendar: calendar),
+      "1 item, next 30 days")
+
+    let when = try XCTUnwrap(FantasticalAgendaRange.overdueWhen(now: now, calendar: calendar))
+    XCTAssertEqual(when, "September 18, 2021 to September 17, 2026", "its own query, ending yesterday")
+  }
+
   func testAgendaSortKeepsGroupOrderThenSoonestItems() {
     let today = FantasticalSectionItem(
       title: "Today", id: "t", detail: nil, symbolName: "sun.max", iconColor: .orange, children: [],
