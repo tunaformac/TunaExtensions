@@ -73,7 +73,6 @@ extension FantasticalActionsCatalog {
     return items
   }
 
-  /// Subject is an agenda item, the typed text becomes one field of `modifyCalendarItem`.
   private static func makeModifyAction(
     id: String, title: String, symbolName: String, field: String, failure: String
   ) -> PredicateAwareAction {

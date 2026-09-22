@@ -2,8 +2,6 @@ import AppKit
 import Foundation
 import TunaKit
 
-/// The browse groups under the Fantastical root. Each one is a date window the helper
-/// understands; Tasks narrows to task calendars.
 enum FantasticalAgendaRange: CaseIterable, Sendable {
   case today, tomorrow, thisWeek, next7Days, thisMonth, thisQuarter, thisYear, tasks
 
@@ -55,8 +53,6 @@ enum FantasticalAgendaRange: CaseIterable, Sendable {
   /// Groups that need their own query. Today and Tomorrow are sliced from Next 7 Days.
   static let queried: [FantasticalAgendaRange] = [.next7Days, .thisWeek, .thisMonth, .thisQuarter, .thisYear, .tasks]
 
-  /// Display order in the root: Today, Tomorrow, week, month, quarter, Tasks, year; By Calendar
-  /// and Next 7 Days follow.
   var sortOrder: Int {
     switch self {
     case .today: return 0

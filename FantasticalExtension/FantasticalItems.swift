@@ -82,8 +82,6 @@ final class FantasticalDestinationItem: CatalogItem, CopyRepresentationProviding
   }
 }
 
-/// "New Event" and "New Task" search entries; the typed text is the action's target. With a
-/// calendar the entry adds into that calendar instead of Fantastical's default.
 class FantasticalNewItemEntry: CatalogEntity, ActionFilteringProviding, @unchecked Sendable {
   let isTask: Bool
   let calendar: FantasticalCalendar?
@@ -122,7 +120,6 @@ class FantasticalNewItemEntry: CatalogEntity, ActionFilteringProviding, @uncheck
   }
 }
 
-/// The two searchable roots; browsing one lists the writable calendars of its kind.
 final class FantasticalNewItemRoot: FantasticalNewItemEntry, CatalogHierarchyNode, @unchecked Sendable {
   private static let calendarLoad = DeferredCatalogLoadState()
   /// Last load failure, cleared once shown, so a failing helper is not restarted on every

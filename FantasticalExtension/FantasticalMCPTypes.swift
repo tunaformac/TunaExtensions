@@ -36,7 +36,6 @@ struct FantasticalMCPResult: Sendable {
   let isError: Bool
 }
 
-/// Accumulates pipe chunks and hands back complete lines.
 final class LineBuffer: @unchecked Sendable {
   private var pending = Data()
   private let lock = NSLock()

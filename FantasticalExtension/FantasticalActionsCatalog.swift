@@ -109,7 +109,6 @@ extension FantasticalActionsCatalog {
     return items
   }
 
-  /// Typed text with inline fields, or a link item, becomes a Fantastical event or task.
   private static func makeAddAction(
     id: String, title: String, symbolName: String, task: Bool
   ) -> PredicateAwareAction {

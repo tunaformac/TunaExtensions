@@ -2,7 +2,6 @@ import AppKit
 import Foundation
 import TunaKit
 
-/// One event or task from Fantastical's agenda.
 final class FantasticalAgendaEntity: CatalogEntity, CopyRepresentationProviding, TimestampedCatalogItem,
   ScoredCatalogItem, @unchecked Sendable
 {
@@ -48,7 +47,6 @@ final class FantasticalAgendaEntity: CatalogEntity, CopyRepresentationProviding,
   }
 }
 
-/// A Fantastical calendar, the target of "Add to Fantastical Calendar".
 final class FantasticalCalendarEntity: CatalogEntity, @unchecked Sendable {
   let calendar: FantasticalCalendar
 
@@ -76,7 +74,6 @@ final class FantasticalCalendarEntity: CatalogEntity, @unchecked Sendable {
   }
 }
 
-/// Grouping node for Today / Tomorrow / Next 7 Days / By Calendar.
 final class FantasticalSectionItem: CatalogEntity, CatalogHierarchyNode, TimestampedCatalogItem,
   ScoredCatalogItem, @unchecked Sendable
 {
