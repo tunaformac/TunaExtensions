@@ -52,6 +52,7 @@ below rather than a generic template, and include the new project in `TunaExtens
 | SafariExtension | Safari bookmarks, reading list, and tabs |
 | SpotifyExtension | Control Spotify, browse your library, and search Spotify |
 | ThingsExtension | Things to-dos and projects |
+| VikunjaExtension | Search, browse, add, and complete tasks in a self-hosted Vikunja |
 
 ## Building
 
