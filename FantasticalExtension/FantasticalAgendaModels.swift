@@ -43,8 +43,10 @@ struct FantasticalAgendaItem: Equatable, Sendable {
   /// The helper spells an all-day item either as a single midnight instant or as midnight through
   /// midnight on a later day, so both shapes count. A start that is not midnight is a timed item
   /// even when the helper sends no end.
-  var isAllDay: Bool {
-    let calendar = dayCalendar()
+  var isAllDay: Bool { isAllDay(in: .autoupdatingCurrent) }
+
+  func isAllDay(in base: Calendar) -> Bool {
+    let calendar = dayCalendar(base)
     guard let start, calendar.startOfDay(for: start) == start else { return false }
     guard let end else { return true }
     return end == start || calendar.startOfDay(for: end) == end
@@ -52,11 +54,11 @@ struct FantasticalAgendaItem: Equatable, Sendable {
 
   /// Half-open: whole days for an all-day item, the helper's own range for a timed one, the
   /// starting instant when there is no end.
-  var span: Range<Date>? {
+  func span(in base: Calendar = .autoupdatingCurrent) -> Range<Date>? {
     guard let start else { return nil }
     if let end, end > start { return start..<end }
-    if isAllDay {
-      let calendar = dayCalendar()
+    if isAllDay(in: base) {
+      let calendar = dayCalendar(base)
       let next = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: start))
       return start..<max(next ?? start, start.addingTimeInterval(1))
     }
@@ -65,9 +67,36 @@ struct FantasticalAgendaItem: Equatable, Sendable {
 
   /// An item starting exactly at midnight belongs to the day that begins, never to the one that
   /// ends; an overnight or multi-day item belongs to every day it runs through.
-  func overlaps(_ window: DateInterval) -> Bool {
-    guard let span else { return false }
-    return span.lowerBound < window.end && span.upperBound > window.start
+  func overlaps(_ window: DateInterval, calendar: Calendar = .autoupdatingCurrent) -> Bool {
+    guard let start else { return false }
+    guard isAllDay(in: calendar) else {
+      guard let span = span(in: calendar) else { return false }
+      return span.lowerBound < window.end && span.upperBound > window.start
+    }
+    let itemCalendar = dayCalendar(calendar)
+    let firstDay = Self.dayNumber(start, itemCalendar)
+    let lastDay =
+      (end?.addingTimeInterval(-1)).flatMap { last in
+        last > start ? Self.dayNumber(last, itemCalendar) : nil
+      } ?? firstDay
+    let windowFirst = Self.dayNumber(window.start, calendar)
+    let windowLast = Self.dayNumber(window.end.addingTimeInterval(-1), calendar)
+    return firstDay <= windowLast && lastDay >= windowFirst
+  }
+
+  /// Whether the item sits on the viewer's own day: an all-day item by the day Fantastical named,
+  /// a timed one by the instants it occupies.
+  func falls(on date: Date, viewer: Calendar) -> Bool {
+    guard let start else { return false }
+    guard isAllDay(in: viewer) else { return viewer.isDate(start, inSameDayAs: date) }
+    return Self.dayNumber(start, dayCalendar(viewer)) == Self.dayNumber(date, viewer)
+  }
+
+  /// A comparable day label, so an all-day item is filed by the day the helper gave it rather
+  /// than by the instants that day happens to occupy in the viewer's zone.
+  private static func dayNumber(_ date: Date, _ calendar: Calendar) -> Int {
+    let parts = calendar.dateComponents([.year, .month, .day], from: date)
+    return (parts.year ?? 0) * 10_000 + (parts.month ?? 0) * 100 + (parts.day ?? 0)
   }
 }
 
@@ -102,10 +131,12 @@ enum FantasticalAgendaParser {
         id: id,
         title: title,
         calendarID: entry["calendarId"] as? String ?? "",
-        start: date(entry["startDate"]),
-        end: date(entry["endDate"]),
+        start: date(entry["startDate"], zone: helperZone),
+        end: date(entry["endDate"], zone: helperZone),
         location: (entry["location"] as? String).flatMap { $0.isEmpty ? nil : $0 },
-        timeZone: helperZone ?? zone(entry["startDate"])
+        timeZone: preferredZone(
+          stamped: zone(entry["startDate"]), helper: helperZone,
+          at: date(entry["startDate"], zone: helperZone))
       )
     }
   }
@@ -125,9 +156,40 @@ enum FantasticalAgendaParser {
     return formatter
   }()
 
-  private static func date(_ value: Any?) -> Date? {
+  private static let isoFractionalFormatter: ISO8601DateFormatter = {
+    let formatter = ISO8601DateFormatter()
+    formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    return formatter
+  }()
+
+  private static func date(_ value: Any?, zone: TimeZone?) -> Date? {
     guard let string = value as? String else { return nil }
-    return isoFormatter.date(from: string)
+    if let date = isoFormatter.date(from: string) { return date }
+    if let date = isoFractionalFormatter.date(from: string) { return date }
+    return floating(string, zone: zone)
+  }
+
+  /// A timestamp carrying no offset is a floating local time, which the helper means in its own
+  /// zone, so it is read there rather than dropped.
+  private static func floating(_ string: String, zone: TimeZone?) -> Date? {
+    let formatter = DateFormatter()
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.timeZone = zone ?? .autoupdatingCurrent
+    for format in ["yyyy-MM-dd'T'HH:mm:ss.SSS", "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd"] {
+      formatter.dateFormat = format
+      if let date = formatter.date(from: string) { return date }
+    }
+    return nil
+  }
+
+  /// The offset stamped on the date wins, because it is what the item was written with. The
+  /// envelope's named zone is taken only when it agrees, since only a named zone knows DST.
+  private static func preferredZone(stamped: TimeZone?, helper: TimeZone?, at date: Date?) -> TimeZone? {
+    guard let stamped else { return helper }
+    guard let helper, let date,
+      helper.secondsFromGMT(for: date) == stamped.secondsFromGMT(for: date)
+    else { return stamped }
+    return helper
   }
 
   /// `ISO8601DateFormatter` drops the offset, so it is read back off the string when the
@@ -186,7 +248,8 @@ enum FantasticalAgendaFormat {
   private static func timeDescription(
     _ item: FantasticalAgendaItem, start: Date, now: Date, calendar: Calendar
   ) -> String {
-    let dayMath = item.isAllDay ? item.dayCalendar(calendar) : calendar
+    let isAllDay = item.isAllDay(in: calendar)
+    let dayMath = isAllDay ? item.dayCalendar(calendar) : calendar
     let dayFormatter = DateFormatter()
     dayFormatter.calendar = dayMath
     dayFormatter.timeZone = dayMath.timeZone
@@ -197,8 +260,16 @@ enum FantasticalAgendaFormat {
     timeFormatter.timeStyle = .short
     timeFormatter.dateStyle = .none
 
-    let day = dayMath.isDate(start, inSameDayAs: now) ? "Today" : dayFormatter.string(from: start)
-    if item.isAllDay { return "\(day), all day" }
+    let day = item.falls(on: now, viewer: calendar) ? "Today" : dayFormatter.string(from: start)
+    if isAllDay {
+      if let end = item.end, end > start,
+        let lastDay = dayMath.date(byAdding: .second, value: -1, to: end),
+        !dayMath.isDate(lastDay, inSameDayAs: start)
+      {
+        return "\(day) to \(dayFormatter.string(from: lastDay)), all day"
+      }
+      return "\(day), all day"
+    }
     var text = "\(day), \(timeFormatter.string(from: start))"
     if let end = item.end, end > start {
       text += " to \(timeFormatter.string(from: end))"
