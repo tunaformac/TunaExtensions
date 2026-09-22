@@ -77,9 +77,11 @@ each with its count. Selecting Fantastical.app and pressing → reaches the same
 further in. Type inside the root to search events and tasks by name; search shows the first 60
 matches. Each item shows its day, time, calendar, and location.
 
-- **Tasks** covers the next 30 days, which the group says in its row. Overdue tasks, undated
-  tasks, and tasks kept in a calendar that also holds events are not in it; search finds them by
-  name.
+- **Tasks** covers everything already due plus the next 30 days, and its row says how many are
+  overdue, for example `3 overdue, 12 next 30 days`. The overdue ones are asked for in their own
+  query, so a long backlog cannot crowd out what is coming. Tasks Fantastical reports as completed
+  are left out. A task with no date at all, or one kept in a calendar that also holds events, is
+  not in this group; search finds it by name.
 - **Today** and **Tomorrow** split at midnight, and an item that runs across midnight or over
   several days is listed under every day it covers.
 - **By Calendar** groups the next 7 days by calendar, read-only calendars included. Writability
