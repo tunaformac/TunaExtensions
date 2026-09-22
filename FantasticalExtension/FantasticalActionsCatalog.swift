@@ -175,10 +175,10 @@ enum FantasticalActions {
     } catch {
       return .failure("Nothing to add")
     }
-    let addImmediately = FantasticalSettings.addImmediately
-    let result = open(url: url(fields), failure: "Nothing to add", activates: !addImmediately)
+    let result = open(
+      url: url(fields), failure: "Nothing to add", activates: !FantasticalSettings.addImmediately)
     if case .success = result {
-      FantasticalAgendaSupport.postDataDidChangeAfterCreate(previewShown: !addImmediately)
+      Task { @MainActor in FantasticalCreateWatcher.shared.creationStarted() }
     }
     return result
   }
