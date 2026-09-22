@@ -5,7 +5,6 @@ import TunaKit
 /// Posted after this extension changes something in Fantastical so cached agenda drops.
 let FantasticalAgendaDidChange = Notification.Name("com.brnbw.tuna.plugins.fantastical.agendaDidChange")
 
-/// Live-search root: type to search events and tasks, or browse the next days.
 public final class FantasticalAgendaCatalog: Catalog, StartupScanningCatalog, CatalogSortingProviding,
   CatalogResultsSortModeProviding
 {
@@ -140,7 +139,7 @@ enum FantasticalAgendaSupport {
     let week = perRange[.next7Days] ?? []
     for derived in [FantasticalAgendaRange.today, .tomorrow] {
       let interval = derived.interval(now: now, calendar: calendar)
-      perRange[derived] = week.filter { $0.start.map(interval.contains) ?? false }
+      perRange[derived] = week.filter { $0.overlaps(interval) }
     }
     return sections(from: perRange, calendars: calendars, now: now, calendar: calendar)
   }
@@ -161,13 +160,14 @@ enum FantasticalAgendaSupport {
     var sections: [CatalogItem] = FantasticalAgendaRange.allCases.map { range in
       let found = subset(range)
       return FantasticalSectionItem(
-        title: range.title, id: "fantastical.agenda.\(range)", detail: count(found.count),
+        title: range.title, id: "fantastical.agenda.\(range)",
+        detail: sectionDetail(found.count, window: range.windowDescription),
         symbolName: range.symbolName, iconColor: range.iconColor, children: entities(found),
         sortOrder: range.sortOrder)
     }
 
     let week = subset(.next7Days)
-    let perCalendar: [CatalogItem] = calendars.filter(\.isWritable).enumerated().compactMap { index, cal in
+    let perCalendar: [CatalogItem] = calendars.enumerated().compactMap { index, cal in
       let mine = week.filter { $0.calendarID == cal.id }
       guard !mine.isEmpty else { return nil }
       return FantasticalSectionItem(
@@ -221,7 +221,6 @@ enum FantasticalAgendaSupport {
       now: now)
   }
 
-  /// Dated items soonest first, undated last by title.
   static func sorted(_ items: [FantasticalAgendaItem]) -> [FantasticalAgendaItem] {
     items.sorted { lhs, rhs in
       switch (lhs.start, rhs.start) {
@@ -231,6 +230,11 @@ enum FantasticalAgendaSupport {
       default: return lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
       }
     }
+  }
+
+  static func sectionDetail(_ n: Int, window: String?) -> String {
+    guard let window else { return count(n) }
+    return "\(count(n)), \(window)"
   }
 
   static func count(_ n: Int) -> String {
@@ -256,6 +260,20 @@ enum FantasticalAgendaSupport {
   }
 
   static func postDataDidChange() {
+    FantasticalNewItemRoot.invalidateCalendars()
     NotificationCenter.default.post(name: FantasticalAgendaDidChange, object: nil)
+  }
+
+  static let previewGraceSeconds = 5
+
+  /// A create lands when Fantastical writes it: at once with "Add without confirmation", only
+  /// after the user's Enter in the parse preview otherwise, which the second drop covers.
+  static func postDataDidChangeAfterCreate(previewShown: Bool) {
+    postDataDidChange()
+    guard previewShown else { return }
+    Task {
+      try? await Task.sleep(for: .seconds(previewGraceSeconds))
+      postDataDidChange()
+    }
   }
 }

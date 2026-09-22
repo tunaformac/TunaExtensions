@@ -45,6 +45,13 @@ enum FantasticalAgendaRange: CaseIterable, Sendable {
 
   var tasksOnly: Bool { self == .tasks }
 
+  static let taskWindowDays = 30
+
+  /// Stated in the row because "Tasks" implies no window of its own.
+  var windowDescription: String? {
+    self == .tasks ? "next \(Self.taskWindowDays) days" : nil
+  }
+
   /// Groups that need their own query. Today and Tomorrow are sliced from Next 7 Days.
   static let queried: [FantasticalAgendaRange] = [.next7Days, .thisWeek, .thisMonth, .thisQuarter, .thisYear, .tasks]
 
@@ -76,7 +83,7 @@ enum FantasticalAgendaRange: CaseIterable, Sendable {
     case .thisMonth: return calendar.dateInterval(of: .month, for: now) ?? days(30, from: day)
     case .thisQuarter: return calendar.dateInterval(of: .quarter, for: now) ?? days(90, from: day)
     case .thisYear: return calendar.dateInterval(of: .year, for: now) ?? days(365, from: day)
-    case .tasks: return days(30, from: day)
+    case .tasks: return days(Self.taskWindowDays, from: day)
     }
   }
 
