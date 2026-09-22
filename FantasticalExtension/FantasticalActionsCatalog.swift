@@ -21,6 +21,8 @@ extension FantasticalActionsCatalog {
     FantasticalIdentifiers.addTypedAction,
   ]
 
+  static let appActionIDs = [FantasticalIdentifiers.miniWindowAction]
+
   static func actions() -> [CatalogAction] {
     var items: [CatalogAction] = []
 
@@ -43,6 +45,20 @@ extension FantasticalActionsCatalog {
     show.supportedSubjectTypes = [.fantasticalDestination, .fantasticalItem]
     show.subjectPredicate = { $0 is FantasticalDestinationItem || $0 is FantasticalAgendaEntity }
     items.append(show)
+
+    let openMini = PredicateAwareAction(
+      id: FantasticalIdentifiers.miniWindowAction, title: "Open Mini Window"
+    ) { subject, _ in
+      guard FantasticalActions.isFantasticalApplication(subject) else {
+        return .failure("Select Fantastical first")
+      }
+      return FantasticalActions.open(
+        url: FantasticalURLBuilder.showURL(for: .miniWindow), failure: "Invalid Fantastical URL")
+    }
+    openMini.systemSymbolName = "menubar.rectangle"
+    openMini.supportedSubjectTypes = [.application]
+    openMini.subjectPredicate = { FantasticalActions.isFantasticalApplication($0) }
+    items.append(openMini)
 
     items.append(
       makeAddAction(
@@ -160,8 +176,12 @@ enum FantasticalActions {
     } catch {
       return .failure("Nothing to add")
     }
-    return open(
-      url: url(fields), failure: "Nothing to add", activates: !FantasticalSettings.addImmediately)
+    let addImmediately = FantasticalSettings.addImmediately
+    let result = open(url: url(fields), failure: "Nothing to add", activates: !addImmediately)
+    if case .success = result {
+      FantasticalAgendaSupport.postDataDidChangeAfterCreate(previewShown: !addImmediately)
+    }
+    return result
   }
 
   static func fields(for item: CatalogItem?) throws -> FantasticalFields {
