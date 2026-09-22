@@ -14,6 +14,7 @@
 		FE000000000000000000B105 /* FantasticalActionsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A105 /* FantasticalActionsCatalog.swift */; };
 		FE000000000000000000B10B /* FantasticalFields.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A10B /* FantasticalFields.swift */; };
 		FE000000000000000000B10C /* FantasticalMCPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A10C /* FantasticalMCPClient.swift */; };
+		FE000000000000000000B112 /* FantasticalMCPTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A112 /* FantasticalMCPTypes.swift */; };
 		FE000000000000000000B10D /* FantasticalAgendaModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A10D /* FantasticalAgendaModels.swift */; };
 		FE000000000000000000B10E /* FantasticalAgendaItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A10E /* FantasticalAgendaItems.swift */; };
 		FE000000000000000000B10F /* FantasticalAgendaCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A10F /* FantasticalAgendaCatalog.swift */; };
@@ -42,6 +43,7 @@
 		FE000000000000000000A105 /* FantasticalActionsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalActionsCatalog.swift; sourceTree = "<group>"; };
 		FE000000000000000000A10B /* FantasticalFields.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalFields.swift; sourceTree = "<group>"; };
 		FE000000000000000000A10C /* FantasticalMCPClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalMCPClient.swift; sourceTree = "<group>"; };
+		FE000000000000000000A112 /* FantasticalMCPTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalMCPTypes.swift; sourceTree = "<group>"; };
 		FE000000000000000000A10D /* FantasticalAgendaModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalAgendaModels.swift; sourceTree = "<group>"; };
 		FE000000000000000000A10E /* FantasticalAgendaItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalAgendaItems.swift; sourceTree = "<group>"; };
 		FE000000000000000000A10F /* FantasticalAgendaCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalAgendaCatalog.swift; sourceTree = "<group>"; };
@@ -93,6 +95,7 @@
 				FE000000000000000000A105 /* FantasticalActionsCatalog.swift */,
 				FE000000000000000000A10B /* FantasticalFields.swift */,
 				FE000000000000000000A10C /* FantasticalMCPClient.swift */,
+				FE000000000000000000A112 /* FantasticalMCPTypes.swift */,
 				FE000000000000000000A10D /* FantasticalAgendaModels.swift */,
 				FE000000000000000000A10E /* FantasticalAgendaItems.swift */,
 				FE000000000000000000A10F /* FantasticalAgendaCatalog.swift */,
@@ -237,6 +240,7 @@
 				FE000000000000000000B105 /* FantasticalActionsCatalog.swift in Sources */,
 				FE000000000000000000B10B /* FantasticalFields.swift in Sources */,
 				FE000000000000000000B10C /* FantasticalMCPClient.swift in Sources */,
+				FE000000000000000000B112 /* FantasticalMCPTypes.swift in Sources */,
 				FE000000000000000000B10D /* FantasticalAgendaModels.swift in Sources */,
 				FE000000000000000000B10E /* FantasticalAgendaItems.swift in Sources */,
 				FE000000000000000000B10F /* FantasticalAgendaCatalog.swift in Sources */,

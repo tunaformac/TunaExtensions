@@ -2,42 +2,6 @@ import AppKit
 import Foundation
 import OSLog
 
-enum FantasticalMCPError: LocalizedError, Equatable {
-  case helperNotFound
-  case notRunning(detail: String?)
-  case timeout
-  case invalidResponse
-  case tool(String)
-
-  var title: String {
-    switch self {
-    case .helperNotFound: return "Fantastical 4.1.17 or later required"
-    case .notRunning: return "Fantastical is not responding"
-    case .timeout: return "Fantastical took too long"
-    case .invalidResponse: return "Unexpected reply from Fantastical"
-    case .tool: return "Fantastical could not complete that"
-    }
-  }
-
-  var errorDescription: String? {
-    switch self {
-    case .helperNotFound:
-      return "Install Fantastical in /Applications. Its built-in MCP helper provides the agenda."
-    case .notRunning(let detail):
-      guard let detail, !detail.isEmpty else { return "Open Fantastical and try again." }
-      return "Fantastical's helper stopped: \(detail)"
-    case .timeout: return "Fantastical did not answer within 60 seconds."
-    case .invalidResponse: return "The helper returned something Tuna could not read."
-    case .tool(let message): return message
-    }
-  }
-}
-
-struct FantasticalMCPResult: Sendable {
-  let text: String
-  let isError: Bool
-}
-
 /// Talks JSON-RPC over stdio to Fantastical's bundled MCP helper. One process lives for the
 /// session; Fantastical asks the user once to allow the host app.
 actor FantasticalMCPClient {
@@ -52,9 +16,13 @@ actor FantasticalMCPClient {
   private var pending: [Int: CheckedContinuation<[String: Any], Error>] = [:]
   private var nextID = 1
   private var initialized = false
+  /// Bumped on every teardown, so a termination callback from a helper we already replaced
+  /// cannot clear the state of the one running now.
+  private var generation = 0
   private var lastStderrLine: String?
   private var chain: Task<Void, Never>?
   private let timeoutSeconds: UInt64 = 60
+  static let stderrDetailLimit = 200
 
   static func helperURL() -> URL? {
     guard
@@ -109,6 +77,7 @@ actor FantasticalMCPClient {
   }
 
   func shutdown() {
+    generation += 1
     output?.readabilityHandler = nil
     output = nil
     errorOutput?.readabilityHandler = nil
@@ -156,8 +125,9 @@ actor FantasticalMCPClient {
     process.standardInput = stdin
     process.standardOutput = stdout
     process.standardError = stderr
+    let generation = self.generation
     process.terminationHandler = { [weak self] _ in
-      Task { await self?.handleTermination() }
+      Task { await self?.handleTermination(generation: generation) }
     }
     try process.run()
     Self.log.info("helper started pid \(process.processIdentifier, privacy: .public)")
@@ -183,8 +153,9 @@ actor FantasticalMCPClient {
     initialized = true
   }
 
-  private func handleTermination() {
-    Self.log.error("helper exited: \(self.lastStderrLine ?? "no stderr", privacy: .public)")
+  private func handleTermination(generation: Int) {
+    guard generation == self.generation else { return }
+    Self.log.error("helper exited: \(self.lastStderrLine ?? "no stderr", privacy: .private)")
     process = nil
     input = nil
     initialized = false
@@ -194,9 +165,10 @@ actor FantasticalMCPClient {
   private func remember(stderrLine: String) {
     let trimmed = stderrLine.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !trimmed.isEmpty else { return }
-    Self.log.info("helper stderr: \(trimmed, privacy: .public)")
-    lastStderrLine = trimmed.replacingOccurrences(
+    Self.log.info("helper stderr: \(trimmed, privacy: .private)")
+    let stripped = trimmed.replacingOccurrences(
       of: #"^\S+ \S+ \S+: \[FantasticalMCP\] "#, with: "", options: .regularExpression)
+    lastStderrLine = String(stripped.prefix(Self.stderrDetailLimit))
   }
 
   private func failAllPending(with error: Error) {
@@ -224,11 +196,14 @@ actor FantasticalMCPClient {
   }
 
   /// Frees a caller the helper never answered: `withCheckedThrowingContinuation` ignores
-  /// cancellation, so the continuation is resumed here instead of raced against a sleep.
+  /// cancellation, so the continuation is resumed here instead of raced against a sleep. The
+  /// helper answers one request at a time, so a request it never answered leaves the pipe out of
+  /// step; tearing it down here means the next call starts a fresh helper.
   private func expire(id: Int) {
     guard let continuation = pending.removeValue(forKey: id) else { return }
     Self.log.error("request \(id, privacy: .public) timed out")
     continuation.resume(throwing: FantasticalMCPError.timeout)
+    shutdown()
   }
 
   private func register(
@@ -275,26 +250,5 @@ actor FantasticalMCPClient {
       let continuation = pending.removeValue(forKey: id)
     else { return }
     continuation.resume(returning: message)
-  }
-}
-
-/// Accumulates pipe chunks and hands back complete lines.
-final class LineBuffer: @unchecked Sendable {
-  private var pending = Data()
-  private let lock = NSLock()
-
-  func append(_ data: Data) -> [String] {
-    lock.lock()
-    defer { lock.unlock() }
-    pending.append(data)
-    var lines: [String] = []
-    while let newline = pending.firstIndex(of: 0x0A) {
-      let chunk = pending.subdata(in: pending.startIndex..<newline)
-      pending.removeSubrange(pending.startIndex...newline)
-      if let line = String(data: chunk, encoding: .utf8) {
-        lines.append(line)
-      }
-    }
-    return lines
   }
 }
