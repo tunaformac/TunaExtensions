@@ -245,6 +245,11 @@ final class FantasticalExtensionTests: XCTestCase {
     XCTAssertNotNil(items[0].start)
     XCTAssertNil(items[1].start)
     XCTAssertEqual(items[1].calendarID, "cal2")
+    XCTAssertEqual(items[0].timeZone, TimeZone(identifier: "Europe/Paris"))
+
+    let withoutEnvelope = try FantasticalAgendaParser.items(
+      from: #"[{"startDate":"2026-09-23T12:30:00+02:00","id":"c;1","calendarId":"c","title":"Hypno"}]"#)
+    XCTAssertEqual(withoutEnvelope.first?.timeZone, TimeZone(secondsFromGMT: 7200))
 
     XCTAssertEqual(try FantasticalAgendaParser.items(from: "No results found."), [])
     XCTAssertThrowsError(try FantasticalAgendaParser.items(from: "not json"))
@@ -322,25 +327,92 @@ final class FantasticalExtensionTests: XCTestCase {
     let cals = [
       FantasticalCalendar(id: "e", title: "Perso", isWritable: true, supportsEvents: true, supportsTasks: false, sourceName: "G"),
       FantasticalCalendar(id: "t", title: "Tasks", isWritable: true, supportsEvents: false, supportsTasks: true, sourceName: "G"),
+      FantasticalCalendar(id: "r", title: "Jours feries", isWritable: false, supportsEvents: true, supportsTasks: false, sourceName: "Subscribed"),
     ]
     func item(_ id: String, cal: String, day: Int) -> FantasticalAgendaItem {
       let start = calendar.date(from: DateComponents(year: 2026, month: 9, day: day, hour: 12))
       return FantasticalAgendaItem(id: id, title: id, calendarID: cal, start: start, end: start, location: nil)
     }
     let a = item("a", cal: "e", day: 18), b = item("b", cal: "t", day: 19)
+    let c = item("c", cal: "r", day: 18)
     let year = (0..<99).map { item("y\($0)", cal: "e", day: 1 + $0 % 28) }
     let sections = FantasticalAgendaSupport.sections(
-      from: [.today: [a], .tomorrow: [b], .tasks: [a, b], .next7Days: [b, a], .thisYear: year],
+      from: [.today: [a], .tomorrow: [b], .tasks: [a, b], .next7Days: [b, a, c], .thisYear: year],
       calendars: cals, now: now, calendar: calendar)
     let byID = Dictionary(uniqueKeysWithValues: sections.map { ($0.id, $0) })
     XCTAssertEqual(byID["fantastical.agenda.today"]?.detail, "1 item")
-    XCTAssertEqual(byID["fantastical.agenda.tasks"]?.detail, "1 item")
+    XCTAssertEqual(byID["fantastical.agenda.tasks"]?.detail, "1 item, next 30 days")
     XCTAssertEqual(byID["fantastical.agenda.thisMonth"]?.detail, "0 items")
     XCTAssertEqual(byID["fantastical.agenda.thisYear"]?.detail, "99+ items, Fantastical returns the first 99")
-    XCTAssertEqual(byID["fantastical.agenda.by-calendar"]?.detail, "2 calendars, next 7 days")
+    XCTAssertEqual(byID["fantastical.agenda.by-calendar"]?.detail, "3 calendars, next 7 days")
+    XCTAssertEqual(
+      (byID["fantastical.agenda.by-calendar"] as? FantasticalSectionItem)?.hierarchyChildren().map(\.title),
+      ["Perso", "Tasks", "Jours feries"], "a read-only calendar still groups its items")
     XCTAssertEqual(
       (byID["fantastical.agenda.next7Days"] as? FantasticalSectionItem)?.hierarchyChildren().map(\.id),
-      ["fantastical.item.a", "fantastical.item.b"])
+      ["fantastical.item.a", "fantastical.item.c", "fantastical.item.b"])
+  }
+
+  func testDayWindowsSplitAtMidnightAndKeepLongItems() throws {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "Europe/Paris")!
+    let now = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 9, day: 18, hour: 9)))
+    let today = FantasticalAgendaRange.today.interval(now: now, calendar: calendar)
+    let tomorrow = FantasticalAgendaRange.tomorrow.interval(now: now, calendar: calendar)
+
+    func at(_ day: Int, _ hour: Int = 0) -> Date? {
+      calendar.date(from: DateComponents(year: 2026, month: 9, day: day, hour: hour))
+    }
+    func item(_ start: Date?, _ end: Date?) -> FantasticalAgendaItem {
+      FantasticalAgendaItem(id: "x", title: "x", calendarID: "c", start: start, end: end, location: nil)
+    }
+
+    let startsAtMidnight = item(at(19), at(19, 1))
+    XCTAssertFalse(startsAtMidnight.overlaps(today), "midnight belongs to the day that begins")
+    XCTAssertTrue(startsAtMidnight.overlaps(tomorrow))
+
+    let endsAtMidnight = item(at(18, 22), at(19))
+    XCTAssertTrue(endsAtMidnight.overlaps(today))
+    XCTAssertFalse(endsAtMidnight.overlaps(tomorrow))
+
+    let overnight = item(at(18, 22), at(19, 1))
+    XCTAssertTrue(overnight.overlaps(today), "an overnight item belongs to both days")
+    XCTAssertTrue(overnight.overlaps(tomorrow))
+
+    let multiDay = item(at(16), at(24))
+    XCTAssertTrue(multiDay.overlaps(today), "a multi-day item belongs to every day it runs through")
+    XCTAssertTrue(multiDay.overlaps(tomorrow))
+
+    let allDayToday = item(at(18), at(19))
+    XCTAssertTrue(allDayToday.isAllDay)
+    XCTAssertTrue(allDayToday.overlaps(today))
+    XCTAssertFalse(allDayToday.overlaps(tomorrow))
+
+    XCTAssertTrue(item(at(18, 12), nil).overlaps(today), "no end still lands on its own day")
+    XCTAssertFalse(item(nil, nil).overlaps(today))
+  }
+
+  func testAllDayFollowsTheHelperTimezone() throws {
+    let tokyo = try XCTUnwrap(TimeZone(identifier: "Asia/Tokyo"))
+    var tokyoCalendar = Calendar(identifier: .gregorian)
+    tokyoCalendar.timeZone = tokyo
+    let midnightInTokyo = try XCTUnwrap(
+      tokyoCalendar.date(from: DateComponents(year: 2026, month: 9, day: 18)))
+
+    let stamped = FantasticalAgendaItem(
+      id: "1", title: "Jour ferie", calendarID: "c", start: midnightInTokyo, end: midnightInTokyo,
+      location: nil, timeZone: tokyo)
+
+    XCTAssertTrue(stamped.isAllDay, "midnight in the helper's zone is all day wherever Tuna runs")
+    XCTAssertEqual(stamped.span?.lowerBound, midnightInTokyo)
+    XCTAssertEqual(stamped.span?.upperBound, midnightInTokyo.addingTimeInterval(86_400))
+
+    var parisCalendar = Calendar(identifier: .gregorian)
+    parisCalendar.timeZone = try XCTUnwrap(TimeZone(identifier: "Europe/Paris"))
+    parisCalendar.locale = Locale(identifier: "en_US")
+    let detail = FantasticalAgendaFormat.detail(
+      stamped, calendarTitle: nil, now: midnightInTokyo, calendar: parisCalendar)
+    XCTAssertEqual(detail, "Today, all day", "the day label keeps the helper's day")
   }
 
   func testAgendaDetailFormatting() throws {
@@ -449,9 +521,17 @@ final class FantasticalExtensionTests: XCTestCase {
     let ids = catalog.actions.map(\.id)
 
     XCTAssertTrue(ids.contains(FantasticalIdentifiers.showAction))
-    for id in FantasticalActionsCatalog.textActionIDs {
+    for id in FantasticalActionsCatalog.textActionIDs + FantasticalActionsCatalog.appActionIDs {
       XCTAssertTrue(ids.contains(id), "missing action \(id)")
     }
+
+    let mini = try XCTUnwrap(
+      catalog.actions.first { $0.id == FantasticalIdentifiers.miniWindowAction }
+        as? PredicateAwareAction)
+    XCTAssertEqual(mini.supportedSubjectTypes, [.application])
+    XCTAssertFalse(
+      mini.subjectPredicate?(FantasticalDestinationItem(destination: .today)) ?? true,
+      "the app action is offered on Fantastical.app, not on a view")
     XCTAssertEqual(ids.count, Set(ids).count, "action ids must be unique")
 
     let add = try XCTUnwrap(catalog.actions.first { $0.id == "add-to-fantastical" })
