@@ -28,6 +28,7 @@
 		FE000000000000000000B119 /* FantasticalAgendaTasks.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A119 /* FantasticalAgendaTasks.swift */; };
 		FE000000000000000000B106 /* FantasticalExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A106 /* FantasticalExtensionTests.swift */; };
 		FE000000000000000000B118 /* FantasticalTaskTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A118 /* FantasticalTaskTests.swift */; };
+		FE000000000000000000B120 /* FantasticalTaskGroupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A120 /* FantasticalTaskGroupTests.swift */; };
 		FE000000000000000000B108 /* TunaFantastical.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A108 /* TunaFantastical.framework */; };
 		FE000000000000000000B10A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A10A /* Cocoa.framework */; };
 /* End PBXBuildFile section */
@@ -64,6 +65,7 @@
 		FE000000000000000000A119 /* FantasticalAgendaTasks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalAgendaTasks.swift; sourceTree = "<group>"; };
 		FE000000000000000000A106 /* FantasticalExtensionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FantasticalExtensionTests.swift; sourceTree = "<group>"; };
 		FE000000000000000000A118 /* FantasticalTaskTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FantasticalTaskTests.swift; sourceTree = "<group>"; };
+		FE000000000000000000A120 /* FantasticalTaskGroupTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FantasticalTaskGroupTests.swift; sourceTree = "<group>"; };
 		FE000000000000000000A107 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FE000000000000000000A108 /* TunaFantastical.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TunaFantastical.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE000000000000000000A109 /* FantasticalExtensionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FantasticalExtensionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -124,6 +126,7 @@
 				FE000000000000000000A107 /* Info.plist */,
 				FE000000000000000000A106 /* FantasticalExtensionTests.swift */,
 				FE000000000000000000A118 /* FantasticalTaskTests.swift */,
+				FE000000000000000000A120 /* FantasticalTaskGroupTests.swift */,
 			);
 			path = .;
 			sourceTree = "<group>";
@@ -282,6 +285,7 @@
 			files = (
 				FE000000000000000000B106 /* FantasticalExtensionTests.swift in Sources */,
 				FE000000000000000000B118 /* FantasticalTaskTests.swift in Sources */,
+				FE000000000000000000B120 /* FantasticalTaskGroupTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
