@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.5.9
+
+- The Tasks group now shows the open tasks Fantastical shows, list by list, with an Overdue
+  group first and finished tasks left out. Reminders lists are read through the system Reminders
+  permission (Tuna asks once), and the lists Fantastical syncs itself, such as Google Tasks, are
+  read from Fantastical's own local database. The helper is only asked when neither is
+  available, and such a list says so in its row.
+- Undated tasks are listed too, after the dated ones; a task row reads due date, list and
+  priority, and an overdue one turns red.
+- Complete Task finishes a Reminders task from Tuna and leaves Tuna open. Rename, Reschedule and
+  Delete keep going through Fantastical.
+
 ## 0.5.8
 
 - Today and Tomorrow split at midnight, and an item running across midnight or over several days
