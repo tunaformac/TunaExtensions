@@ -3,7 +3,7 @@ import Foundation
 import TunaKit
 
 final class FantasticalAgendaEntity: CatalogEntity, CopyRepresentationProviding, TimestampedCatalogItem,
-  ScoredCatalogItem, @unchecked Sendable
+  FantasticalScoredItem, @unchecked Sendable
 {
   var sortScore: Double { FantasticalAgendaSort.itemScore(start: item.start) }
   var capturedAtDate: Date { FantasticalAgendaSort.itemTimestamp(start: item.start) }
@@ -82,7 +82,7 @@ final class FantasticalCalendarEntity: CatalogEntity, @unchecked Sendable {
 }
 
 final class FantasticalSectionItem: CatalogEntity, CatalogHierarchyNode, TimestampedCatalogItem,
-  ScoredCatalogItem, @unchecked Sendable
+  FantasticalScoredItem, @unchecked Sendable
 {
   let sortOrder: Int
   var sortScore: Double { FantasticalAgendaSort.sectionScore(sortOrder) }

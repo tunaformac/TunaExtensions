@@ -105,6 +105,10 @@ enum FantasticalAgendaRange: CaseIterable, Sendable {
   }
 }
 
+protocol FantasticalScoredItem: AnyObject {
+  var sortScore: Double { get }
+}
+
 /// Sections keep their declared order and outrank items; items go soonest first. Tuna's time
 /// sort shows the newest `capturedAtDate` first, so timestamps are mirrored.
 enum FantasticalAgendaSort {
@@ -131,8 +135,8 @@ enum FantasticalAgendaSort {
   ]
 
   static func compare(_ lhs: CatalogItem, _ rhs: CatalogItem) -> Bool {
-    let l = (lhs as? ScoredCatalogItem)?.sortScore ?? -1
-    let r = (rhs as? ScoredCatalogItem)?.sortScore ?? -1
+    let l = (lhs as? FantasticalScoredItem)?.sortScore ?? -1
+    let r = (rhs as? FantasticalScoredItem)?.sortScore ?? -1
     if l != r { return l > r }
     return lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
   }

@@ -98,14 +98,16 @@ enum FantasticalURLBuilder {
     if let isoDate = isoFormatter(calendar: calendar).date(from: text) {
       return isoDate
     }
-    guard let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.date.rawValue)
-    else { return nil }
+    guard let detector = dateDetector else { return nil }
     let range = NSRange(text.startIndex..., in: text)
     guard let match = detector.firstMatch(in: text, options: [], range: range),
       match.range == range
     else { return nil }
     return match.date
   }
+
+  private static let dateDetector = try? NSDataDetector(
+    types: NSTextCheckingResult.CheckingType.date.rawValue)
 
   static func format(_ date: Date, calendar: Calendar = .autoupdatingCurrent) -> String {
     isoFormatter(calendar: calendar).string(from: date)
@@ -142,7 +144,7 @@ enum FantasticalURLBuilder {
   private static func percentEncodedQueryItem(name: String, value: String) -> URLQueryItem {
     URLQueryItem(
       name: name,
-      value: value.addingPercentEncoding(withAllowedCharacters: .rfc3986Unreserved) ?? value)
+      value: value.addingPercentEncoding(withAllowedCharacters: .rfc3986Unreserved) ?? "")
   }
 
   static func normalize(_ value: String?) -> String? {

@@ -210,7 +210,11 @@ enum FantasticalActions {
     }
     let configuration = NSWorkspace.OpenConfiguration()
     configuration.activates = activates
-    NSWorkspace.shared.open(url, configuration: configuration, completionHandler: nil)
+    NSWorkspace.shared.open(url, configuration: configuration) { _, error in
+      if let error {
+        FantasticalMCPClient.log.error("open failed: \(error.localizedDescription, privacy: .private)")
+      }
+    }
     return .success
   }
 

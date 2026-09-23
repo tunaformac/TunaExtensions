@@ -2,9 +2,6 @@ import AppKit
 import Foundation
 import TunaKit
 
-/// Posted after this extension changes something in Fantastical so cached agenda drops.
-let FantasticalAgendaDidChange = Notification.Name("com.brnbw.tuna.plugins.fantastical.agendaDidChange")
-
 public final class FantasticalAgendaCatalog: Catalog, StartupScanningCatalog, CatalogSortingProviding,
   CatalogResultsSortModeProviding
 {
@@ -40,7 +37,7 @@ public final class FantasticalAgendaCatalog: Catalog, StartupScanningCatalog, Ca
     self.identifier = definition.identifier
     self.name = definition.name
     changeObserver = NotificationCenter.default.addObserver(
-      forName: FantasticalAgendaDidChange, object: nil, queue: .main
+      forName: FantasticalAgendaSupport.didChange, object: nil, queue: .main
     ) { [weak self] _ in
       Task { @MainActor [weak self] in
         guard let self else { return }
