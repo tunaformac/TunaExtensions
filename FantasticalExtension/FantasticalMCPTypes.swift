@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 
 enum FantasticalMCPError: LocalizedError, Equatable {
@@ -53,5 +54,22 @@ final class LineBuffer: @unchecked Sendable {
       }
     }
     return lines
+  }
+}
+
+extension FantasticalMCPClient {
+  static func helperURL() -> URL? {
+    guard
+      let app = NSWorkspace.shared.urlForApplication(
+        withBundleIdentifier: FantasticalIdentifiers.bundleIdentifier)
+    else { return nil }
+    let url = app.appending(path: "Contents/Helpers/FantasticalMCP.app/Contents/MacOS/FantasticalMCP")
+    return FileManager.default.isExecutableFile(atPath: url.path) ? url : nil
+  }
+
+  static func makeRequest(id: Int?, method: String, params: [String: Any]) -> [String: Any] {
+    var request: [String: Any] = ["jsonrpc": "2.0", "method": method, "params": params]
+    if let id { request["id"] = id }
+    return request
   }
 }

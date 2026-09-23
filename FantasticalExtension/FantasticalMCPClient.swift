@@ -1,6 +1,7 @@
 import AppKit
 import Foundation
 import OSLog
+import TunaKit
 
 /// Talks JSON-RPC over stdio to Fantastical's bundled MCP helper. One process lives for the
 /// session; Fantastical asks the user once to allow the host app.
@@ -10,8 +11,11 @@ actor FantasticalMCPClient {
 
   private var process: Process?
   private var input: FileHandle?
-  private var output: FileHandle?
-  private var errorOutput: FileHandle?
+  /// Kept until the helper they belong to has exited: a descriptor closed under a reader that is
+  /// still scheduled is the one thing `FileHandle` cannot recover from.
+  private var pipes: [Pipe] = []
+  private var retiringPipes: [Pipe] = []
+  private var readers: [Task<Void, Never>] = []
   private var startup: Task<Void, Error>?
   private var pending: [Int: CheckedContinuation<[String: Any], Error>] = [:]
   private var nextID = 1
@@ -27,21 +31,6 @@ actor FantasticalMCPClient {
   private let timeoutSeconds: UInt64 = 60
   static let stderrDetailLimit = 200
   static let toolMessageLimit = 400
-
-  static func helperURL() -> URL? {
-    guard
-      let app = NSWorkspace.shared.urlForApplication(
-        withBundleIdentifier: FantasticalIdentifiers.bundleIdentifier)
-    else { return nil }
-    let url = app.appending(path: "Contents/Helpers/FantasticalMCP.app/Contents/MacOS/FantasticalMCP")
-    return FileManager.default.isExecutableFile(atPath: url.path) ? url : nil
-  }
-
-  static func makeRequest(id: Int?, method: String, params: [String: Any]) -> [String: Any] {
-    var request: [String: Any] = ["jsonrpc": "2.0", "method": method, "params": params]
-    if let id { request["id"] = id }
-    return request
-  }
 
   /// The helper answers one request at a time; parallel calls make it drop its connection to
   /// Fantastical, so calls queue. Cancelling drops queued work; in-flight calls hit the deadline.
@@ -83,19 +72,16 @@ actor FantasticalMCPClient {
 
   func shutdown() {
     generation += 1
-    output?.readabilityHandler = nil
-    output = nil
-    errorOutput?.readabilityHandler = nil
-    errorOutput = nil
+    for reader in readers { reader.cancel() }
+    readers = []
     if let process {
       process.terminationHandler = nil
       try? input?.close()
       process.terminate()
       retiring = process
-      DispatchQueue.global().asyncAfter(deadline: .now() + 2) {
-        if process.isRunning { kill(process.processIdentifier, SIGKILL) }
-      }
+      retiringPipes = pipes
     }
+    pipes = []
     process = nil
     input = nil
     initialized = false
@@ -123,6 +109,7 @@ actor FantasticalMCPClient {
     if let retiring {
       await Self.waitForExit(retiring)
       self.retiring = nil
+      retiringPipes = []
     }
     lastStderrLine = nil
     guard let url = Self.helperURL() else { throw FantasticalMCPError.helperNotFound }
@@ -140,17 +127,19 @@ actor FantasticalMCPClient {
       Task { await self?.handleTermination(generation: generation) }
     }
     try process.run()
+    Self.suppressSIGPIPE(on: stdin.fileHandleForWriting)
     Self.log.info("helper started pid \(process.processIdentifier, privacy: .public)")
     self.process = process
     self.input = stdin.fileHandleForWriting
-    output = stdout.fileHandleForReading
-    errorOutput = stderr.fileHandleForReading
-    Self.readLines(from: stdout.fileHandleForReading) { [weak self] line in
-      Task { await self?.deliver(line: line) }
-    }
-    Self.readLines(from: stderr.fileHandleForReading) { [weak self] line in
-      Task { await self?.remember(stderrLine: line) }
-    }
+    pipes = [stdin, stdout, stderr]
+    readers = [
+      Task { [weak self] in
+        for await line in Self.lines(from: stdout.fileHandleForReading) { await self?.deliver(line: line) }
+      },
+      Task { [weak self] in
+        for await line in Self.lines(from: stderr.fileHandleForReading) { await self?.remember(stderrLine: line) }
+      },
+    ]
 
     _ = try await request(
       method: "initialize",
@@ -163,12 +152,32 @@ actor FantasticalMCPClient {
     initialized = true
   }
 
+  /// A write into a pipe whose reader has died raises SIGPIPE and takes the host down with it;
+  /// with this flag on the descriptor the same write throws EPIPE and `send` reports it instead.
+  nonisolated private static func suppressSIGPIPE(on handle: FileHandle) {
+    _ = fcntl(handle.fileDescriptor, F_SETNOSIGPIPE, 1)
+  }
+
+  /// Bounded, because a helper that ignores SIGTERM must not wedge every later call: SIGKILL goes
+  /// out after two seconds and the wait gives up after three.
   nonisolated private static func waitForExit(_ process: Process) async {
     await withCheckedContinuation { continuation in
+      let resumed = LockedValue(false)
+      let finish = {
+        let first = resumed.withValue { done -> Bool in
+          defer { done = true }
+          return !done
+        }
+        if first { continuation.resume() }
+      }
       DispatchQueue.global().async {
         process.waitUntilExit()
-        continuation.resume()
+        finish()
       }
+      DispatchQueue.global().asyncAfter(deadline: .now() + 2) {
+        if process.isRunning, process.processIdentifier > 0 { kill(process.processIdentifier, SIGKILL) }
+      }
+      DispatchQueue.global().asyncAfter(deadline: .now() + 3, execute: finish)
     }
   }
 
@@ -211,12 +220,12 @@ actor FantasticalMCPClient {
     nextID += 1
     let payload = Self.makeRequest(id: id, method: method, params: params)
     let deadline = Task { [timeoutSeconds] in
-      try await Task.sleep(nanoseconds: timeoutSeconds * 1_000_000_000)
+      try await Task.sleep(for: .seconds(timeoutSeconds))
       await self.expire(id: id)
     }
     defer { deadline.cancel() }
     return try await withCheckedThrowingContinuation { continuation in
-      Task { await self.register(id: id, continuation: continuation, payload: payload) }
+      register(id: id, continuation: continuation, payload: payload)
     }
   }
 
@@ -251,19 +260,21 @@ actor FantasticalMCPClient {
     Self.log.info("sent \(payload["method"] as? String ?? "?", privacy: .public) id \(payload["id"] as? Int ?? -1, privacy: .public)")
   }
 
-  /// Splits the pipe into lines on Foundation's reader queue, never on the actor, so a
-  /// waiting read can never stall the request that would produce the reply.
-  nonisolated private static func readLines(from handle: FileHandle, _ onLine: @escaping @Sendable (String) -> Void) {
-    let buffer = LineBuffer()
-    handle.readabilityHandler = { handle in
-      let data = handle.availableData
-      guard !data.isEmpty else {
-        handle.readabilityHandler = nil
-        return
+  /// Splits the pipe into lines on Foundation's reader queue, never on the actor, and hands them
+  /// over in arrival order. The throwing read is deliberate: `availableData` raises an
+  /// uncatchable exception once the descriptor is closed under it.
+  nonisolated private static func lines(from handle: FileHandle) -> AsyncStream<String> {
+    AsyncStream { continuation in
+      let buffer = LineBuffer()
+      handle.readabilityHandler = { handle in
+        guard let data = try? handle.read(upToCount: 65_536), !data.isEmpty else {
+          handle.readabilityHandler = nil
+          continuation.finish()
+          return
+        }
+        for line in buffer.append(data) { continuation.yield(line) }
       }
-      for line in buffer.append(data) {
-        onLine(line)
-      }
+      continuation.onTermination = { _ in handle.readabilityHandler = nil }
     }
   }
 
