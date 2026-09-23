@@ -134,13 +134,14 @@ enum FantasticalAgendaActions {
     await perform("deleteCalendarItem", arguments: ["id": id])
   }
 
+  /// The reminder store's own observer posts the change for this save, so posting it here too
+  /// rebuilt the agenda twice.
   static func complete(id: String) async -> ActionResult {
     do {
       try await FantasticalReminderStore.shared.complete(id: id)
     } catch {
       return .failure(error.localizedDescription)
     }
-    FantasticalAgendaSupport.postDataDidChange()
     return .success
   }
 
