@@ -18,10 +18,30 @@ enum FantasticalAgendaSupport {
     return calendars
   }
 
-  static func items(when: String?, query: String? = nil) async throws -> [FantasticalAgendaItem] {
+  /// Tasks are asked for list by list. A date range across every calendar fills the helper's 99
+  /// row cap with the oldest events before a single task appears, while a task list can hold
+  /// nothing else. The window does not narrow a task list (every undated task comes back with it),
+  /// and rows carry no completion flag, so only dated tasks are kept: the rest is search's job.
+  static func taskItems(
+    calendars: [FantasticalCalendar], now: Date, calendar: Calendar
+  ) async throws -> [FantasticalAgendaItem] {
+    let when = FantasticalAgendaRange.taskWhen(now: now, calendar: calendar)
+    let day = calendar.startOfDay(for: now)
+    let horizon = calendar.date(byAdding: .day, value: FantasticalAgendaRange.taskWindowDays, to: day) ?? day
+    var found: [FantasticalAgendaItem] = []
+    for list in calendars where list.supportsTasks && !list.supportsEvents {
+      found += try await items(when: when, calendarID: list.id)
+    }
+    return deduplicated(found).filter { $0.start.map { $0 < horizon } ?? false }
+  }
+
+  static func items(
+    when: String?, query: String? = nil, calendarID: String? = nil
+  ) async throws -> [FantasticalAgendaItem] {
     var arguments: [String: Any] = [:]
     if let when { arguments["when"] = when }
     if let query, !query.isEmpty { arguments["query"] = query }
+    if let calendarID { arguments["calendarId"] = calendarID }
     let result = try await FantasticalMCPClient.shared.call("queryCalendarItems", arguments: arguments)
     return try FantasticalAgendaParser.items(from: result.text)
   }
@@ -38,9 +58,7 @@ enum FantasticalAgendaSupport {
     for range in FantasticalAgendaRange.queried {
       perRange[range] = try await items(when: range.when(now: now, calendar: calendar))
     }
-    if let overdue = FantasticalAgendaRange.overdueWhen(now: now, calendar: calendar) {
-      perRange[.tasks] = deduplicated(try await items(when: overdue) + (perRange[.tasks] ?? []))
-    }
+    perRange[.tasks] = try await taskItems(calendars: calendars, now: now, calendar: calendar)
     let pool = dayPool(from: perRange)
     for derived in [FantasticalAgendaRange.today, .tomorrow] {
       let interval = derived.interval(now: now, calendar: calendar)
@@ -180,8 +198,7 @@ enum FantasticalAgendaSupport {
     guard overdue > 0 else {
       return sectionDetail(items.count, window: FantasticalAgendaRange.tasks.windowDescription)
     }
-    let upcoming = items.count - overdue
-    return "\(overdue) overdue, \(upcoming) next \(FantasticalAgendaRange.taskWindowDays) days"
+    return "\(overdue) overdue, \(items.count - overdue) next \(FantasticalAgendaRange.taskWindowDays) days"
   }
 
   static func count(_ n: Int) -> String {
