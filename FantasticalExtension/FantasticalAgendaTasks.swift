@@ -19,17 +19,19 @@ extension FantasticalAgendaSupport {
     var lists: [FantasticalTaskList] = []
     for cal in taskCalendars {
       try Task.checkCancellation()
-      if reminderLists.contains(cal.id) {
+      switch taskSource(for: cal, reminderLists: reminderLists, storeAvailable: store.isAvailable) {
+      case .eventKit:
         lists.append(FantasticalTaskList(calendar: cal, source: .eventKit, items: await reminders.openTasks(in: cal.id)))
         continue
-      }
-      if store.isAvailable {
+      case .store:
         do {
           lists.append(FantasticalTaskList(calendar: cal, source: .store, items: try store.openTasks(in: cal.id)))
           continue
         } catch {
           FantasticalStoreReader.log.error("store read failed: \(error.localizedDescription, privacy: .public)")
         }
+      case .helper:
+        break
       }
       let when = FantasticalAgendaRange.taskWhen(now: now, calendar: calendar)
       let day = calendar.startOfDay(for: now)
@@ -41,6 +43,16 @@ extension FantasticalAgendaSupport {
           items: deduplicated(rows).filter { $0.start.map { $0 < horizon } ?? false }))
     }
     return (lists, wantsReminders && access == .denied)
+  }
+
+  /// A Reminders list is never in Fantastical's store, so without EventKit access only the helper
+  /// can show it.
+  static func taskSource(
+    for calendar: FantasticalCalendar, reminderLists: Set<String>, storeAvailable: Bool
+  ) -> FantasticalTaskSource {
+    if reminderLists.contains(calendar.id) { return .eventKit }
+    if calendar.sourceName == FantasticalReminderStore.helperSourceName { return .helper }
+    return storeAvailable ? .store : .helper
   }
 
   static func taskSections(

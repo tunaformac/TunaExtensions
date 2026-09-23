@@ -112,9 +112,9 @@ time Tuna uses it, Fantastical asks whether to allow Tuna; refuse and the agenda
 instead. The helper does not expose notes, links or a done flag, so open tasks come from EventKit
 (Reminders lists) and from Fantastical's local database instead, and Complete Task is offered on
 Reminders tasks only. Refuse the Reminders permission and the Tasks group shows a **Reminders
-access needed** row at the top; a Reminders list is then read from Fantastical's database, or from
-the helper when that read fails, until you allow Tuna under System Settings, Privacy & Security,
-Reminders.
+access needed** row at the top; a Reminders list then falls back to Fantastical's helper, which
+only reports dated tasks and no completion state, until you allow Tuna under System Settings,
+Privacy & Security, Reminders.
 
 ## Views
 

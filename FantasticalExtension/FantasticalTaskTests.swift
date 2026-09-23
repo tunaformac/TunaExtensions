@@ -283,6 +283,19 @@ final class FantasticalTaskTests: XCTestCase {
     XCTAssertTrue(FantasticalActionsCatalog.agendaActionIDs.contains(FantasticalIdentifiers.completeAction))
   }
 
+  func testTaskSourceRoutesReminderListsAwayFromTheStore() {
+    func list(_ id: String, source: String) -> FantasticalCalendar {
+      FantasticalCalendar(id: id, title: id, isWritable: true, supportsEvents: false, supportsTasks: true, sourceName: source)
+    }
+    let reminders = list("A3F59DCE", source: FantasticalReminderStore.helperSourceName)
+    let google = list("d9836b3d", source: "Google")
+    XCTAssertEqual(FantasticalAgendaSupport.taskSource(for: reminders, reminderLists: ["A3F59DCE"], storeAvailable: true), .eventKit)
+    XCTAssertEqual(FantasticalAgendaSupport.taskSource(for: reminders, reminderLists: [], storeAvailable: true), .helper, "a denied Reminders list is never in the store")
+    XCTAssertEqual(FantasticalAgendaSupport.taskSource(for: google, reminderLists: [], storeAvailable: true), .store)
+    XCTAssertEqual(FantasticalAgendaSupport.taskSource(for: google, reminderLists: [], storeAvailable: false), .helper)
+    XCTAssertEqual(FantasticalAgendaSupport.taskSource(for: google, reminderLists: ["d9836b3d"], storeAvailable: false), .eventKit, "an EventKit id wins whatever the source name says")
+  }
+
   private func archive(_ task: FantasticalArchivedTask) throws -> Data {
     let archiver = NSKeyedArchiver(requiringSecureCoding: true)
     archiver.setClassName(FantasticalArchivedTask.archivedClassName, for: FantasticalArchivedTask.self)
