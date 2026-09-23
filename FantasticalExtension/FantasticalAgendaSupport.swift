@@ -18,21 +18,43 @@ enum FantasticalAgendaSupport {
     return calendars
   }
 
-  /// Tasks are asked for list by list. A date range across every calendar fills the helper's 99
-  /// row cap with the oldest events before a single task appears, while a task list can hold
-  /// nothing else. The window does not narrow a task list (every undated task comes back with it),
-  /// and rows carry no completion flag, so only dated tasks are kept: the rest is search's job.
-  static func taskItems(
+  /// Open tasks come from wherever Fantastical itself reads them: EventKit for a Reminders list,
+  /// Fantastical's own store for the accounts it syncs, and only then the helper, which returns
+  /// the finished tasks of a list and drops its open undated ones.
+  static func openTaskLists(
     calendars: [FantasticalCalendar], now: Date, calendar: Calendar
-  ) async throws -> [FantasticalAgendaItem] {
-    let when = FantasticalAgendaRange.taskWhen(now: now, calendar: calendar)
-    let day = calendar.startOfDay(for: now)
-    let horizon = calendar.date(byAdding: .day, value: FantasticalAgendaRange.taskWindowDays, to: day) ?? day
-    var found: [FantasticalAgendaItem] = []
-    for list in calendars where list.supportsTasks && !list.supportsEvents {
-      found += try await items(when: when, calendarID: list.id)
+  ) async throws -> (lists: [FantasticalTaskList], reminderAccessDenied: Bool) {
+    let taskCalendars = calendars.filter { $0.supportsTasks && !$0.supportsEvents }
+    guard !taskCalendars.isEmpty else { return ([], false) }
+    let reminders = FantasticalReminderStore.shared
+    let wantsReminders = taskCalendars.contains { $0.sourceName == FantasticalReminderStore.helperSourceName }
+    let access: FantasticalReminderStore.Access = wantsReminders ? await reminders.access() : .denied
+    let reminderLists = access == .granted ? await reminders.listIdentifiers() : []
+    let store = FantasticalStoreReader()
+    var lists: [FantasticalTaskList] = []
+    for cal in taskCalendars {
+      if reminderLists.contains(cal.id) {
+        lists.append(FantasticalTaskList(calendar: cal, source: .eventKit, items: await reminders.openTasks(in: cal.id)))
+        continue
+      }
+      if store.isAvailable {
+        do {
+          lists.append(FantasticalTaskList(calendar: cal, source: .store, items: try store.openTasks(in: cal.id)))
+          continue
+        } catch {
+          FantasticalStoreReader.log.error("store read failed: \(error.localizedDescription, privacy: .public)")
+        }
+      }
+      let when = FantasticalAgendaRange.taskWhen(now: now, calendar: calendar)
+      let day = calendar.startOfDay(for: now)
+      let horizon = calendar.date(byAdding: .day, value: FantasticalAgendaRange.taskWindowDays, to: day) ?? day
+      let rows = try await items(when: when, calendarID: cal.id)
+      lists.append(
+        FantasticalTaskList(
+          calendar: cal, source: .helper,
+          items: deduplicated(rows).filter { $0.start.map { $0 < horizon } ?? false }))
     }
-    return deduplicated(found).filter { $0.start.map { $0 < horizon } ?? false }
+    return (lists, wantsReminders && access == .denied)
   }
 
   static func items(
@@ -58,43 +80,44 @@ enum FantasticalAgendaSupport {
     for range in FantasticalAgendaRange.queried {
       perRange[range] = try await items(when: range.when(now: now, calendar: calendar))
     }
-    perRange[.tasks] = try await taskItems(calendars: calendars, now: now, calendar: calendar)
+    let tasks = try await openTaskLists(calendars: calendars, now: now, calendar: calendar)
     let pool = dayPool(from: perRange)
     for derived in [FantasticalAgendaRange.today, .tomorrow] {
       let interval = derived.interval(now: now, calendar: calendar)
       perRange[derived] = pool.filter { $0.overlaps(interval, calendar: calendar) }
     }
-    return sections(from: perRange, calendars: calendars, now: now, calendar: calendar)
+    return sections(
+      from: perRange, calendars: calendars, taskLists: tasks.lists,
+      reminderAccessDenied: tasks.reminderAccessDenied, now: now, calendar: calendar)
   }
 
   static func sections(
     from perRange: [FantasticalAgendaRange: [FantasticalAgendaItem]], calendars: [FantasticalCalendar],
+    taskLists: [FantasticalTaskList] = [], reminderAccessDenied: Bool = false,
     now: Date, calendar: Calendar = .autoupdatingCurrent
   ) -> [CatalogItem] {
-    let byID = Dictionary(calendars.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
     func entities(_ subset: [FantasticalAgendaItem]) -> [CatalogItem] {
       subset.map { entity(for: $0, calendars: calendars, now: now) }
     }
-    func subset(_ range: FantasticalAgendaRange) -> [FantasticalAgendaItem] {
-      let found = sorted(perRange[range] ?? [])
-      guard range.tasksOnly else { return found }
-      return found.filter { isTask($0, in: byID[$0.calendarID]) }
-    }
 
     var sections: [CatalogItem] = FantasticalAgendaRange.allCases.map { range in
-      let found = subset(range)
-      let detail =
-        range.tasksOnly
-        ? tasksDetail(found, calendars: calendars, now: now, calendar: calendar)
-        : sectionDetail(found.count, window: range.windowDescription)
+      if range.tasksOnly {
+        let tasks = taskSections(
+          lists: taskLists, reminderAccessDenied: reminderAccessDenied, now: now, calendar: calendar)
+        return FantasticalSectionItem(
+          title: range.title, id: "fantastical.agenda.\(range)", detail: tasks.detail,
+          symbolName: range.symbolName, iconColor: range.iconColor, children: tasks.children,
+          sortOrder: range.sortOrder)
+      }
+      let found = sorted(perRange[range] ?? [])
       return FantasticalSectionItem(
         title: range.title, id: "fantastical.agenda.\(range)",
-        detail: detail,
+        detail: sectionDetail(found.count, window: range.windowDescription),
         symbolName: range.symbolName, iconColor: range.iconColor, children: entities(found),
         sortOrder: range.sortOrder)
     }
 
-    let week = subset(.next7Days)
+    let week = sorted(perRange[.next7Days] ?? [])
     let perCalendar: [CatalogItem] = calendars.enumerated().compactMap { index, cal in
       let mine = week.filter { $0.calendarID == cal.id }
       guard !mine.isEmpty else { return nil }
@@ -140,12 +163,13 @@ enum FantasticalAgendaSupport {
     return Array(entities)
   }
 
-  static func entity(for item: FantasticalAgendaItem, calendars: [FantasticalCalendar], now: Date)
-    -> FantasticalAgendaEntity
-  {
+  static func entity(
+    for item: FantasticalAgendaItem, calendars: [FantasticalCalendar], now: Date,
+    source: FantasticalTaskSource? = nil
+  ) -> FantasticalAgendaEntity {
     let cal = calendars.first { $0.id == item.calendarID }
     return FantasticalAgendaEntity(
-      item: item, calendarTitle: cal?.title, isTask: isTask(item, in: cal),
+      item: item, calendarTitle: cal?.title, isTask: source != nil || isTask(item, in: cal),
       isEditable: cal?.isWritable ?? true, now: now)
   }
 
@@ -186,19 +210,65 @@ enum FantasticalAgendaSupport {
     return !calendar.supportsEvents || item.end == nil
   }
 
-  /// Says how much of the Tasks group is already due, because "12 items" hides the three that
-  /// needed doing last week, and says when Fantastical reports no list that could hold one.
-  static func tasksDetail(
-    _ items: [FantasticalAgendaItem], calendars: [FantasticalCalendar], now: Date,
+  static func taskSections(
+    lists: [FantasticalTaskList], reminderAccessDenied: Bool = false, now: Date,
     calendar: Calendar = .autoupdatingCurrent
-  ) -> String {
-    guard calendars.contains(where: \.supportsTasks) else { return "0 items, no task lists" }
-    let startOfToday = calendar.startOfDay(for: now)
-    let overdue = items.filter { ($0.start ?? .distantFuture) < startOfToday }.count
-    guard overdue > 0 else {
-      return sectionDetail(items.count, window: FantasticalAgendaRange.tasks.windowDescription)
+  ) -> (children: [CatalogItem], detail: String) {
+    let calendars = lists.map(\.calendar)
+    let all = lists.flatMap(\.items)
+    let overdue = sortedTasks(all.filter { $0.isOverdue(now: now, calendar: calendar) })
+    var children: [CatalogItem] = []
+    if reminderAccessDenied {
+      children.append(
+        messageItem(
+          title: "Reminders access needed",
+          message: "Allow Tuna under System Settings, Privacy & Security, Reminders, then open Tasks again.",
+          symbolName: "lock", tint: .systemOrange))
     }
-    return "\(overdue) overdue, \(items.count - overdue) next \(FantasticalAgendaRange.taskWindowDays) days"
+    if !overdue.isEmpty {
+      children.append(
+        FantasticalSectionItem(
+          title: "Overdue", id: "fantastical.agenda.tasks.overdue", detail: count(overdue.count),
+          symbolName: "exclamationmark.circle", iconColor: .red,
+          children: overdue.map { entity(for: $0, calendars: calendars, now: now, source: .eventKit) },
+          sortOrder: 0))
+    }
+    for (index, list) in lists.enumerated() {
+      children.append(
+        FantasticalSectionItem(
+          title: list.calendar.title, id: "fantastical.agenda.tasks.\(list.calendar.id)",
+          detail: listDetail(list), symbolName: "checklist", iconColor: .blue,
+          children: sortedTasks(list.items).map { entity(for: $0, calendars: calendars, now: now, source: list.source) },
+          sortOrder: index + 1))
+    }
+    return (children, tasksDetail(open: all.count, overdue: overdue.count, hasLists: !lists.isEmpty))
+  }
+
+  static func listDetail(_ list: FantasticalTaskList) -> String {
+    guard !list.items.isEmpty else { return "No open tasks" }
+    guard list.source == .helper else { return "\(list.items.count) open" }
+    return "\(list.items.count) dated, completion unknown"
+  }
+
+  static func tasksDetail(open: Int, overdue: Int, hasLists: Bool) -> String {
+    guard hasLists else { return "0 items, no task lists" }
+    guard open > 0 else { return "No open tasks" }
+    guard overdue > 0 else { return "\(open) open" }
+    return "\(open) open, \(overdue) overdue"
+  }
+
+  /// Due soonest first, undated last, priority breaking ties, then the title.
+  static func sortedTasks(_ items: [FantasticalAgendaItem]) -> [FantasticalAgendaItem] {
+    items.sorted { lhs, rhs in
+      switch (lhs.start, rhs.start) {
+      case (let l?, let r?) where l != r: return l < r
+      case (.some, .none): return true
+      case (.none, .some): return false
+      default:
+        if lhs.priorityRank != rhs.priorityRank { return lhs.priorityRank < rhs.priorityRank }
+        return lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
+      }
+    }
   }
 
   static func count(_ n: Int) -> String {

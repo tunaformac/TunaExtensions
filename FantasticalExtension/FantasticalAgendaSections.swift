@@ -46,10 +46,7 @@ enum FantasticalAgendaRange: CaseIterable, Sendable {
   static let taskWindowDays = 30
   static let overdueYears = 5
 
-  /// Stated in the row because "Tasks" implies no window of its own.
-  var windowDescription: String? {
-    self == .tasks ? "next \(Self.taskWindowDays) days" : nil
-  }
+  var windowDescription: String? { nil }
 
   /// The window a task list is asked for when the helper wants a date: years of backlog through
   /// the days ahead, inclusive as the helper spells it.

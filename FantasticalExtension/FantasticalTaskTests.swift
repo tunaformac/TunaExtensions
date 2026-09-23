@@ -127,6 +127,70 @@ final class FantasticalTaskTests: XCTestCase {
       "Untitled task")
   }
 
+  func testTasksAreGroupedPerListWithOverdueFirst() throws {
+    let calendar = paris
+    let now = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 9, day: 23, hour: 10)))
+    func list(_ id: String, _ title: String) -> FantasticalCalendar {
+      FantasticalCalendar(id: id, title: title, isWritable: true, supportsEvents: false, supportsTasks: true, sourceName: "Calendar")
+    }
+    func task(_ key: String, list: String, day: Int?, priority: Int = 0) -> FantasticalAgendaItem {
+      FantasticalAgendaItem(
+        id: "\(list);\(key)", title: key, calendarID: list,
+        start: day.flatMap { calendar.date(from: DateComponents(year: 2026, month: 9, day: $0)) }, end: nil,
+        location: nil, timeZone: calendar.timeZone, priority: priority)
+    }
+    let lists = [
+      FantasticalTaskList(
+        calendar: list("r", "Reminders"), source: .eventKit,
+        items: [task("late", list: "r", day: 20), task("undated", list: "r", day: nil), task("soon", list: "r", day: 25)]),
+      FantasticalTaskList(calendar: list("i", "Inbox"), source: .eventKit, items: []),
+      FantasticalTaskList(calendar: list("g", "Google"), source: .store, items: [task("g1", list: "g", day: 21)]),
+    ]
+    let tasks = FantasticalAgendaSupport.taskSections(lists: lists, now: now, calendar: calendar)
+    XCTAssertEqual(tasks.detail, "4 open, 2 overdue")
+    XCTAssertEqual(tasks.children.map(\.title), ["Overdue", "Reminders", "Inbox", "Google"])
+    XCTAssertEqual(tasks.children.map(\.detail), ["2 items", "3 open", "No open tasks", "1 open"])
+    let overdue = try XCTUnwrap(tasks.children.first as? FantasticalSectionItem)
+    XCTAssertEqual(overdue.hierarchyChildren().map(\.id), ["fantastical.item.r;late", "fantastical.item.g;g1"])
+    let reminders = try XCTUnwrap(tasks.children[1] as? FantasticalSectionItem)
+    XCTAssertEqual(
+      reminders.hierarchyChildren().map(\.id),
+      ["fantastical.item.r;late", "fantastical.item.r;soon", "fantastical.item.r;undated"],
+      "due soonest first, undated last")
+    XCTAssertEqual(tasks.children.map { ($0 as? FantasticalSectionItem)?.sortOrder }, [0, 1, 2, 3])
+
+    let empty = FantasticalAgendaSupport.taskSections(lists: [], now: now, calendar: calendar)
+    XCTAssertEqual(empty.detail, "0 items, no task lists")
+    XCTAssertTrue(empty.children.isEmpty)
+
+    let denied = FantasticalAgendaSupport.taskSections(
+      lists: [lists[2]], reminderAccessDenied: true, now: now, calendar: calendar)
+    XCTAssertEqual(denied.children.first?.title, "Reminders access needed")
+    XCTAssertEqual(denied.detail, "1 open, 1 overdue")
+  }
+
+  func testTaskSortPutsDueSoonestThenPriorityThenTitle() throws {
+    let calendar = paris
+    let day = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 9, day: 25)))
+    func task(_ title: String, due: Date?, priority: Int) -> FantasticalAgendaItem {
+      FantasticalAgendaItem(id: "l;\(title)", title: title, calendarID: "l", start: due, end: nil, location: nil, priority: priority)
+    }
+    let sorted = FantasticalAgendaSupport.sortedTasks([
+      task("b none", due: nil, priority: 0), task("a none", due: nil, priority: 0),
+      task("low later", due: day.addingTimeInterval(86_400), priority: 9),
+      task("medium", due: day, priority: 5), task("high", due: day, priority: 1),
+      task("urgent undated", due: nil, priority: 1),
+    ])
+    XCTAssertEqual(sorted.map(\.title), ["high", "medium", "low later", "urgent undated", "a none", "b none"])
+  }
+
+  func testTasksDetailCountsOpenAndOverdue() {
+    XCTAssertEqual(FantasticalAgendaSupport.tasksDetail(open: 0, overdue: 0, hasLists: false), "0 items, no task lists")
+    XCTAssertEqual(FantasticalAgendaSupport.tasksDetail(open: 0, overdue: 0, hasLists: true), "No open tasks")
+    XCTAssertEqual(FantasticalAgendaSupport.tasksDetail(open: 1, overdue: 0, hasLists: true), "1 open")
+    XCTAssertEqual(FantasticalAgendaSupport.tasksDetail(open: 12, overdue: 3, hasLists: true), "12 open, 3 overdue")
+  }
+
   private func archive(_ task: FantasticalArchivedTask) throws -> Data {
     let archiver = NSKeyedArchiver(requiringSecureCoding: true)
     archiver.setClassName(FantasticalArchivedTask.archivedClassName, for: FantasticalArchivedTask.self)

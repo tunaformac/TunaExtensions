@@ -305,31 +305,11 @@ final class FantasticalExtensionTests: XCTestCase {
     var calendar = Calendar(identifier: .gregorian)
     calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "Europe/Paris"))
     let now = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 9, day: 18, hour: 9)))
-    func task(_ id: String, day: Int) -> FantasticalAgendaItem {
-      FantasticalAgendaItem(
-        id: id, title: id, calendarID: "t",
-        start: calendar.date(from: DateComponents(year: 2026, month: 9, day: day, hour: 12)),
-        end: nil, location: nil, timeZone: calendar.timeZone)
-    }
-
     let lists = [
       FantasticalCalendar(
         id: "t", title: "My Tasks", isWritable: true, supportsEvents: false, supportsTasks: true,
         sourceName: "G")
     ]
-    XCTAssertEqual(
-      FantasticalAgendaSupport.tasksDetail(
-        [task("late", day: 10), task("later", day: 17), task("soon", day: 19)], calendars: lists,
-        now: now, calendar: calendar),
-      "2 overdue, 1 next 30 days")
-    XCTAssertEqual(
-      FantasticalAgendaSupport.tasksDetail(
-        [task("soon", day: 19)], calendars: lists, now: now, calendar: calendar),
-      "1 item, next 30 days")
-    XCTAssertEqual(
-      FantasticalAgendaSupport.tasksDetail([], calendars: [], now: now, calendar: calendar),
-      "0 items, no task lists")
-
     let mixed = FantasticalCalendar(
       id: "m", title: "Home", isWritable: true, supportsEvents: true, supportsTasks: true,
       sourceName: "CalDAV")
@@ -385,11 +365,15 @@ final class FantasticalExtensionTests: XCTestCase {
     let c = item("c", cal: "r", day: 18)
     let year = (0..<99).map { item("y\($0)", cal: "e", day: 1 + $0 % 28) }
     let sections = FantasticalAgendaSupport.sections(
-      from: [.today: [a], .tomorrow: [b], .tasks: [a, b], .next7Days: [b, a, c], .thisYear: year],
-      calendars: cals, now: now, calendar: calendar)
+      from: [.today: [a], .tomorrow: [b], .next7Days: [b, a, c], .thisYear: year],
+      calendars: cals,
+      taskLists: [FantasticalTaskList(calendar: cals[1], source: .helper, items: [b])],
+      now: now, calendar: calendar)
     let byID = Dictionary(uniqueKeysWithValues: sections.map { ($0.id, $0) })
     XCTAssertEqual(byID["fantastical.agenda.today"]?.detail, "1 item")
-    XCTAssertEqual(byID["fantastical.agenda.tasks"]?.detail, "1 item, next 30 days")
+    XCTAssertEqual(byID["fantastical.agenda.tasks"]?.detail, "1 open")
+    XCTAssertEqual(
+      (byID["fantastical.agenda.tasks"] as? FantasticalSectionItem)?.hierarchyChildren().map(\.title), ["Tasks"])
     XCTAssertEqual(byID["fantastical.agenda.thisMonth"]?.detail, "0 items")
     XCTAssertEqual(byID["fantastical.agenda.thisYear"]?.detail, "99+ items, Fantastical returns the first 99")
     XCTAssertEqual(byID["fantastical.agenda.by-calendar"]?.detail, "3 calendars, next 7 days")
