@@ -4,8 +4,8 @@ import TunaKit
 
 extension FantasticalActionsCatalog {
   static let agendaActionIDs = [
-    FantasticalIdentifiers.rescheduleAction, "rename", "change-location", "delete-item",
-    "add-to-fantastical-calendar",
+    FantasticalIdentifiers.rescheduleAction, "rename", "change-location", FantasticalIdentifiers.completeAction,
+    "delete-item", "add-to-fantastical-calendar",
   ]
 
   static func agendaActions() -> [CatalogAction] {
@@ -27,6 +27,18 @@ extension FantasticalActionsCatalog {
       return entity.isEditable && !entity.isTask
     }
     items.append(changeLocation)
+
+    let complete = PredicateAwareAction(id: FantasticalIdentifiers.completeAction, title: "Complete Task") {
+      subject, _ in
+      guard let entity = subject as? FantasticalAgendaEntity, entity.canComplete else {
+        return .failure("Only a Reminders task can be completed from Tuna")
+      }
+      return await FantasticalAgendaActions.complete(id: entity.item.id)
+    }
+    complete.systemSymbolName = "checkmark.circle"
+    complete.supportedSubjectTypes = [.fantasticalItem]
+    complete.subjectPredicate = { ($0 as? FantasticalAgendaEntity)?.canComplete == true }
+    items.append(complete)
 
     let delete = PredicateAwareAction(id: "delete-item", title: "Delete from Fantastical") {
       subject, _ in
@@ -119,6 +131,16 @@ enum FantasticalAgendaActions {
 
   static func delete(id: String) async -> ActionResult {
     await perform("deleteCalendarItem", arguments: ["id": id])
+  }
+
+  static func complete(id: String) async -> ActionResult {
+    do {
+      try await FantasticalReminderStore.shared.complete(id: id)
+    } catch {
+      return .failure(error.localizedDescription)
+    }
+    FantasticalAgendaSupport.postDataDidChange()
+    return .success
   }
 
   private static func perform(_ tool: String, arguments: [String: Any]) async -> ActionResult {

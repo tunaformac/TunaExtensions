@@ -269,6 +269,19 @@ final class FantasticalTaskTests: XCTestCase {
     XCTAssertGreaterThan(entity("undated high", due: nil, priority: 1).sortScore, entity("undated none", due: nil, priority: 0).sortScore)
   }
 
+  func testCompleteTaskIsOfferedOnEventKitTasksOnly() throws {
+    let catalog = FantasticalActionsCatalog(
+      definition: ActionCatalogDefinition(identifier: FantasticalIdentifiers.actionCatalog, name: "Fantastical"))
+    let complete = try XCTUnwrap(
+      catalog.actions.first { $0.id == FantasticalIdentifiers.completeAction } as? PredicateAwareAction)
+    XCTAssertEqual(complete.title, "Complete Task")
+    XCTAssertEqual(complete.supportedSubjectTypes, [.fantasticalItem])
+    let item = FantasticalAgendaItem(id: "r;k", title: "k", calendarID: "r", start: nil, end: nil, location: nil)
+    XCTAssertTrue(complete.subjectPredicate?(FantasticalAgendaEntity(item: item, calendarTitle: nil, isTask: true, canComplete: true)) ?? false)
+    XCTAssertFalse(complete.subjectPredicate?(FantasticalAgendaEntity(item: item, calendarTitle: nil, isTask: true)) ?? true)
+    XCTAssertTrue(FantasticalActionsCatalog.agendaActionIDs.contains(FantasticalIdentifiers.completeAction))
+  }
+
   private func archive(_ task: FantasticalArchivedTask) throws -> Data {
     let archiver = NSKeyedArchiver(requiringSecureCoding: true)
     archiver.setClassName(FantasticalArchivedTask.archivedClassName, for: FantasticalArchivedTask.self)

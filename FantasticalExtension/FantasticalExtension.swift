@@ -93,6 +93,9 @@ public final class FantasticalExtension: Extension {
               actionID: FantasticalIdentifiers.showAction),
             ActionReference(
               catalogIdentifier: FantasticalIdentifiers.actionCatalog,
+              actionID: FantasticalIdentifiers.completeAction),
+            ActionReference(
+              catalogIdentifier: FantasticalIdentifiers.actionCatalog,
               actionID: FantasticalIdentifiers.rescheduleAction),
           ]
         ),
@@ -128,4 +131,5 @@ enum FantasticalIdentifiers {
   static let addTypedAction = "add-typed"
   static let miniWindowAction = "open-mini-window"
   static let rescheduleAction = "reschedule"
+  static let completeAction = "complete-task"
 }
