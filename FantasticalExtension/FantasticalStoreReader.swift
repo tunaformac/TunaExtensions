@@ -39,6 +39,7 @@ struct FantasticalStoreReader: Sendable {
       throw ReadError.cannotOpen(detail)
     }
     defer { sqlite3_close(db) }
+    sqlite3_busy_timeout(db, 250)
 
     let sql = """
       SELECT d.key, d.data FROM database2 d
@@ -55,19 +56,28 @@ struct FantasticalStoreReader: Sendable {
     sqlite3_bind_text(query, 1, "calendarItems-\(listID)", -1, transient)
 
     var items: [FantasticalAgendaItem] = []
-    while sqlite3_step(query) == SQLITE_ROW {
-      guard let keyText = sqlite3_column_text(query, 0) else { continue }
-      let key = String(cString: keyText)
-      let length = Int(sqlite3_column_bytes(query, 1))
-      guard length > 0, let bytes = sqlite3_column_blob(query, 1) else { continue }
-      guard let task = FantasticalArchivedTask.decode(from: Data(bytes: bytes, count: length)), !task.completed
-      else { continue }
-      items.append(
-        FantasticalAgendaItem(
-          id: FantasticalTaskID.make(listID: listID, key: key), title: task.title, calendarID: listID,
-          start: task.dueDate, end: nil, location: nil, priority: task.priority))
+    var step = sqlite3_step(query)
+    while step == SQLITE_ROW {
+      if let item = item(from: query, listID: listID) { items.append(item) }
+      step = sqlite3_step(query)
+    }
+    guard step == SQLITE_DONE else {
+      throw ReadError.badStatement(String(cString: sqlite3_errmsg(db)))
     }
     return items
+  }
+
+  private func item(from query: OpaquePointer, listID: String) -> FantasticalAgendaItem? {
+    guard let keyText = sqlite3_column_text(query, 0) else { return nil }
+    let key = String(cString: keyText)
+    guard let bytes = sqlite3_column_blob(query, 1) else { return nil }
+    let length = Int(sqlite3_column_bytes(query, 1))
+    guard length > 0 else { return nil }
+    guard let task = FantasticalArchivedTask.decode(from: Data(bytes: bytes, count: length)), !task.completed
+    else { return nil }
+    return FantasticalAgendaItem(
+      id: FantasticalTaskID.make(listID: listID, key: key), title: task.title, calendarID: listID,
+      start: task.dueDate, end: nil, location: nil, priority: task.priority)
   }
 }
 

@@ -89,6 +89,28 @@ final class FantasticalTaskTests: XCTestCase {
     XCTAssertFalse(FantasticalStoreReader(url: url.appending(path: "missing")).isAvailable)
   }
 
+  func testStoreReaderThrowsWhenTheStoreCannotBeRead() throws {
+    let url = FileManager.default.temporaryDirectory.appending(path: "fantastical-\(UUID().uuidString).fcdata")
+    defer { try? FileManager.default.removeItem(at: url) }
+    var handle: OpaquePointer?
+    XCTAssertEqual(sqlite3_open(url.path, &handle), SQLITE_OK)
+    let db = try XCTUnwrap(handle)
+    XCTAssertEqual(
+      sqlite3_exec(
+        db,
+        "CREATE TABLE database2 (rowid INTEGER PRIMARY KEY, collection CHAR NOT NULL, key CHAR NOT NULL, data BLOB, metadata BLOB);",
+        nil, nil, nil),
+      SQLITE_OK)
+    XCTAssertEqual(sqlite3_close(db), SQLITE_OK)
+    XCTAssertThrowsError(try FantasticalStoreReader(url: url).openTasks(in: "google")) { error in
+      XCTAssertTrue(error is FantasticalStoreReader.ReadError, "\(error)")
+    }
+    let directory = FantasticalStoreReader(url: FileManager.default.temporaryDirectory)
+    XCTAssertThrowsError(try directory.openTasks(in: "google")) { error in
+      XCTAssertTrue(error is FantasticalStoreReader.ReadError, "\(error)")
+    }
+  }
+
   private func archive(_ task: FantasticalArchivedTask) throws -> Data {
     let archiver = NSKeyedArchiver(requiringSecureCoding: true)
     archiver.setClassName(FantasticalArchivedTask.archivedClassName, for: FantasticalArchivedTask.self)
