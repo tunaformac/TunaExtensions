@@ -33,6 +33,8 @@ actor FantasticalReminderStore {
     case .fullAccess:
       return .granted
     case .notDetermined:
+      /// A suite that reached this line would hang CI on the system prompt, because `make test` runs
+      /// every extension in one job; the Reminders extension guards the same way.
       if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil { return .denied }
       let granted = (try? await store.requestFullAccessToReminders()) ?? false
       return granted ? .granted : .denied
@@ -48,6 +50,7 @@ actor FantasticalReminderStore {
   }
 
   func openTasks(in listID: String) async -> [FantasticalAgendaItem] {
+    startObserving()
     guard let list = store.calendars(for: .reminder).first(where: { $0.calendarIdentifier == listID }) else {
       return []
     }
@@ -55,7 +58,6 @@ actor FantasticalReminderStore {
     let reminders: [EKReminder] = await withCheckedContinuation { continuation in
       store.fetchReminders(matching: predicate) { continuation.resume(returning: $0 ?? []) }
     }
-    startObserving()
     return reminders.map { reminder in
       Self.item(
         listID: listID, key: reminder.calendarItemIdentifier, title: reminder.title ?? "",
