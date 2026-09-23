@@ -36,6 +36,7 @@ extension FantasticalActionsCatalog {
       return await FantasticalAgendaActions.complete(id: entity.item.id)
     }
     complete.systemSymbolName = "checkmark.circle"
+    complete.executionPolicy = .keepVisible
     complete.supportedSubjectTypes = [.fantasticalItem]
     complete.subjectPredicate = { ($0 as? FantasticalAgendaEntity)?.canComplete == true }
     items.append(complete)

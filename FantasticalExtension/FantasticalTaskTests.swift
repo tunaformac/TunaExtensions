@@ -276,6 +276,7 @@ final class FantasticalTaskTests: XCTestCase {
       catalog.actions.first { $0.id == FantasticalIdentifiers.completeAction } as? PredicateAwareAction)
     XCTAssertEqual(complete.title, "Complete Task")
     XCTAssertEqual(complete.supportedSubjectTypes, [.fantasticalItem])
+    XCTAssertEqual(complete.executionPolicy, .keepVisible)
     let item = FantasticalAgendaItem(id: "r;k", title: "k", calendarID: "r", start: nil, end: nil, location: nil)
     XCTAssertTrue(complete.subjectPredicate?(FantasticalAgendaEntity(item: item, calendarTitle: nil, isTask: true, canComplete: true)) ?? false)
     XCTAssertFalse(complete.subjectPredicate?(FantasticalAgendaEntity(item: item, calendarTitle: nil, isTask: true)) ?? true)
