@@ -111,6 +111,22 @@ final class FantasticalTaskTests: XCTestCase {
     }
   }
 
+  func testReminderRowsBecomeItemsWithTheHelperIdShape() throws {
+    let calendar = paris
+    let due = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 9, day: 25)))
+    let item = FantasticalReminderStore.item(
+      listID: "A3F59DCE", key: "9D5E1A73", title: "  Call the bank ", due: due, priority: 1)
+    XCTAssertEqual(item.id, "A3F59DCE;9D5E1A73")
+    XCTAssertEqual(item.calendarID, "A3F59DCE")
+    XCTAssertEqual(item.title, "Call the bank")
+    XCTAssertEqual(item.start, due)
+    XCTAssertNil(item.end)
+    XCTAssertEqual(item.priority, 1)
+    XCTAssertEqual(
+      FantasticalReminderStore.item(listID: "l", key: "k", title: "   ", due: nil, priority: 0).title,
+      "Untitled task")
+  }
+
   private func archive(_ task: FantasticalArchivedTask) throws -> Data {
     let archiver = NSKeyedArchiver(requiringSecureCoding: true)
     archiver.setClassName(FantasticalArchivedTask.archivedClassName, for: FantasticalArchivedTask.self)
