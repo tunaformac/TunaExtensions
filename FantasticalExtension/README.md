@@ -2,7 +2,7 @@
 
 Fantastical brings your agenda into Tuna and turns typed text into events and tasks through
 Fantastical's natural language parser. Reads use Fantastical's built-in MCP helper, your Reminders
-lists and Fantastical's own database, writes use its URL scheme; nothing leaves this Mac.
+lists and Fantastical's own database, creates use its URL scheme; nothing leaves this Mac.
 
 ## Adding events and tasks
 
@@ -79,11 +79,12 @@ matches. Each item shows its day, time, calendar, and location.
 
 - **Tasks** shows your open tasks the way Fantastical does: an **Overdue** group first, then one
   group per task list, each row saying the due date, the list and the priority, undated tasks
-  after the dated ones. Finished tasks are left out. Reminders lists are read through the system
-  Reminders permission, which Tuna asks for once; lists Fantastical syncs itself (Google Tasks,
-  Todoist, CalDAV tasks) are read from Fantastical's local database. When neither is available a
-  list falls back to Fantastical's helper, which only reports dated tasks and no completion
-  state, and its row says `completion unknown`.
+  after the dated ones. An overdue task is in both places: the Overdue group and its own list.
+  Finished tasks are left out. Reminders lists are read through the system Reminders permission,
+  which Tuna asks for once; lists Fantastical syncs itself (Google Tasks, Todoist, CalDAV tasks)
+  are read from Fantastical's local database. When neither is available a list falls back to
+  Fantastical's helper, which only reports dated tasks, those overdue or due in the next 30 days,
+  and no completion state, and its row says `completion unknown`.
 - **Today** and **Tomorrow** split at midnight, and an item that runs across midnight or over
   several days is listed under every day it covers.
 - **By Calendar** groups the next 7 days by calendar, read-only calendars included. Writability
@@ -110,7 +111,10 @@ The agenda comes from Fantastical's built-in MCP helper (Fantastical 4.1.17 or l
 time Tuna uses it, Fantastical asks whether to allow Tuna; refuse and the agenda shows a message
 instead. The helper does not expose notes, links or a done flag, so open tasks come from EventKit
 (Reminders lists) and from Fantastical's local database instead, and Complete Task is offered on
-Reminders tasks only.
+Reminders tasks only. Refuse the Reminders permission and the Tasks group shows a **Reminders
+access needed** row at the top; a Reminders list is then read from Fantastical's database, or from
+the helper when that read fails, until you allow Tuna under System Settings, Privacy & Security,
+Reminders.
 
 ## Views
 
@@ -136,13 +140,13 @@ Tuna Settings > Extensions > Fantastical:
 
 Everything stays on this Mac: the URL scheme for creating items and views, Fantastical's own MCP
 helper (`Fantastical.app/Contents/Helpers/FantasticalMCP.app`) over standard input and output for
-the agenda, and EventKit and Fantastical's own database, read only, for open tasks. No network
-access from the extension, no credentials. Agenda results live in memory only while the browse or
-search is open. Writes: reschedule, rename, change location, and delete (confirmed) through the
-helper, Complete Task through EventKit; every create goes through the URL scheme. Helper
-diagnostics are logged privately, so event and calendar text never reaches the public log.
-Reminders are read with the system permission Tuna already declares; nothing from EventKit or from
-Fantastical's database is logged.
+the agenda, and EventKit for your Reminders lists and Fantastical's own database, read only, for
+open tasks. No network access from the extension, no credentials. Agenda results live in memory
+only while the browse or search is open. Writes: reschedule, rename, change location, and delete
+(confirmed) through the helper, Complete Task through EventKit; every create goes through the URL
+scheme. Helper diagnostics are logged privately, so event and calendar text never reaches the
+public log. Reminders are read with the system permission Tuna already declares; nothing from
+EventKit or from Fantastical's database is logged.
 
 ## Limitations
 
