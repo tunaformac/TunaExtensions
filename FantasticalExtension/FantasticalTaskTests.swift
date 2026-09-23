@@ -208,6 +208,15 @@ final class FantasticalTaskTests: XCTestCase {
     XCTAssertGreaterThanOrEqual(
       notice.capturedAtDate, firstSection.capturedAtDate, "the time sort keeps the notice on top too")
     XCTAssertEqual(denied.detail, "1 open, 1 overdue")
+
+    let helper = FantasticalTaskList(
+      calendar: list("h", "Todoist"), source: .helper,
+      items: [task("h1", list: "h", day: 25), task("h2", list: "h", day: 26)])
+    XCTAssertEqual(FantasticalAgendaSupport.listDetail(helper), "2 dated, completion unknown")
+    XCTAssertEqual(
+      FantasticalAgendaSupport.listDetail(
+        FantasticalTaskList(calendar: list("h", "Todoist"), source: .helper, items: [])),
+      "No open tasks")
   }
 
   func testTaskSortPutsDueSoonestThenPriorityThenTitle() throws {
@@ -302,6 +311,14 @@ final class FantasticalTaskTests: XCTestCase {
     XCTAssertGreaterThan(entity("high", due: due, priority: 1).sortScore, entity("none", due: due, priority: 0).sortScore)
     XCTAssertGreaterThan(entity("sooner", due: due, priority: 0).sortScore, entity("later", due: due.addingTimeInterval(1), priority: 1).sortScore)
     XCTAssertGreaterThan(entity("undated high", due: nil, priority: 1).sortScore, entity("undated none", due: nil, priority: 0).sortScore)
+    XCTAssertGreaterThan(
+      entity("high", due: due, priority: 1).capturedAtDate, entity("none", due: due, priority: 0).capturedAtDate)
+    XCTAssertGreaterThan(
+      entity("sooner", due: due, priority: 0).capturedAtDate,
+      entity("later", due: due.addingTimeInterval(1), priority: 1).capturedAtDate)
+    XCTAssertGreaterThan(
+      entity("undated high", due: nil, priority: 1).capturedAtDate,
+      entity("undated none", due: nil, priority: 0).capturedAtDate)
   }
 
   func testCompleteTaskIsOfferedOnEventKitTasksOnly() throws {

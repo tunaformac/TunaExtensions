@@ -8,7 +8,10 @@ final class FantasticalAgendaEntity: CatalogEntity, CopyRepresentationProviding,
   var sortScore: Double {
     FantasticalAgendaSort.itemScore(start: item.start) + FantasticalAgendaSort.priorityBonus(item.priorityRank)
   }
-  var capturedAtDate: Date { FantasticalAgendaSort.itemTimestamp(start: item.start) }
+  var capturedAtDate: Date {
+    FantasticalAgendaSort.itemTimestamp(start: item.start)
+      .addingTimeInterval(FantasticalAgendaSort.priorityBonus(item.priorityRank))
+  }
   let item: FantasticalAgendaItem
   let calendarTitle: String?
   let isTask: Bool

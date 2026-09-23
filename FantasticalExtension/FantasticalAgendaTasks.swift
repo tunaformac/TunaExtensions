@@ -79,7 +79,7 @@ extension FantasticalAgendaSupport {
     if !overdue.isEmpty {
       children.append(
         FantasticalSectionItem(
-          title: "Overdue", id: "fantastical.agenda.tasks.overdue", detail: count(overdue.count),
+          title: "Overdue", id: "fantastical.agenda.tasks.overdue", detail: plainCount(overdue.count),
           symbolName: "exclamationmark.circle", iconColor: .red,
           children: overdue.map { entity(for: $0, calendars: calendars, now: now, source: sourceByList[$0.calendarID] ?? .helper) },
           sortOrder: 0))
@@ -93,6 +93,10 @@ extension FantasticalAgendaSupport {
           sortOrder: index + 1))
     }
     return (children, tasksDetail(open: all.count, overdue: overdue.count, hasLists: !lists.isEmpty))
+  }
+
+  private static func plainCount(_ n: Int) -> String {
+    n == 1 ? "1 item" : "\(n) items"
   }
 
   static func listDetail(_ list: FantasticalTaskList) -> String {
