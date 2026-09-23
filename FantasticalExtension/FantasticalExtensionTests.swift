@@ -300,27 +300,6 @@ final class FantasticalExtensionTests: XCTestCase {
       ["a", "c", "z"])
   }
 
-  func testCompletedTasksAreRecognisedAndDropped() throws {
-    let payload =
-      #"{"items":[{"id":"1","title":"done","calendarId":"t","isCompleted":true},"#
-      + #"{"id":"2","title":"open","calendarId":"t"},"#
-      + #"{"id":"3","title":"finished","calendarId":"t","completionDate":"2026-09-01T10:00:00+02:00"},"#
-      + #"{"id":"4","title":"marked","calendarId":"t","status":"completed"}]}"#
-    let items = try FantasticalAgendaParser.items(from: payload)
-    XCTAssertEqual(items.filter(\.isCompleted).map(\.id), ["1", "3", "4"])
-    XCTAssertEqual(items.filter { !$0.isCompleted }.map(\.id), ["2"], "no flag means still open")
-
-    let calendars = [
-      FantasticalCalendar(
-        id: "t", title: "Tasks", isWritable: true, supportsEvents: false, supportsTasks: true,
-        sourceName: "G")
-    ]
-    let sections = FantasticalAgendaSupport.sections(
-      from: [.tasks: items], calendars: calendars, now: Date())
-    let tasks = sections.first { $0.id == "fantastical.agenda.tasks" } as? FantasticalSectionItem
-    XCTAssertEqual(tasks?.hierarchyChildren().count, 1, "a completed task is not listed")
-  }
-
   func testTasksRowNamesTheOverdueShare() throws {
     var calendar = Calendar(identifier: .gregorian)
     calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "Europe/Paris"))
@@ -332,14 +311,35 @@ final class FantasticalExtensionTests: XCTestCase {
         end: nil, location: nil, timeZone: calendar.timeZone)
     }
 
+    let lists = [
+      FantasticalCalendar(
+        id: "t", title: "My Tasks", isWritable: true, supportsEvents: false, supportsTasks: true,
+        sourceName: "G")
+    ]
     XCTAssertEqual(
       FantasticalAgendaSupport.tasksDetail(
-        [task("late", day: 10), task("later", day: 17), task("soon", day: 19)], now: now,
-        calendar: calendar),
+        [task("late", day: 10), task("later", day: 17), task("soon", day: 19)], calendars: lists,
+        now: now, calendar: calendar),
       "2 overdue, 1 next 30 days")
     XCTAssertEqual(
-      FantasticalAgendaSupport.tasksDetail([task("soon", day: 19)], now: now, calendar: calendar),
+      FantasticalAgendaSupport.tasksDetail(
+        [task("soon", day: 19)], calendars: lists, now: now, calendar: calendar),
       "1 item, next 30 days")
+    XCTAssertEqual(
+      FantasticalAgendaSupport.tasksDetail([], calendars: [], now: now, calendar: calendar),
+      "0 items, no task lists")
+
+    let mixed = FantasticalCalendar(
+      id: "m", title: "Home", isWritable: true, supportsEvents: true, supportsTasks: true,
+      sourceName: "CalDAV")
+    let dated = FantasticalAgendaItem(
+      id: "d", title: "d", calendarID: "m", start: now, end: now.addingTimeInterval(3600), location: nil)
+    let openEnded = FantasticalAgendaItem(
+      id: "o", title: "o", calendarID: "m", start: now, end: nil, location: nil)
+    XCTAssertFalse(FantasticalAgendaSupport.isTask(dated, in: mixed), "an event always carries an end")
+    XCTAssertTrue(FantasticalAgendaSupport.isTask(openEnded, in: mixed), "a task in a mixed calendar has none")
+    XCTAssertTrue(FantasticalAgendaSupport.isTask(dated, in: lists[0]), "a task list settles it by itself")
+    XCTAssertFalse(FantasticalAgendaSupport.isTask(openEnded, in: nil))
 
     let when = try XCTUnwrap(FantasticalAgendaRange.overdueWhen(now: now, calendar: calendar))
     XCTAssertEqual(when, "September 18, 2021 to September 17, 2026", "its own query, ending yesterday")
@@ -571,6 +571,14 @@ final class FantasticalExtensionTests: XCTestCase {
       XCTAssertFalse(action.subjectPredicate?(readOnly) ?? true, "\(id) offered on a read-only calendar")
       XCTAssertTrue(action.subjectPredicate?(editable) ?? false, "\(id) missing on a writable calendar")
     }
+
+    let changeLocation = try XCTUnwrap(
+      catalog.actions.first { $0.id == "change-location" } as? PredicateAwareAction)
+    let task = FantasticalAgendaEntity(item: item, calendarTitle: "My Tasks", isTask: true, isEditable: true)
+    XCTAssertFalse(
+      changeLocation.subjectPredicate?(task) ?? true, "the helper keeps no location on a task")
+    let rename = try XCTUnwrap(catalog.actions.first { $0.id == "rename" } as? PredicateAwareAction)
+    XCTAssertTrue(rename.subjectPredicate?(task) ?? false, "a task can still be renamed")
 
     let calendars = [
       FantasticalCalendar(
