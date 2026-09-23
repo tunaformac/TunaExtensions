@@ -20,11 +20,10 @@ struct FantasticalAgendaItem: Equatable, Sendable {
   /// The zone the helper stamped on the dates: an all-day item is a whole day in that zone, not
   /// in whichever zone Tuna runs in.
   let timeZone: TimeZone?
-  let isCompleted: Bool
 
   init(
     id: String, title: String, calendarID: String, start: Date?, end: Date?, location: String?,
-    timeZone: TimeZone? = nil, isCompleted: Bool = false
+    timeZone: TimeZone? = nil
   ) {
     self.id = id
     self.title = title
@@ -33,7 +32,6 @@ struct FantasticalAgendaItem: Equatable, Sendable {
     self.end = end
     self.location = location
     self.timeZone = timeZone
-    self.isCompleted = isCompleted
   }
 
   func dayCalendar(_ base: Calendar = .autoupdatingCurrent) -> Calendar {

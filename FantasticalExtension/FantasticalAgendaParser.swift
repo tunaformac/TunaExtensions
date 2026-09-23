@@ -28,7 +28,6 @@ enum FantasticalAgendaParser {
     let array = envelope?["items"] as? [[String: Any]] ?? object as? [[String: Any]] ?? []
     return array.compactMap { entry in
       guard let id = entry["id"] as? String, let title = entry["title"] as? String else { return nil }
-      logSchemaOnce(entry)
       return FantasticalAgendaItem(
         id: id,
         title: title,
@@ -38,40 +37,9 @@ enum FantasticalAgendaParser {
         location: (entry["location"] as? String).flatMap { $0.isEmpty ? nil : $0 },
         timeZone: preferredZone(
           stamped: zone(entry["startDate"]), helper: helperZone,
-          at: date(entry["startDate"], zone: helperZone)),
-        isCompleted: completed(entry)
+          at: date(entry["startDate"], zone: helperZone))
       )
     }
-  }
-
-  /// The helper publishes no schema for these rows, so a completion flag is looked for under the
-  /// spellings it might use; an absent flag means the task is still open.
-  private static func completed(_ entry: [String: Any]) -> Bool {
-    for key in ["isCompleted", "completed", "isDone", "done", "isFinished"] {
-      if let flag = entry[key] as? Bool { return flag }
-      if let number = entry[key] as? NSNumber { return number.boolValue }
-      if let text = entry[key] as? String {
-        return ["true", "yes", "completed", "done"].contains(text.lowercased())
-      }
-    }
-    for key in ["completionDate", "completedDate", "completedAt"] {
-      if let value = entry[key], !(value is NSNull) { return true }
-    }
-    if let status = entry["status"] as? String {
-      return ["completed", "done", "finished"].contains(status.lowercased())
-    }
-    return false
-  }
-
-  private static let schemaLogged = LockedValue<Bool>(false)
-
-  /// Key names only, never a value, so the row schema can be read off the log without putting an
-  /// event anywhere near it.
-  private static func logSchemaOnce(_ entry: [String: Any]) {
-    guard !schemaLogged.value else { return }
-    schemaLogged.value = true
-    FantasticalMCPClient.log.info(
-      "item keys: \(entry.keys.sorted().joined(separator: ","), privacy: .public)")
   }
 
   private static func json(_ text: String) throws -> Any {

@@ -5,6 +5,9 @@ import TunaKit
 enum FantasticalAgendaSupport {
   static let agendaDays = 7
 
+  /// Posted after this extension changes something in Fantastical so cached agenda drops.
+  static let didChange = Notification.Name("com.brnbw.tuna.plugins.fantastical.agendaDidChange")
+
   /// Last calendars the helper returned, so browse children can be built without awaiting.
   static let knownCalendars = LockedValue<[FantasticalCalendar]>([])
 
@@ -50,21 +53,21 @@ enum FantasticalAgendaSupport {
     from perRange: [FantasticalAgendaRange: [FantasticalAgendaItem]], calendars: [FantasticalCalendar],
     now: Date, calendar: Calendar = .autoupdatingCurrent
   ) -> [CatalogItem] {
-    let taskCalendars = Set(calendars.filter { $0.supportsTasks && !$0.supportsEvents }.map(\.id))
+    let byID = Dictionary(calendars.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
     func entities(_ subset: [FantasticalAgendaItem]) -> [CatalogItem] {
       subset.map { entity(for: $0, calendars: calendars, now: now) }
     }
     func subset(_ range: FantasticalAgendaRange) -> [FantasticalAgendaItem] {
       let found = sorted(perRange[range] ?? [])
       guard range.tasksOnly else { return found }
-      return found.filter { taskCalendars.contains($0.calendarID) && !$0.isCompleted }
+      return found.filter { isTask($0, in: byID[$0.calendarID]) }
     }
 
     var sections: [CatalogItem] = FantasticalAgendaRange.allCases.map { range in
       let found = subset(range)
       let detail =
         range.tasksOnly
-        ? tasksDetail(found, now: now, calendar: calendar)
+        ? tasksDetail(found, calendars: calendars, now: now, calendar: calendar)
         : sectionDetail(found.count, window: range.windowDescription)
       return FantasticalSectionItem(
         title: range.title, id: "fantastical.agenda.\(range)",
@@ -124,8 +127,7 @@ enum FantasticalAgendaSupport {
   {
     let cal = calendars.first { $0.id == item.calendarID }
     return FantasticalAgendaEntity(
-      item: item, calendarTitle: cal?.title,
-      isTask: cal?.supportsTasks == true && cal?.supportsEvents == false,
+      item: item, calendarTitle: cal?.title, isTask: isTask(item, in: cal),
       isEditable: cal?.isWritable ?? true, now: now)
   }
 
@@ -159,11 +161,20 @@ enum FantasticalAgendaSupport {
     return "\(count(n)), \(window)"
   }
 
+  /// The helper marks nothing as a task. A calendar that holds only tasks settles it; in one that
+  /// holds both, an event always carries an end and a task never does.
+  static func isTask(_ item: FantasticalAgendaItem, in calendar: FantasticalCalendar?) -> Bool {
+    guard let calendar, calendar.supportsTasks else { return false }
+    return !calendar.supportsEvents || item.end == nil
+  }
+
   /// Says how much of the Tasks group is already due, because "12 items" hides the three that
-  /// needed doing last week.
+  /// needed doing last week, and says when Fantastical reports no list that could hold one.
   static func tasksDetail(
-    _ items: [FantasticalAgendaItem], now: Date, calendar: Calendar = .autoupdatingCurrent
+    _ items: [FantasticalAgendaItem], calendars: [FantasticalCalendar], now: Date,
+    calendar: Calendar = .autoupdatingCurrent
   ) -> String {
+    guard calendars.contains(where: \.supportsTasks) else { return "0 items, no task lists" }
     let startOfToday = calendar.startOfDay(for: now)
     let overdue = items.filter { ($0.start ?? .distantFuture) < startOfToday }.count
     guard overdue > 0 else {
@@ -202,6 +213,6 @@ enum FantasticalAgendaSupport {
   static func postDataDidChange() {
     dataGeneration.withValue { $0 += 1 }
     FantasticalNewItemRoot.invalidateCalendars()
-    NotificationCenter.default.post(name: FantasticalAgendaDidChange, object: nil)
+    NotificationCenter.default.post(name: didChange, object: nil)
   }
 }
