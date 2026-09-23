@@ -165,7 +165,13 @@ final class FantasticalTaskTests: XCTestCase {
 
     let denied = FantasticalAgendaSupport.taskSections(
       lists: [lists[2]], reminderAccessDenied: true, now: now, calendar: calendar)
-    XCTAssertEqual(denied.children.first?.title, "Reminders access needed")
+    let ordered = denied.children.sorted(by: FantasticalAgendaSort.compare)
+    XCTAssertEqual(ordered.first?.title, "Reminders access needed")
+    XCTAssertEqual(ordered.map(\.title), ["Reminders access needed", "Overdue", "Google"])
+    let notice = try XCTUnwrap(ordered.first as? TimestampedCatalogItem)
+    let firstSection = try XCTUnwrap(ordered[1] as? TimestampedCatalogItem)
+    XCTAssertGreaterThanOrEqual(
+      notice.capturedAtDate, firstSection.capturedAtDate, "the time sort keeps the notice on top too")
     XCTAssertEqual(denied.detail, "1 open, 1 overdue")
   }
 

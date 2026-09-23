@@ -220,7 +220,7 @@ enum FantasticalAgendaSupport {
     var children: [CatalogItem] = []
     if reminderAccessDenied {
       children.append(
-        messageItem(
+        FantasticalNoticeItem(
           title: "Reminders access needed",
           message: "Allow Tuna under System Settings, Privacy & Security, Reminders, then open Tasks again.",
           symbolName: "lock", tint: .systemOrange))

@@ -127,6 +127,36 @@ final class FantasticalSectionItem: CatalogEntity, CatalogHierarchyNode, Timesta
   }
 }
 
+/// A plain message item carries no sort score, so the agenda comparator would sink it below every
+/// section instead of showing it first.
+final class FantasticalNoticeItem: CatalogEntity, TimestampedCatalogItem, FantasticalScoredItem,
+  @unchecked Sendable
+{
+  var sortScore: Double { FantasticalAgendaSort.sectionScore(0) + 1 }
+  var capturedAtDate: Date { .distantFuture }
+  private let message: String
+  private let symbolName: String
+  private let tint: NSColor
+
+  init(title: String, message: String, symbolName: String, tint: NSColor) {
+    self.message = message
+    self.symbolName = symbolName
+    self.tint = tint
+    super.init(id: "fantastical.notice.\(title)", title: title, path: nil)
+    typeID = .searchCatalogEntry
+  }
+
+  override var detail: String? { message }
+
+  override func preview(maxDimension: CGFloat) -> CatalogItemPreview {
+    .systemSymbol(symbolName, tintColor: tint)
+  }
+
+  override func placeholderPreview(maxDimension: CGFloat) -> CatalogItemPreview {
+    preview(maxDimension: maxDimension)
+  }
+}
+
 extension TypeID {
   static let fantasticalItem = TypeID("com.tuna.type.fantastical-item")
   static let fantasticalCalendar = TypeID("com.tuna.type.fantastical-calendar")
