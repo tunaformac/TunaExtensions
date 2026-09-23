@@ -289,7 +289,8 @@ final class FantasticalExtensionTests: XCTestCase {
       "January 1, 2026 to December 31, 2026")
     XCTAssertTrue(FantasticalAgendaRange.tasks.tasksOnly)
     XCTAssertFalse(FantasticalAgendaRange.queried.contains(.today))
-    XCTAssertEqual(FantasticalAgendaRange.queried.count, 6)
+    XCTAssertFalse(FantasticalAgendaRange.queried.contains(.tasks), "task lists are asked one by one")
+    XCTAssertEqual(FantasticalAgendaRange.queried.count, 5)
 
     func item(_ id: String, day: Int?) -> FantasticalAgendaItem {
       let start = day.flatMap { calendar.date(from: DateComponents(year: 2026, month: 9, day: $0, hour: 12)) }
@@ -341,8 +342,10 @@ final class FantasticalExtensionTests: XCTestCase {
     XCTAssertTrue(FantasticalAgendaSupport.isTask(dated, in: lists[0]), "a task list settles it by itself")
     XCTAssertFalse(FantasticalAgendaSupport.isTask(openEnded, in: nil))
 
-    let when = try XCTUnwrap(FantasticalAgendaRange.overdueWhen(now: now, calendar: calendar))
-    XCTAssertEqual(when, "September 18, 2021 to September 17, 2026", "its own query, ending yesterday")
+    XCTAssertEqual(
+      FantasticalAgendaRange.taskWhen(now: now, calendar: calendar),
+      "September 18, 2021 to October 17, 2026", "backlog through the next 30 days, inclusive")
+
   }
 
   func testAgendaSortKeepsGroupOrderThenSoonestItems() {
