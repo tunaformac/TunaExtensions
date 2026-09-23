@@ -261,18 +261,21 @@ actor FantasticalMCPClient {
   }
 
   /// Splits the pipe into lines on Foundation's reader queue, never on the actor, and hands them
-  /// over in arrival order. The throwing read is deliberate: `availableData` raises an
-  /// uncatchable exception once the descriptor is closed under it.
+  /// over in arrival order. The POSIX read is deliberate: `availableData` raises an uncatchable
+  /// exception once the descriptor is closed under it, and `read(upToCount:)` waits for the
+  /// whole count on a pipe, so a short reply never comes out.
   nonisolated private static func lines(from handle: FileHandle) -> AsyncStream<String> {
     AsyncStream { continuation in
       let buffer = LineBuffer()
       handle.readabilityHandler = { handle in
-        guard let data = try? handle.read(upToCount: 65_536), !data.isEmpty else {
+        var chunk = [UInt8](repeating: 0, count: 65_536)
+        let count = chunk.withUnsafeMutableBytes { read(handle.fileDescriptor, $0.baseAddress, $0.count) }
+        guard count > 0 else {
           handle.readabilityHandler = nil
           continuation.finish()
           return
         }
-        for line in buffer.append(data) { continuation.yield(line) }
+        for line in buffer.append(Data(chunk[0..<count])) { continuation.yield(line) }
       }
       continuation.onTermination = { _ in handle.readabilityHandler = nil }
     }
