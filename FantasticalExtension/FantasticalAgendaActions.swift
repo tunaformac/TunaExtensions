@@ -4,7 +4,8 @@ import TunaKit
 
 extension FantasticalActionsCatalog {
   static let agendaActionIDs = [
-    "reschedule", "rename", "change-location", "delete-item", "add-to-fantastical-calendar",
+    FantasticalIdentifiers.rescheduleAction, "rename", "change-location", "delete-item",
+    "add-to-fantastical-calendar",
   ]
 
   static func agendaActions() -> [CatalogAction] {
@@ -12,16 +13,20 @@ extension FantasticalActionsCatalog {
 
     items.append(
       makeModifyAction(
-        id: "reschedule", title: "Reschedule...", symbolName: "clock.arrow.circlepath",
+        id: FantasticalIdentifiers.rescheduleAction, title: "Reschedule...", symbolName: "clock.arrow.circlepath",
         field: "when", failure: "Type the new time, for example tomorrow 15h"))
     items.append(
       makeModifyAction(
         id: "rename", title: "Rename...", symbolName: "pencil", field: "title",
         failure: "Type the new title"))
-    items.append(
-      makeModifyAction(
-        id: "change-location", title: "Change Location...", symbolName: "mappin.and.ellipse",
-        field: "location", failure: "Type the new location"))
+    let changeLocation = makeModifyAction(
+      id: "change-location", title: "Change Location...", symbolName: "mappin.and.ellipse",
+      field: "location", failure: "Type the new location")
+    changeLocation.subjectPredicate = { subject in
+      guard let entity = subject as? FantasticalAgendaEntity else { return false }
+      return entity.isEditable && !entity.isTask
+    }
+    items.append(changeLocation)
 
     let delete = PredicateAwareAction(id: "delete-item", title: "Delete from Fantastical") {
       subject, _ in
@@ -82,6 +87,9 @@ extension FantasticalActionsCatalog {
         return .failure("No Fantastical item selected")
       }
       guard entity.isEditable else { return .failure(readOnlyFailure(entity)) }
+      guard field != "location" || !entity.isTask else {
+        return .failure("Fantastical keeps no location on a task")
+      }
       guard let value = FantasticalURLBuilder.textValue(for: target) else {
         return .failure(failure)
       }
