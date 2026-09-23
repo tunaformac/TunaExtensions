@@ -124,6 +124,10 @@ enum FantasticalAgendaSort {
     return Date(timeIntervalSinceReferenceDate: 2 * mirrorPoint.timeIntervalSinceReferenceDate - start.timeIntervalSinceReferenceDate)
   }
 
+  /// Small enough never to reorder two different due dates (a second apart at least), large enough
+  /// to order same-day and undated tasks by priority.
+  static func priorityBonus(_ rank: Int) -> Double { Double(10 - max(1, min(rank, 10))) / 1_000 }
+
   static let options: [CatalogSortOption] = [
     CatalogSortOption(id: optionID, title: "Agenda", detail: "Groups in order, then soonest first", comparator: compare),
     .nameAscending,

@@ -197,6 +197,78 @@ final class FantasticalTaskTests: XCTestCase {
     XCTAssertEqual(FantasticalAgendaSupport.tasksDetail(open: 12, overdue: 3, hasLists: true), "12 open, 3 overdue")
   }
 
+  func testTaskDetailSaysDueListAndPriority() throws {
+    let calendar = paris
+    let now = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 9, day: 23, hour: 10)))
+    let allDay = FantasticalAgendaItem(
+      id: "r;a", title: "a", calendarID: "r",
+      start: calendar.date(from: DateComponents(year: 2026, month: 9, day: 25)), end: nil, location: nil,
+      timeZone: calendar.timeZone, priority: 1)
+    let allDayDetail = FantasticalAgendaFormat.detail(allDay, calendarTitle: "Reminders", now: now, calendar: calendar, isTask: true)
+    XCTAssertTrue(allDayDetail.hasPrefix("Due "), allDayDetail)
+    XCTAssertTrue(allDayDetail.contains("25"), allDayDetail)
+    XCTAssertFalse(allDayDetail.contains("all day"), allDayDetail)
+    XCTAssertTrue(allDayDetail.hasSuffix(" · Reminders · High priority"), allDayDetail)
+    let timed = FantasticalAgendaItem(
+      id: "r;t", title: "t", calendarID: "r",
+      start: calendar.date(from: DateComponents(year: 2026, month: 9, day: 23, hour: 15)), end: nil, location: nil,
+      timeZone: calendar.timeZone)
+    let timedDetail = FantasticalAgendaFormat.detail(timed, calendarTitle: "Reminders", now: now, calendar: calendar, isTask: true)
+    XCTAssertTrue(timedDetail.hasPrefix("Due Today, "), timedDetail)
+    XCTAssertTrue(timedDetail.hasSuffix(" · Reminders"), timedDetail)
+    let undated = FantasticalAgendaItem(id: "r;u", title: "u", calendarID: "r", start: nil, end: nil, location: nil)
+    XCTAssertEqual(
+      FantasticalAgendaFormat.detail(undated, calendarTitle: "Inbox", now: now, calendar: calendar, isTask: true),
+      "No date · Inbox")
+    let eventDetail = FantasticalAgendaFormat.detail(allDay, calendarTitle: "Perso", now: now, calendar: calendar)
+    XCTAssertTrue(eventDetail.hasSuffix(", all day · Perso"), "an event keeps its wording: \(eventDetail)")
+    XCTAssertFalse(eventDetail.hasPrefix("Due "), eventDetail)
+  }
+
+  func testEntitiesKnowWhichTasksCanBeCompleted() throws {
+    let calendar = paris
+    let now = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 9, day: 23, hour: 10)))
+    func list(_ id: String, writable: Bool = true) -> FantasticalCalendar {
+      FantasticalCalendar(id: id, title: id, isWritable: writable, supportsEvents: false, supportsTasks: true, sourceName: "Calendar")
+    }
+    let item = FantasticalAgendaItem(id: "r;k", title: "k", calendarID: "r", start: nil, end: nil, location: nil)
+    let calendars = [list("r"), list("ro", writable: false)]
+    XCTAssertTrue(FantasticalAgendaSupport.entity(for: item, calendars: calendars, now: now, source: .eventKit).canComplete)
+    XCTAssertFalse(FantasticalAgendaSupport.entity(for: item, calendars: calendars, now: now, source: .store).canComplete)
+    XCTAssertFalse(FantasticalAgendaSupport.entity(for: item, calendars: calendars, now: now, source: .helper).canComplete)
+    XCTAssertFalse(FantasticalAgendaSupport.entity(for: item, calendars: calendars, now: now).canComplete)
+    let readOnly = FantasticalAgendaItem(id: "ro;k", title: "k", calendarID: "ro", start: nil, end: nil, location: nil)
+    XCTAssertFalse(FantasticalAgendaSupport.entity(for: readOnly, calendars: calendars, now: now, source: .eventKit).canComplete)
+
+    let lists = [
+      FantasticalTaskList(calendar: list("r"), source: .eventKit, items: [
+        FantasticalAgendaItem(id: "r;late", title: "late", calendarID: "r",
+          start: calendar.date(from: DateComponents(year: 2026, month: 9, day: 20)), end: nil, location: nil),
+      ]),
+      FantasticalTaskList(calendar: list("g"), source: .store, items: [
+        FantasticalAgendaItem(id: "g;late", title: "late", calendarID: "g",
+          start: calendar.date(from: DateComponents(year: 2026, month: 9, day: 21)), end: nil, location: nil),
+      ]),
+    ]
+    let overdue = try XCTUnwrap(
+      FantasticalAgendaSupport.taskSections(lists: lists, now: now, calendar: calendar).children.first as? FantasticalSectionItem)
+    XCTAssertEqual(
+      overdue.hierarchyChildren().map { ($0 as? FantasticalAgendaEntity)?.canComplete }, [true, false],
+      "an overdue row keeps the source of the list it came from")
+  }
+
+  func testTaskSortScoreBreaksTiesByPriority() {
+    let due = Date(timeIntervalSinceReferenceDate: 800_000_000)
+    func entity(_ id: String, due: Date?, priority: Int) -> FantasticalAgendaEntity {
+      FantasticalAgendaEntity(
+        item: FantasticalAgendaItem(id: id, title: id, calendarID: "l", start: due, end: nil, location: nil, priority: priority),
+        calendarTitle: nil, isTask: true)
+    }
+    XCTAssertGreaterThan(entity("high", due: due, priority: 1).sortScore, entity("none", due: due, priority: 0).sortScore)
+    XCTAssertGreaterThan(entity("sooner", due: due, priority: 0).sortScore, entity("later", due: due.addingTimeInterval(1), priority: 1).sortScore)
+    XCTAssertGreaterThan(entity("undated high", due: nil, priority: 1).sortScore, entity("undated none", due: nil, priority: 0).sortScore)
+  }
+
   private func archive(_ task: FantasticalArchivedTask) throws -> Data {
     let archiver = NSKeyedArchiver(requiringSecureCoding: true)
     archiver.setClassName(FantasticalArchivedTask.archivedClassName, for: FantasticalArchivedTask.self)

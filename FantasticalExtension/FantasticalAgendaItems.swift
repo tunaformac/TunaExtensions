@@ -5,7 +5,9 @@ import TunaKit
 final class FantasticalAgendaEntity: CatalogEntity, CopyRepresentationProviding, TimestampedCatalogItem,
   FantasticalScoredItem, @unchecked Sendable
 {
-  var sortScore: Double { FantasticalAgendaSort.itemScore(start: item.start) }
+  var sortScore: Double {
+    FantasticalAgendaSort.itemScore(start: item.start) + FantasticalAgendaSort.priorityBonus(item.priorityRank)
+  }
   var capturedAtDate: Date { FantasticalAgendaSort.itemTimestamp(start: item.start) }
   let item: FantasticalAgendaItem
   let calendarTitle: String?
@@ -13,17 +15,21 @@ final class FantasticalAgendaEntity: CatalogEntity, CopyRepresentationProviding,
   /// Whether the item's calendar accepts writes. An item Tuna cannot match to a known calendar
   /// stays editable, so the helper, not a guess here, has the last word.
   let isEditable: Bool
+  /// Only a task read from EventKit can be finished here: the helper has no tool for it, and
+  /// Fantastical's store is never written.
+  let canComplete: Bool
   private let detailText: String
 
   init(
     item: FantasticalAgendaItem, calendarTitle: String?, isTask: Bool, isEditable: Bool = true,
-    now: Date = Date()
+    canComplete: Bool = false, now: Date = Date()
   ) {
     self.item = item
     self.calendarTitle = calendarTitle
     self.isTask = isTask
     self.isEditable = isEditable
-    self.detailText = FantasticalAgendaFormat.detail(item, calendarTitle: calendarTitle, now: now)
+    self.canComplete = canComplete
+    self.detailText = FantasticalAgendaFormat.detail(item, calendarTitle: calendarTitle, now: now, isTask: isTask)
     super.init(id: "fantastical.item.\(item.id)", title: item.title, path: nil)
     typeID = .fantasticalItem
   }
@@ -41,7 +47,8 @@ final class FantasticalAgendaEntity: CatalogEntity, CopyRepresentationProviding,
 
   override func preview(maxDimension: CGFloat) -> CatalogItemPreview {
     if isTask {
-      return .systemSymbol("checkmark.circle", tintColor: .systemBlue)
+      return .systemSymbol(
+        "checkmark.circle", tintColor: item.isOverdue(now: Date()) ? .systemRed : .systemBlue)
     }
     if let span = item.span(), span.upperBound < Date() {
       return .systemSymbol("calendar", tintColor: .secondaryLabelColor)
@@ -133,7 +140,7 @@ final class FantasticalNoticeItem: CatalogEntity, TimestampedCatalogItem, Fantas
   @unchecked Sendable
 {
   var sortScore: Double { FantasticalAgendaSort.sectionScore(0) + 1 }
-  var capturedAtDate: Date { .distantFuture }
+  var capturedAtDate: Date { FantasticalAgendaSort.sectionTimestamp(0).addingTimeInterval(1) }
   private let message: String
   private let symbolName: String
   private let tint: NSColor

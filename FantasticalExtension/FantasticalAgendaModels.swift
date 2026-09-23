@@ -145,21 +145,23 @@ enum FantasticalWhen {
 enum FantasticalAgendaFormat {
   static func detail(
     _ item: FantasticalAgendaItem, calendarTitle: String?, now: Date = Date(),
-    calendar: Calendar = .autoupdatingCurrent
+    calendar: Calendar = .autoupdatingCurrent, isTask: Bool = false
   ) -> String {
     var parts: [String] = []
     if let start = item.start {
-      parts.append(timeDescription(item, start: start, now: now, calendar: calendar))
+      let time = timeDescription(item, start: start, now: now, calendar: calendar, allDaySuffix: !isTask)
+      parts.append(isTask ? "Due \(time)" : time)
     } else {
       parts.append("No date")
     }
     if let calendarTitle, !calendarTitle.isEmpty { parts.append(calendarTitle) }
     if let location = item.location { parts.append(location) }
+    if isTask, let priority = item.priorityLabel { parts.append(priority) }
     return parts.joined(separator: " · ")
   }
 
   private static func timeDescription(
-    _ item: FantasticalAgendaItem, start: Date, now: Date, calendar: Calendar
+    _ item: FantasticalAgendaItem, start: Date, now: Date, calendar: Calendar, allDaySuffix: Bool
   ) -> String {
     let isAllDay = item.isAllDay(in: calendar)
     let dayMath = isAllDay ? item.dayCalendar(calendar) : calendar
@@ -179,9 +181,11 @@ enum FantasticalAgendaFormat {
         let lastDay = dayMath.date(byAdding: .second, value: -1, to: end),
         !dayMath.isDate(lastDay, inSameDayAs: start)
       {
-        return "\(day) to \(dayFormatter.string(from: lastDay)), all day"
+        return allDaySuffix
+          ? "\(day) to \(dayFormatter.string(from: lastDay)), all day"
+          : "\(day) to \(dayFormatter.string(from: lastDay))"
       }
-      return "\(day), all day"
+      return allDaySuffix ? "\(day), all day" : day
     }
     var text = "\(day), \(timeFormatter.string(from: start))"
     if let end = item.end, end > start {
