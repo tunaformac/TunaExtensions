@@ -20,10 +20,12 @@ struct FantasticalAgendaItem: Equatable, Sendable {
   /// The zone the helper stamped on the dates: an all-day item is a whole day in that zone, not
   /// in whichever zone Tuna runs in.
   let timeZone: TimeZone?
+  /// 0 is none; 1 through 9 run from highest to lowest, as EventKit and RFC 5545 spell it.
+  let priority: Int
 
   init(
     id: String, title: String, calendarID: String, start: Date?, end: Date?, location: String?,
-    timeZone: TimeZone? = nil
+    timeZone: TimeZone? = nil, priority: Int = 0
   ) {
     self.id = id
     self.title = title
@@ -32,6 +34,25 @@ struct FantasticalAgendaItem: Equatable, Sendable {
     self.end = end
     self.location = location
     self.timeZone = timeZone
+    self.priority = priority
+  }
+
+  var priorityRank: Int { priority == 0 ? 10 : priority }
+
+  var priorityLabel: String? {
+    switch priority {
+    case 1...4: return "High priority"
+    case 5: return "Medium priority"
+    case 6...9: return "Low priority"
+    default: return nil
+    }
+  }
+
+  /// A day-only due date is late once its day has passed; a timed one once its instant has.
+  func isOverdue(now: Date, calendar: Calendar = .autoupdatingCurrent) -> Bool {
+    guard let start else { return false }
+    guard isAllDay(in: calendar) else { return start < now }
+    return Self.dayNumber(start, dayCalendar(calendar)) < Self.dayNumber(now, calendar)
   }
 
   func dayCalendar(_ base: Calendar = .autoupdatingCurrent) -> Calendar {
@@ -168,4 +189,27 @@ enum FantasticalAgendaFormat {
     }
     return text
   }
+}
+
+/// The helper spells an item id as `calendarId;key`, and its modify and delete tools accept only
+/// that shape, so rows read from EventKit or the store are given the same one.
+enum FantasticalTaskID {
+  static func make(listID: String, key: String) -> String { "\(listID);\(key)" }
+
+  static func split(_ id: String) -> (listID: String, key: String)? {
+    guard let separator = id.firstIndex(of: ";") else { return nil }
+    let key = id[id.index(after: separator)...]
+    guard !key.isEmpty else { return nil }
+    return (String(id[..<separator]), String(key))
+  }
+}
+
+enum FantasticalTaskSource: Sendable {
+  case eventKit, store, helper
+}
+
+struct FantasticalTaskList: Sendable {
+  let calendar: FantasticalCalendar
+  let source: FantasticalTaskSource
+  let items: [FantasticalAgendaItem]
 }
