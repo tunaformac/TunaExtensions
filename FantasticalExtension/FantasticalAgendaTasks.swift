@@ -1,8 +1,11 @@
 import AppKit
 import Foundation
+import OSLog
 import TunaKit
 
 extension FantasticalAgendaSupport {
+  static let log = Logger(subsystem: "com.brnbw.tuna.plugins.fantastical", category: "tasks")
+
   /// Open tasks come from wherever Fantastical itself reads them: EventKit for a Reminders list,
   /// Fantastical's own store for the accounts it syncs, and only then the helper, which returns
   /// the finished tasks of a list and drops its open undated ones.
@@ -19,7 +22,9 @@ extension FantasticalAgendaSupport {
     var lists: [FantasticalTaskList] = []
     for cal in taskCalendars {
       try Task.checkCancellation()
-      switch taskSource(for: cal, reminderLists: reminderLists, storeAvailable: store.isAvailable) {
+      let source = taskSource(for: cal, reminderLists: reminderLists, storeAvailable: store.isAvailable)
+      log.info("list \(cal.id, privacy: .public) via \(String(describing: source), privacy: .public)")
+      switch source {
       case .eventKit:
         lists.append(FantasticalTaskList(calendar: cal, source: .eventKit, items: await reminders.openTasks(in: cal.id)))
         continue

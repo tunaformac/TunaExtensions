@@ -14,11 +14,13 @@ struct FantasticalStoreReader: Sendable {
   enum ReadError: LocalizedError {
     case cannotOpen(String)
     case badStatement(String)
+    case unknownList(String)
 
     var errorDescription: String? {
       switch self {
       case .cannotOpen(let detail): return "Fantastical's database could not be opened: \(detail)"
       case .badStatement(let detail): return "Fantastical's database could not be read: \(detail)"
+      case .unknownList(let id): return "Fantastical's database holds no list \(id)"
       }
     }
   }
@@ -40,6 +42,8 @@ struct FantasticalStoreReader: Sendable {
     }
     defer { sqlite3_close(db) }
     sqlite3_busy_timeout(db, 250)
+    let collection = "calendarItems-\(listID)"
+    guard try holds(collection: collection, in: db) else { throw ReadError.unknownList(listID) }
 
     let sql = """
       SELECT d.key, d.data FROM database2 d
@@ -52,8 +56,7 @@ struct FantasticalStoreReader: Sendable {
       throw ReadError.badStatement(String(cString: sqlite3_errmsg(db)))
     }
     defer { sqlite3_finalize(query) }
-    let transient = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
-    sqlite3_bind_text(query, 1, "calendarItems-\(listID)", -1, transient)
+    sqlite3_bind_text(query, 1, collection, -1, Self.transient)
 
     var items: [FantasticalAgendaItem] = []
     var step = sqlite3_step(query)
@@ -65,6 +68,19 @@ struct FantasticalStoreReader: Sendable {
       throw ReadError.badStatement(String(cString: sqlite3_errmsg(db)))
     }
     return items
+  }
+
+  private static let transient = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
+
+  private func holds(collection: String, in db: OpaquePointer) throws -> Bool {
+    var statement: OpaquePointer?
+    let sql = "SELECT 1 FROM database2 WHERE collection = ? LIMIT 1"
+    guard sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK, let query = statement else {
+      throw ReadError.badStatement(String(cString: sqlite3_errmsg(db)))
+    }
+    defer { sqlite3_finalize(query) }
+    sqlite3_bind_text(query, 1, collection, -1, Self.transient)
+    return sqlite3_step(query) == SQLITE_ROW
   }
 
   private func item(from query: OpaquePointer, listID: String) -> FantasticalAgendaItem? {

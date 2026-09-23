@@ -158,6 +158,10 @@ EventKit or from Fantastical's database is logged.
   `~/Library/Group Containers/85C27NK92C.com.flexibits.fantastical2.mac/Database/Fantastical-8.fcdata`,
   read only, never written. That file is Fantastical's own and its layout may change with a
   Fantastical update; when it cannot be read the list falls back to the helper.
+- A Reminders list is recognised by the source name Fantastical's helper reports for it,
+  `Calendar`. A Reminders list reported under another name is read from Fantastical's database
+  and, when that database does not hold it, from the helper. The extension log names the source
+  chosen for every list.
 - Verified against Fantastical 4.2 (`com.flexibits.fantastical2.mac`, direct download). The Mini
   Window scheme is registered by Fantastical's helper login item, which is enabled by default.
 

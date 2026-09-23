@@ -111,6 +111,41 @@ final class FantasticalTaskTests: XCTestCase {
     }
   }
 
+  func testStoreReaderThrowsWhenItHoldsNoSuchList() throws {
+    let url = FileManager.default.temporaryDirectory.appending(path: "fantastical-\(UUID().uuidString).fcdata")
+    defer { try? FileManager.default.removeItem(at: url) }
+    try makeStore(
+      at: url,
+      rows: [
+        (
+          1, "calendarItems-other", "o1",
+          FantasticalArchivedTask(title: "Elsewhere", priority: 0, dueDate: nil, completed: false), 0, 0
+        )
+      ])
+    XCTAssertThrowsError(try FantasticalStoreReader(url: url).openTasks(in: "google")) { error in
+      XCTAssertTrue(error is FantasticalStoreReader.ReadError, "\(error)")
+      if case .unknownList(let id) = error as? FantasticalStoreReader.ReadError {
+        XCTAssertEqual(id, "google")
+      } else {
+        XCTFail("expected unknownList, got \(error)")
+      }
+    }
+  }
+
+  func testStoreReaderReturnsNoTasksWhenTheListHoldsOnlyCompletedOnes() throws {
+    let url = FileManager.default.temporaryDirectory.appending(path: "fantastical-\(UUID().uuidString).fcdata")
+    defer { try? FileManager.default.removeItem(at: url) }
+    try makeStore(
+      at: url,
+      rows: [
+        (
+          1, "calendarItems-google", "g1",
+          FantasticalArchivedTask(title: "Done one", priority: 0, dueDate: nil, completed: true), 1, 0
+        )
+      ])
+    XCTAssertEqual(try FantasticalStoreReader(url: url).openTasks(in: "google").count, 0)
+  }
+
   func testReminderRowsBecomeItemsWithTheHelperIdShape() throws {
     let calendar = paris
     let due = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 9, day: 25)))
