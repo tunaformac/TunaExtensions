@@ -79,9 +79,11 @@ matches. Each item shows its day, time, calendar, and location.
 
 - **Tasks** covers everything already due plus the next 30 days, and its row says how many are
   overdue, for example `3 overdue, 12 next 30 days`. The overdue ones are asked for in their own
-  query, so a long backlog cannot crowd out what is coming. Tasks Fantastical reports as completed
-  are left out. A task with no date at all, or one kept in a calendar that also holds events, is
-  not in this group; search finds it by name.
+  query, so a long backlog cannot crowd out what is coming. Whether a finished task still appears
+  is Fantastical's call: its helper reports no completion state, and it marks nothing as a task
+  either, so a task list is taken as a whole, and in a calendar that holds both events and tasks
+  an item without an end time counts as a task. A task with no date at all is not in this group;
+  search finds it by name.
 - **Today** and **Tomorrow** split at midnight, and an item that runs across midnight or over
   several days is listed under every day it covers.
 - **By Calendar** groups the next 7 days by calendar, read-only calendars included. Writability
@@ -95,7 +97,8 @@ Actions on an item:
 
 - **Show in Fantastical** (default): reveals the item's day.
 - **Reschedule...**, **Rename...**, **Change Location...**: type the new value as the target.
-  Reschedule takes words such as `tomorrow 15h` or `next monday 9h to 10h`.
+  Reschedule takes words such as `tomorrow 15h` or `next monday 9h to 10h`. Change Location is
+  offered on events only, since Fantastical keeps no location on a task.
 - **Delete from Fantastical**: asks for confirmation first.
 
 Reschedule, Rename, Change Location and Delete are offered only on items in calendars Fantastical

@@ -10,8 +10,8 @@
   deleted: Reschedule, Rename, Change Location and Delete are no longer offered on items
   Fantastical will refuse to change.
 - The Tasks group lists overdue tasks as well as the next 30 days, in its own query so a backlog
-  cannot crowd out what is coming, and its row says how many are overdue. Completed tasks are left
-  out.
+  cannot crowd out what is coming, and its row says how many are overdue. Fantastical decides
+  whether a finished task is still reported; its helper carries no completion state.
 - Creating an item refreshes the agenda, as renaming, rescheduling and deleting already did, and
   an open group refreshes itself once a write lands instead of holding its old rows.
 - Items running from before today are kept when filling Today and Tomorrow, and timestamps
