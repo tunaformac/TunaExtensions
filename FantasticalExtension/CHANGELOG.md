@@ -4,7 +4,7 @@
 
 - Press Return on the Tasks group to see every open task in one list, due soonest first with
   undated tasks last. The right arrow still opens the Overdue group and the per list groups. Each
-  row keeps Complete Task, Rename, Reschedule and Delete.
+  row keeps the same actions it has under its list.
 
 ## 0.5.9
 
