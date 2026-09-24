@@ -114,4 +114,23 @@ final class FantasticalShowAllTasksTests: XCTestCase {
         catalogIdentifier: FantasticalIdentifiers.actionCatalog, actionID: FantasticalIdentifiers.showAllTasksAction))
     XCTAssertTrue(FantasticalActionsCatalog.agendaActionIDs.contains(FantasticalIdentifiers.showAllTasksAction))
   }
+
+  func testShowAllTasksAsksForARebuildAfterAWrite() {
+    final class Counter: @unchecked Sendable { var value = 0 }
+    let counter = Counter()
+    let group = FantasticalTaskGroupItem(
+      title: "Tasks", id: "t", detail: nil, symbolName: "checklist", iconColor: .blue, children: [], tasks: [],
+      sortOrder: 5)
+    let observer = NotificationCenter.default.addObserver(
+      forName: CatalogDidFinishScan, object: nil, queue: nil
+    ) { _ in counter.value += 1 }
+    defer { NotificationCenter.default.removeObserver(observer) }
+
+    _ = group.allTasks()
+    XCTAssertEqual(counter.value, 0, "a fresh group asks for nothing")
+
+    FantasticalAgendaSupport.postDataDidChange()
+    _ = group.allTasks()
+    XCTAssertEqual(counter.value, 1, "a group built before the write asks the host to rebuild it")
+  }
 }
