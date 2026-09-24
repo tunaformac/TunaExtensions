@@ -143,7 +143,7 @@ private final class SafariLastDownloadItem: CatalogItem, ActionSubjectResolving,
 {
   init() {
     super.init(id: "Last Download", title: "Last Download", type: .entity)
-    typeID = .file
+    typeID = .safariLastDownload
   }
 
   @MainActor

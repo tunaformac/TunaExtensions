@@ -49,7 +49,7 @@ below rather than a generic template, and include the new project in `TunaExtens
 | ObsidianExtension | Browse Obsidian vaults, folders, and notes |
 | PoofExtension | Find, paste, and manage Poof text snippets |
 | RemindersExtension | Search reminders and create them in specific lists |
-| SafariExtension | Safari bookmarks, reading list, and tabs |
+| SafariExtension | Safari bookmarks, reading list, tabs, and Last Download (Resolve by default, with file actions available) |
 | SpotifyExtension | Control Spotify, browse your library, and search Spotify |
 | ThingsExtension | Things to-dos and projects |
 

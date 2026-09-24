@@ -40,6 +40,11 @@ public final class SafariExtension: Extension {
         ActionCatalogDeclaration(
           id: "safari.actions", type: SafariActionsCatalog.self, name: "Safari Actions"),
       ],
+      typeRegistrations: [
+        TypeRegistrationDefinition(
+          typeID: .safariLastDownload, displayName: "Last Download",
+          inheritsFrom: [.file]),
+      ],
       appBrowseEnrichments: [
         AppBrowseEnrichmentDefinition(
           bundleIdentifiers: ["com.apple.Safari"],
@@ -61,4 +66,8 @@ public final class SafariExtension: Extension {
       ]
     )
   }
+}
+
+extension TypeID {
+  static let safariLastDownload = TypeID("com.tuna.type.safari-last-download")
 }

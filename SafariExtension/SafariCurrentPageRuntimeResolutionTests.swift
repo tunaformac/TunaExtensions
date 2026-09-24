@@ -50,4 +50,38 @@ final class SafariCurrentPageRuntimeResolutionTests: XCTestCase {
     }
     XCTAssertEqual(value, "https://example.com/path")
   }
+
+  @MainActor
+  func testLastDownloadOffersResolveAndCompatibleFileActions() async throws {
+    SafariAppleScript.isSafariRunningOverride = { false }
+    let ext = try SafariExtension(bundle: Bundle(for: SafariExtension.self))
+    let registration = try XCTUnwrap(
+      ext.typeRegistrations.first { $0.typeID == .safariLastDownload })
+    XCTAssertEqual(registration.inheritsFrom, [.file])
+
+    let catalog = SafariMetaCatalog(
+      definition: CatalogDefinition(
+        identifier: "safari.utilities", name: "Safari Utilities",
+        enabledByDefault: true, settings: []))
+    await catalog.scan()
+    let lastDownload = try XCTUnwrap(catalog.objects.first { $0.id == "Last Download" })
+    XCTAssertEqual(lastDownload.typeID, .safariLastDownload)
+    TypeRegistry.shared.register(registration.typeID, inheritsFrom: registration.inheritsFrom)
+    XCTAssertTrue(lastDownload is ActionSubjectResolving)
+
+    let resolve = CatalogAction(id: "resolve", title: "Resolve") { _, _ in .success }
+    resolve.supportedSubjectTypes = [.entity]
+    let quickAction = CatalogAction(id: "perform-quick-action", title: "Perform Quick Action…") {
+      _, _ in .success
+    }
+    quickAction.supportedSubjectTypes = [.file]
+    let matches = SearchResultFiltering.filterActions(
+      [resolve, quickAction].map {
+        ScoreResult(
+          object: $0, score: 1, ranges: [],
+          sourceCatalogIdentifier: $0.id == "resolve" ? "tuna.common-actions" : "automation.actions")
+      },
+      selectedSubject: lastDownload, resolvedSubjects: [])
+    XCTAssertEqual(Set(matches.map(\.object.id)), ["resolve", "perform-quick-action"])
+  }
 }
