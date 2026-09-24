@@ -104,6 +104,14 @@ public final class FantasticalExtension: Extension {
               actionID: FantasticalIdentifiers.rescheduleAction),
           ]
         ),
+        DefaultActionRankingDefinition(
+          typeID: TypeID.fantasticalTaskGroup,
+          actions: [
+            ActionReference(
+              catalogIdentifier: FantasticalIdentifiers.actionCatalog,
+              actionID: FantasticalIdentifiers.showAllTasksAction)
+          ]
+        ),
       ],
       appBrowseEnrichments: [
         AppBrowseEnrichmentDefinition(
@@ -137,4 +145,5 @@ enum FantasticalIdentifiers {
   static let miniWindowAction = "open-mini-window"
   static let rescheduleAction = "reschedule"
   static let completeAction = "complete-task"
+  static let showAllTasksAction = "show-all-tasks"
 }

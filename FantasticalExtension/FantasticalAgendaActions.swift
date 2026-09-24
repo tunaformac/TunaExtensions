@@ -5,7 +5,7 @@ import TunaKit
 extension FantasticalActionsCatalog {
   static let agendaActionIDs = [
     FantasticalIdentifiers.rescheduleAction, "rename", "change-location", FantasticalIdentifiers.completeAction,
-    "delete-item", "add-to-fantastical-calendar",
+    "delete-item", "add-to-fantastical-calendar", FantasticalIdentifiers.showAllTasksAction,
   ]
 
   static func agendaActions() -> [CatalogAction] {
@@ -88,6 +88,27 @@ extension FantasticalActionsCatalog {
     addToCalendar.subjectPredicate = { FantasticalURLBuilder.textValue(for: $0) != nil }
     addToCalendar.targetPredicate = { $0 is FantasticalCalendarEntity }
     items.append(addToCalendar)
+
+    let showAll = PredicateAwareAction(id: FantasticalIdentifiers.showAllTasksAction, title: "Show All Tasks") {
+      subject, _ in
+      guard let group = subject as? FantasticalTaskGroupItem else {
+        return .failure("Select the Tasks group first")
+      }
+      let rows = group.allTasks()
+      guard !rows.isEmpty else {
+        return .results([
+          FantasticalAgendaSupport.messageItem(
+            title: "No open tasks", message: "Nothing is open in your task lists.", symbolName: "checklist",
+            tint: .secondaryLabelColor)
+        ])
+      }
+      return .results(rows)
+    }
+    showAll.systemSymbolName = "checklist"
+    showAll.executionPolicy = .keepVisible
+    showAll.supportedSubjectTypes = [.fantasticalTaskGroup]
+    showAll.subjectPredicate = { $0 is FantasticalTaskGroupItem }
+    items.append(showAll)
 
     return items
   }

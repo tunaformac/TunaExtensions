@@ -122,10 +122,14 @@ class FantasticalSectionItem: CatalogEntity, CatalogHierarchyNode, TimestampedCa
   /// An open pane keeps the rows it was built with. When a write has landed since, ask the host
   /// to rebuild this node rather than leaving those rows on screen for the rest of the session.
   func hierarchyChildren() -> [CatalogItem] {
+    requestRebuildIfStale()
+    return children
+  }
+
+  fileprivate func requestRebuildIfStale() {
     if generation != FantasticalAgendaSupport.dataGeneration.value {
       FantasticalAgendaSupport.postScanFinished(identifier: FantasticalIdentifiers.agendaCatalog)
     }
-    return children
   }
 
   override func preview(maxDimension: CGFloat) -> CatalogItemPreview {
@@ -150,6 +154,11 @@ final class FantasticalTaskGroupItem: FantasticalSectionItem, @unchecked Sendabl
       title: title, id: id, detail: detail, symbolName: symbolName, iconColor: iconColor,
       children: children, sortOrder: sortOrder)
     typeID = .fantasticalTaskGroup
+  }
+
+  func allTasks() -> [CatalogItem] {
+    requestRebuildIfStale()
+    return tasks
   }
 }
 

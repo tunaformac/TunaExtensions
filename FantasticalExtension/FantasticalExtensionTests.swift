@@ -554,7 +554,9 @@ final class FantasticalExtensionTests: XCTestCase {
       item: item, calendarTitle: "Perso", isTask: false, isEditable: true)
 
     for id in FantasticalActionsCatalog.agendaActionIDs
-    where id != "add-to-fantastical-calendar" && id != FantasticalIdentifiers.completeAction {
+    where id != "add-to-fantastical-calendar" && id != FantasticalIdentifiers.completeAction
+      && id != FantasticalIdentifiers.showAllTasksAction
+    {
       let action = try XCTUnwrap(catalog.actions.first { $0.id == id } as? PredicateAwareAction)
       XCTAssertFalse(action.subjectPredicate?(readOnly) ?? true, "\(id) offered on a read-only calendar")
       XCTAssertTrue(action.subjectPredicate?(editable) ?? false, "\(id) missing on a writable calendar")

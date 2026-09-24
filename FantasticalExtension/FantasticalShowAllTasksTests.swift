@@ -77,4 +77,41 @@ final class FantasticalShowAllTasksTests: XCTestCase {
     XCTAssertEqual(registration?.inheritsFrom, [.entity])
     XCTAssertEqual(registration?.displayName, "Fantastical Task Groups")
   }
+
+  func testShowAllTasksListsEveryOpenTaskFromTheTasksNode() async throws {
+    let (lists, now) = try fixture()
+    let sections = FantasticalAgendaSupport.sections(
+      from: [:], calendars: lists.map(\.calendar), taskLists: lists, now: now, calendar: paris)
+    let node = try XCTUnwrap(sections.first { $0.id == "fantastical.agenda.tasks" } as? FantasticalTaskGroupItem)
+    let catalog = FantasticalActionsCatalog(
+      definition: ActionCatalogDefinition(identifier: FantasticalIdentifiers.actionCatalog, name: "Fantastical"))
+    let action = try XCTUnwrap(
+      catalog.actions.first { $0.id == FantasticalIdentifiers.showAllTasksAction } as? PredicateAwareAction)
+    XCTAssertEqual(action.title, "Show All Tasks")
+    XCTAssertEqual(action.supportedSubjectTypes, [.fantasticalTaskGroup])
+    XCTAssertEqual(action.targetRequirement, CatalogActionTargetRequirement.none)
+    XCTAssertEqual(action.executionPolicy, .keepVisible)
+    XCTAssertTrue(action.subjectPredicate?(node) ?? false)
+    XCTAssertFalse(action.subjectPredicate?(node.hierarchyChildren().first) ?? true, "a list group only browses")
+
+    guard case .results(let rows) = await action.callback(node, nil) else { return XCTFail("expected results") }
+    XCTAssertEqual(rows.map(\.id), node.tasks.map(\.id))
+    XCTAssertEqual(node.allTasks().map(\.id), node.tasks.map(\.id))
+
+    let empty = FantasticalTaskGroupItem(
+      title: "Tasks", id: "t", detail: nil, symbolName: "checklist", iconColor: .blue, children: [], tasks: [],
+      sortOrder: 5)
+    guard case .results(let notice) = await action.callback(empty, nil) else { return XCTFail("expected a notice") }
+    XCTAssertEqual(notice.map(\.title), ["No open tasks"])
+  }
+
+  func testShowAllTasksIsTheDefaultActionOfTheTasksNode() {
+    let declaration = FantasticalExtension.makeDeclaration()
+    let ranking = declaration.defaultActionRankings.first { $0.typeID == .fantasticalTaskGroup }
+    XCTAssertEqual(
+      ranking?.actions.first,
+      ActionReference(
+        catalogIdentifier: FantasticalIdentifiers.actionCatalog, actionID: FantasticalIdentifiers.showAllTasksAction))
+    XCTAssertTrue(FantasticalActionsCatalog.agendaActionIDs.contains(FantasticalIdentifiers.showAllTasksAction))
+  }
 }
