@@ -91,7 +91,7 @@ final class FantasticalCalendarEntity: CatalogEntity, @unchecked Sendable {
   }
 }
 
-final class FantasticalSectionItem: CatalogEntity, CatalogHierarchyNode, TimestampedCatalogItem,
+class FantasticalSectionItem: CatalogEntity, CatalogHierarchyNode, TimestampedCatalogItem,
   FantasticalScoredItem, @unchecked Sendable
 {
   let sortOrder: Int
@@ -137,6 +137,22 @@ final class FantasticalSectionItem: CatalogEntity, CatalogHierarchyNode, Timesta
   }
 }
 
+/// The Tasks node. Return runs Show All Tasks over `tasks`; the right arrow still browses the groups.
+final class FantasticalTaskGroupItem: FantasticalSectionItem, @unchecked Sendable {
+  let tasks: [CatalogItem]
+
+  init(
+    title: String, id: String, detail: String?, symbolName: String, iconColor: CatalogIconColor,
+    children: [CatalogItem], tasks: [CatalogItem], sortOrder: Int
+  ) {
+    self.tasks = tasks
+    super.init(
+      title: title, id: id, detail: detail, symbolName: symbolName, iconColor: iconColor,
+      children: children, sortOrder: sortOrder)
+    typeID = .fantasticalTaskGroup
+  }
+}
+
 /// A plain message item carries no sort score, so the agenda comparator would sink it below every
 /// section instead of showing it first.
 final class FantasticalNoticeItem: CatalogEntity, TimestampedCatalogItem, FantasticalScoredItem,
@@ -170,4 +186,5 @@ final class FantasticalNoticeItem: CatalogEntity, TimestampedCatalogItem, Fantas
 extension TypeID {
   static let fantasticalItem = TypeID("com.tuna.type.fantastical-item")
   static let fantasticalCalendar = TypeID("com.tuna.type.fantastical-calendar")
+  static let fantasticalTaskGroup = TypeID("com.tuna.type.fantastical-task-group")
 }

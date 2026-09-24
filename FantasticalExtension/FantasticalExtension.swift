@@ -3,7 +3,9 @@ import TunaKit
 
 @objc(FantasticalExtension)
 public final class FantasticalExtension: Extension {
-  public override var declaration: ExtensionDeclaration? {
+  public override var declaration: ExtensionDeclaration? { Self.makeDeclaration() }
+
+  static func makeDeclaration() -> ExtensionDeclaration {
     ExtensionDeclaration(
       metadata: ExtensionMetadata(
         displayName: "Fantastical",
@@ -74,6 +76,9 @@ public final class FantasticalExtension: Extension {
           inheritsFrom: [.entity]),
         TypeRegistrationDefinition(
           typeID: TypeID.fantasticalCalendar, displayName: "Fantastical Calendars",
+          inheritsFrom: [.entity]),
+        TypeRegistrationDefinition(
+          typeID: TypeID.fantasticalTaskGroup, displayName: "Fantastical Task Groups",
           inheritsFrom: [.entity]),
       ],
       defaultActionRankings: [

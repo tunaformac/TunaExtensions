@@ -63,36 +63,39 @@ extension FantasticalAgendaSupport {
   static func taskSections(
     lists: [FantasticalTaskList], reminderAccessDenied: Bool = false, now: Date,
     calendar: Calendar = .autoupdatingCurrent
-  ) -> (children: [CatalogItem], detail: String) {
+  ) -> (children: [CatalogItem], tasks: [CatalogItem], detail: String) {
     let calendars = lists.map(\.calendar)
     let sourceByList = Dictionary(lists.map { ($0.calendar.id, $0.source) }, uniquingKeysWith: { first, _ in first })
+    func row(_ item: FantasticalAgendaItem) -> CatalogItem {
+      entity(for: item, calendars: calendars, now: now, source: sourceByList[item.calendarID] ?? .helper)
+    }
     let all = lists.flatMap(\.items)
     let overdue = sortedTasks(all.filter { $0.isOverdue(now: now, calendar: calendar) })
     var children: [CatalogItem] = []
+    var tasks: [CatalogItem] = []
     if reminderAccessDenied {
-      children.append(
-        FantasticalNoticeItem(
-          title: "Reminders access needed",
-          message: "Allow Tuna under System Settings, Privacy & Security, Reminders, then open Tasks again.",
-          symbolName: "lock", tint: .systemOrange))
+      let notice = FantasticalNoticeItem(
+        title: "Reminders access needed",
+        message: "Allow Tuna under System Settings, Privacy & Security, Reminders, then open Tasks again.",
+        symbolName: "lock", tint: .systemOrange)
+      children.append(notice)
+      tasks.append(notice)
     }
+    tasks.append(contentsOf: sortedTasks(all).map(row))
     if !overdue.isEmpty {
       children.append(
         FantasticalSectionItem(
           title: "Overdue", id: "fantastical.agenda.tasks.overdue", detail: plainCount(overdue.count),
-          symbolName: "exclamationmark.circle", iconColor: .red,
-          children: overdue.map { entity(for: $0, calendars: calendars, now: now, source: sourceByList[$0.calendarID] ?? .helper) },
-          sortOrder: 0))
+          symbolName: "exclamationmark.circle", iconColor: .red, children: overdue.map(row), sortOrder: 0))
     }
     for (index, list) in lists.enumerated() {
       children.append(
         FantasticalSectionItem(
           title: list.calendar.title, id: "fantastical.agenda.tasks.\(list.calendar.id)",
           detail: listDetail(list), symbolName: "checklist", iconColor: .blue,
-          children: sortedTasks(list.items).map { entity(for: $0, calendars: calendars, now: now, source: list.source) },
-          sortOrder: index + 1))
+          children: sortedTasks(list.items).map(row), sortOrder: index + 1))
     }
-    return (children, tasksDetail(open: all.count, overdue: overdue.count, hasLists: !lists.isEmpty))
+    return (children, tasks, tasksDetail(open: all.count, overdue: overdue.count, hasLists: !lists.isEmpty))
   }
 
   private static func plainCount(_ n: Int) -> String {

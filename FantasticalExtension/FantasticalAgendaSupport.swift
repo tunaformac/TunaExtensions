@@ -65,10 +65,10 @@ enum FantasticalAgendaSupport {
       if range.tasksOnly {
         let tasks = taskSections(
           lists: taskLists, reminderAccessDenied: reminderAccessDenied, now: now, calendar: calendar)
-        return FantasticalSectionItem(
+        return FantasticalTaskGroupItem(
           title: range.title, id: "fantastical.agenda.\(range)", detail: tasks.detail,
           symbolName: range.symbolName, iconColor: range.iconColor, children: tasks.children,
-          sortOrder: range.sortOrder)
+          tasks: tasks.tasks, sortOrder: range.sortOrder)
       }
       let found = sorted(perRange[range] ?? [])
       return FantasticalSectionItem(
