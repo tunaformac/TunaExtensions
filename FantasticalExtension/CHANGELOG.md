@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.10
+
+- Press Return on the Tasks group to see every open task in one list, due soonest first with
+  undated tasks last. The right arrow still opens the Overdue group and the per list groups. Each
+  row keeps Complete Task, Rename, Reschedule and Delete.
+
 ## 0.5.9
 
 - The Tasks group now shows the open tasks Fantastical shows, list by list, with an Overdue

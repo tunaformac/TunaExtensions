@@ -85,6 +85,8 @@ matches. Each item shows its day, time, calendar, and location.
   are read from Fantastical's local database. When neither is available a list falls back to
   Fantastical's helper, which only reports dated tasks, those overdue or due in the next 30 days,
   and no completion state, and its row says `completion unknown`.
+  Press Return on **Tasks** to see every open task in one list, due soonest first; press the
+  right arrow to browse the Overdue group and the lists.
 - **Today** and **Tomorrow** split at midnight, and an item that runs across midnight or over
   several days is listed under every day it covers.
 - **By Calendar** groups the next 7 days by calendar, read-only calendars included. Writability
