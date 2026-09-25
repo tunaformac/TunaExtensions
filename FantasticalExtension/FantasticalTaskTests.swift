@@ -64,6 +64,31 @@ final class FantasticalTaskTests: XCTestCase {
     XCTAssertNil(FantasticalArchivedTask.decode(from: Data("not an archive".utf8)))
   }
 
+  func testDecoderReadsFantasticalsObjectEncodedScalars() throws {
+    let utcMidnight = Date(timeIntervalSinceReferenceDate: 811_382_400)
+    let localMidnight = Date(timeIntervalSinceReferenceDate: 811_375_200)
+    let data = try archiveLikeFantastical(
+      FantasticalShapedTask(
+        title: "buy cat food", priority: 5, completed: false, isAllDay: true, dueDate: utcMidnight,
+        startDate: localMidnight))
+    let decoded = try XCTUnwrap(FantasticalArchivedTask.decode(from: data))
+    XCTAssertEqual(decoded.title, "buy cat food")
+    XCTAssertEqual(decoded.priority, 5)
+    XCTAssertFalse(decoded.completed)
+    XCTAssertTrue(decoded.isAllDay)
+    XCTAssertEqual(decoded.dueDate, utcMidnight)
+    XCTAssertEqual(decoded.startDate, localMidnight)
+    XCTAssertEqual(decoded.start, localMidnight, "an all-day task lives on the day Fantastical shows")
+
+    let timed = try XCTUnwrap(
+      FantasticalArchivedTask.decode(
+        from: try archiveLikeFantastical(
+          FantasticalShapedTask(
+            title: "call", priority: 0, completed: true, isAllDay: false, dueDate: utcMidnight, startDate: nil))))
+    XCTAssertTrue(timed.completed)
+    XCTAssertEqual(timed.start, utcMidnight, "a timed task keeps its instant")
+  }
+
   func testStoreReaderReturnsOpenTasksOfOneListOnly() throws {
     let url = FileManager.default.temporaryDirectory.appending(path: "fantastical-\(UUID().uuidString).fcdata")
     defer { try? FileManager.default.removeItem(at: url) }
@@ -71,7 +96,10 @@ final class FantasticalTaskTests: XCTestCase {
     try makeStore(
       at: url,
       rows: [
-        (1, "calendarItems-google", "g1", FantasticalArchivedTask(title: "Open one", priority: 1, dueDate: due, completed: false), 0, 0),
+        (1, "calendarItems-google", "g1",
+         FantasticalArchivedTask(
+           title: "Open one", priority: 1, dueDate: due, completed: false,
+           startDate: due.addingTimeInterval(-7_200), isAllDay: true), 0, 0),
         (2, "calendarItems-google", "g2", FantasticalArchivedTask(title: "Done one", priority: 0, dueDate: nil, completed: true), 1, 0),
         (3, "calendarItems-google", "g3", FantasticalArchivedTask(title: "Hidden one", priority: 0, dueDate: nil, completed: false), 0, 1),
         (4, "calendarItems-other", "o1", FantasticalArchivedTask(title: "Elsewhere", priority: 0, dueDate: nil, completed: false), 0, 0),
@@ -83,7 +111,9 @@ final class FantasticalTaskTests: XCTestCase {
     XCTAssertEqual(items.map(\.id), ["google;g1", "google;g4"])
     XCTAssertEqual(items.map(\.title), ["Open one", "Undated"])
     XCTAssertEqual(items.map(\.priority), [1, 9])
-    XCTAssertEqual(items.first?.start, due)
+    XCTAssertEqual(
+      items.first?.start, due.addingTimeInterval(-7_200),
+      "the reader hands out Fantastical's local midnight")
     XCTAssertNil(items.last?.start)
     XCTAssertEqual(items.first?.calendarID, "google")
     XCTAssertFalse(FantasticalStoreReader(url: url.appending(path: "missing")).isAvailable)
@@ -162,9 +192,48 @@ final class FantasticalTaskTests: XCTestCase {
       "Untitled task")
   }
 
+  @objc(FantasticalShapedTask)
+  private final class FantasticalShapedTask: NSObject, NSSecureCoding {
+    static let supportsSecureCoding = true
+    let title: String
+    let priority: Int
+    let completed: Bool
+    let isAllDay: Bool
+    let dueDate: Date?
+    let startDate: Date?
+
+    init(title: String, priority: Int, completed: Bool, isAllDay: Bool, dueDate: Date?, startDate: Date?) {
+      self.title = title
+      self.priority = priority
+      self.completed = completed
+      self.isAllDay = isAllDay
+      self.dueDate = dueDate
+      self.startDate = startDate
+    }
+
+    required init?(coder: NSCoder) { nil }
+
+    func encode(with coder: NSCoder) {
+      coder.encode(title as NSString, forKey: "title")
+      coder.encode(NSNumber(value: priority), forKey: "priority")
+      coder.encode(NSNumber(value: completed), forKey: "completed")
+      coder.encode(NSNumber(value: isAllDay), forKey: "isAllDay")
+      if let dueDate { coder.encode(dueDate as NSDate, forKey: "dueDate") }
+      if let startDate { coder.encode(startDate as NSDate, forKey: "startDate") }
+    }
+  }
+
   private func archive(_ task: FantasticalArchivedTask) throws -> Data {
+    archiveUnderFantasticalsClassName(task, for: FantasticalArchivedTask.self)
+  }
+
+  private func archiveLikeFantastical(_ task: FantasticalShapedTask) throws -> Data {
+    archiveUnderFantasticalsClassName(task, for: FantasticalShapedTask.self)
+  }
+
+  private func archiveUnderFantasticalsClassName(_ task: NSObject, for type: AnyClass) -> Data {
     let archiver = NSKeyedArchiver(requiringSecureCoding: true)
-    archiver.setClassName(FantasticalArchivedTask.archivedClassName, for: FantasticalArchivedTask.self)
+    archiver.setClassName(FantasticalArchivedTask.archivedClassName, for: type)
     archiver.encode(task, forKey: NSKeyedArchiveRootObjectKey)
     archiver.finishEncoding()
     return archiver.encodedData

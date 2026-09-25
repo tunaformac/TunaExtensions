@@ -93,12 +93,13 @@ struct FantasticalStoreReader: Sendable {
     else { return nil }
     return FantasticalAgendaItem(
       id: FantasticalTaskID.make(listID: listID, key: key), title: task.title, calendarID: listID,
-      start: task.dueDate, end: nil, location: nil, priority: task.priority)
+      start: task.start, end: nil, location: nil, priority: task.priority)
   }
 }
 
 /// Stands in for Fantastical's `FBTask` while its archive is opened: only the keys named here are
-/// read, so the rest of the object never has to be understood.
+/// read, so the rest of the object never has to be understood. Fantastical archives every scalar
+/// as an object, and a `decodeInteger` or `decodeBool` on one raises and leaves every later key nil.
 final class FantasticalArchivedTask: NSObject, NSSecureCoding {
   static let supportsSecureCoding = true
   static let archivedClassName = "FBTask"
@@ -106,27 +107,41 @@ final class FantasticalArchivedTask: NSObject, NSSecureCoding {
   let title: String
   let priority: Int
   let dueDate: Date?
+  /// A date-only due sits at UTC midnight; `startDate` carries the same day at local midnight.
+  let startDate: Date?
+  let isAllDay: Bool
   let completed: Bool
 
-  init(title: String, priority: Int, dueDate: Date?, completed: Bool) {
+  init(
+    title: String, priority: Int, dueDate: Date?, completed: Bool, startDate: Date? = nil,
+    isAllDay: Bool = false
+  ) {
     self.title = title
     self.priority = priority
     self.dueDate = dueDate
     self.completed = completed
+    self.startDate = startDate
+    self.isAllDay = isAllDay
   }
 
   required init?(coder: NSCoder) {
     title = coder.decodeObject(of: NSString.self, forKey: "title") as String? ?? ""
-    priority = coder.decodeInteger(forKey: "priority")
     dueDate = coder.decodeObject(of: NSDate.self, forKey: "dueDate") as Date?
-    completed = coder.decodeBool(forKey: "completed")
+    startDate = coder.decodeObject(of: NSDate.self, forKey: "startDate") as Date?
+    completed = coder.decodeObject(of: NSNumber.self, forKey: "completed")?.boolValue ?? false
+    priority = coder.decodeObject(of: NSNumber.self, forKey: "priority")?.intValue ?? 0
+    isAllDay = coder.decodeObject(of: NSNumber.self, forKey: "isAllDay")?.boolValue ?? false
   }
+
+  var start: Date? { isAllDay ? (startDate ?? dueDate) : dueDate }
 
   func encode(with coder: NSCoder) {
     coder.encode(title as NSString, forKey: "title")
-    coder.encode(priority, forKey: "priority")
+    coder.encode(NSNumber(value: priority), forKey: "priority")
+    coder.encode(NSNumber(value: completed), forKey: "completed")
+    coder.encode(NSNumber(value: isAllDay), forKey: "isAllDay")
     if let dueDate { coder.encode(dueDate as NSDate, forKey: "dueDate") }
-    coder.encode(completed, forKey: "completed")
+    if let startDate { coder.encode(startDate as NSDate, forKey: "startDate") }
   }
 
   static func decode(from data: Data) -> FantasticalArchivedTask? {
