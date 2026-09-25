@@ -5,6 +5,9 @@
 - Press Return on the Tasks group to see every open task in one list, due soonest first with
   undated tasks last. The right arrow still opens the Overdue group and the per list groups. Each
   row keeps the same actions it has under its list.
+- Tasks read from Fantastical's own database (Google Tasks and the other lists Fantastical syncs
+  itself) now show their due date and priority. The archive stores those as objects and the
+  reader asked for plain numbers, so every such task read as undated.
 
 ## 0.5.9
 
