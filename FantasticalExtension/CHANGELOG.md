@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.11
+
+- After Fantastical is quit and opened again, Tuna reconnects to it on its own instead of
+  showing "Failed to connect to Fantastical" until Tuna is restarted.
+
 ## 0.5.10
 
 - Press Return on the Tasks group to see every open task in one list, due soonest first with
