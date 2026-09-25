@@ -31,6 +31,11 @@ actor FantasticalMCPClient {
   private let timeoutSeconds: UInt64 = 60
   static let stderrDetailLimit = 200
   static let toolMessageLimit = 400
+  private let locateHelper: @Sendable () -> URL?
+
+  init(locateHelper: @escaping @Sendable () -> URL? = { FantasticalMCPClient.helperURL() }) {
+    self.locateHelper = locateHelper
+  }
 
   /// The helper answers one request at a time; parallel calls make it drop its connection to
   /// Fantastical, so calls queue. Cancelling drops queued work; in-flight calls hit the deadline.
@@ -49,9 +54,12 @@ actor FantasticalMCPClient {
     }
   }
 
-  private func performCall(_ tool: String, arguments: [String: Any]) async throws -> FantasticalMCPResult {
+  private func performCall(
+    _ tool: String, arguments: [String: Any], isRetry: Bool = false
+  ) async throws -> FantasticalMCPResult {
     Self.log.info("call \(tool, privacy: .public)")
     try await ensureRunning()
+    let callGeneration = generation
     let response = try await request(
       method: "tools/call", params: ["name": tool, "arguments": arguments])
     guard let result = response["result"] as? [String: Any] else {
@@ -63,11 +71,22 @@ actor FantasticalMCPClient {
     let content = result["content"] as? [[String: Any]] ?? []
     let text = content.compactMap { $0["text"] as? String }.joined(separator: "\n")
     let isError = result["isError"] as? Bool ?? false
+    if isError, !isRetry, Self.isStrandedHelper(text) {
+      Self.log.error("helper lost Fantastical during \(tool, privacy: .public), restarting it")
+      if generation == callGeneration { shutdown() }
+      return try await performCall(tool, arguments: arguments, isRetry: true)
+    }
     if isError {
       throw FantasticalMCPError.tool(
         text.isEmpty ? "Fantastical reported an error." : String(text.prefix(Self.toolMessageLimit)))
     }
     return FantasticalMCPResult(text: text, isError: false)
+  }
+
+  /// A helper that outlives a Fantastical quit keeps answering, but only with this, until it is
+  /// replaced.
+  static func isStrandedHelper(_ text: String) -> Bool {
+    text.contains("Failed to connect to Fantastical")
   }
 
   func shutdown() {
@@ -112,7 +131,7 @@ actor FantasticalMCPClient {
       retiringPipes = []
     }
     lastStderrLine = nil
-    guard let url = Self.helperURL() else { throw FantasticalMCPError.helperNotFound }
+    guard let url = locateHelper() else { throw FantasticalMCPError.helperNotFound }
 
     let process = Process()
     process.executableURL = url
