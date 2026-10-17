@@ -28,7 +28,7 @@ public final class CleanShotExtension: Extension {
       ],
       appBrowseEnrichments: [
         AppBrowseEnrichmentDefinition(
-          bundleIdentifiers: ["pl.maketheweb.cleanshotx"],
+          bundleIdentifiers: ["pl.maketheweb.cleanshotx", "com.getcleanshot.app-setapp"],
           entries: [
             AppBrowseEnrichmentEntryDefinition(catalogIdentifier: "cleanshot.commands")
           ]
