@@ -38,6 +38,7 @@ below rather than a generic template, and include the new project in `TunaExtens
 | BrewExtension | Search and manage Homebrew packages |
 | ChromeExtension | Browse Chrome bookmarks and launch profiles |
 | CleanShotExtension | Browse recent CleanShot images and run capture commands |
+| DokployExtension | Search, deploy, start, and stop Dokploy services |
 | FancyTextExtension | Turn text into searchable Unicode styles |
 | GitHubExtension | Repos, issues, and pull requests |
 | GiphyExtension | Search, preview, and paste GIFs from GIPHY |
