@@ -55,4 +55,7 @@
    <FileRef
       location = "group:ThingsExtension/ThingsExtension.xcodeproj">
    </FileRef>
+   <FileRef
+      location = "group:VikunjaExtension/VikunjaExtension.xcodeproj">
+   </FileRef>
 </Workspace>
