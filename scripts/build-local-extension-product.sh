@@ -64,15 +64,20 @@ if [[ -n "${TUNA_CODE_SIGN_IDENTITY:-}" ]]; then
 fi
 
 # A rebuilt local package can reuse the same semantic version at a new revision. SwiftPM rejects
-# that intentionally mutable development tag when its workspace still records the old SHA.
+# that intentionally mutable development tag when its workspace still records the old SHA, and its
+# per-user trust-on-first-use fingerprints would reject it too, so only warn about those.
 rm -rf "$DERIVED_DATA/SourcePackages"
+package_settings=(
+  -clonedSourcePackagesDirPath "$DERIVED_DATA/SourcePackages"
+  -disablePackageRepositoryCache
+  -packageFingerprintPolicy warn
+  -scmProvider system
+)
 
 "$ROOT/scripts/run-xcodebuild" -resolvePackageDependencies \
   -project "$project" \
   -scheme "$resolved_target" \
-  -clonedSourcePackagesDirPath "$DERIVED_DATA/SourcePackages" \
-  -disablePackageRepositoryCache \
-  -scmProvider system >&2
+  "${package_settings[@]}" >&2
 
 "$ROOT/scripts/run-xcodebuild" build \
   -project "$project" \
@@ -80,9 +85,7 @@ rm -rf "$DERIVED_DATA/SourcePackages"
   -configuration "$CONFIGURATION" \
   -destination "$DESTINATION" \
   -derivedDataPath "$DERIVED_DATA" \
-  -clonedSourcePackagesDirPath "$DERIVED_DATA/SourcePackages" \
-  -disablePackageRepositoryCache \
-  -scmProvider system \
+  "${package_settings[@]}" \
   "${build_settings[@]}" >&2
 
 settings_file="$(mktemp)"
@@ -93,9 +96,7 @@ trap 'rm -f "$settings_file"; cleanup' EXIT
   -configuration "$CONFIGURATION" \
   -destination "$DESTINATION" \
   -derivedDataPath "$DERIVED_DATA" \
-  -clonedSourcePackagesDirPath "$DERIVED_DATA/SourcePackages" \
-  -disablePackageRepositoryCache \
-  -scmProvider system \
+  "${package_settings[@]}" \
   -showBuildSettings
 
 target_build_dir="$(rg '^ *TARGET_BUILD_DIR' -m1 "$settings_file" | sed 's/.*= //')"

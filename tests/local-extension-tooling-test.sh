@@ -163,7 +163,7 @@ PATH="$SANDBOX/discovery/bin:$PATH" \
 TUNA_XCODEBUILD_LOG_DIR="$SANDBOX/discovery/logs" \
   "$SANDBOX/discovery/scripts/prepare-local-tunakit-package.sh" \
     "$SANDBOX/discovery/tuna" >/dev/null
-[[ -d "$SANDBOX/discovery/build/local-tunakit-package/TunaKit.xcframework" ]] ||
+[[ -d "$SANDBOX/discovery/build/local-tunakit/TunaKit/TunaKit.xcframework" ]] ||
   fail "Local TunaKit preparation did not produce a package."
 
 # A local Release build must explicitly remain on the active architecture because its generated
@@ -174,7 +174,7 @@ mkdir -p \
   "$SANDBOX/build/SourceExtension/Source.xcodeproj" \
   "$SANDBOX/build/SourceExtension/Source.xcodeproj/project.xcworkspace/xcshareddata/swiftpm" \
   "$SANDBOX/build/ChromiumExtensionSupport/Sources" \
-  "$SANDBOX/build/local-package/TunaKit.xcframework"
+  "$SANDBOX/build/local-package/TunaKit/TunaKit.xcframework"
 cp \
   "$ROOT/scripts/build-extension-product.sh" \
   "$ROOT/scripts/build-local-extension-product.sh" \
@@ -246,23 +246,29 @@ cat >"$SANDBOX/build/bin/xcsift" <<'EOF'
 cat >/dev/null
 EOF
 chmod +x "$SANDBOX/build/scripts/"* "$SANDBOX/build/bin/"*
-git -C "$SANDBOX/build/local-package" init -q
-git -C "$SANDBOX/build/local-package" config user.name Test
-git -C "$SANDBOX/build/local-package" config user.email test@example.com
-printf '// package\n' >"$SANDBOX/build/local-package/Package.swift"
-git -C "$SANDBOX/build/local-package" add .
-git -C "$SANDBOX/build/local-package" commit -qm initial
-git -C "$SANDBOX/build/local-package" tag 1.22.0
+git -C "$SANDBOX/build/local-package/TunaKit" init -q
+git -C "$SANDBOX/build/local-package/TunaKit" config user.name Test
+git -C "$SANDBOX/build/local-package/TunaKit" config user.email test@example.com
+printf '// package\n' >"$SANDBOX/build/local-package/TunaKit/Package.swift"
+git -C "$SANDBOX/build/local-package/TunaKit" add .
+git -C "$SANDBOX/build/local-package/TunaKit" commit -qm initial
+git -C "$SANDBOX/build/local-package/TunaKit" tag 1.22.0
 
 PATH="$SANDBOX/build/bin:$PATH" \
 XCODEBUILD_LOG="$SANDBOX/build/xcodebuild.log" \
 EXPECT_SHARED_PACKAGE=0 \
 LOCAL_PROJECT_PATH_FILE="$SANDBOX/build/local-project-path" \
-TUNA_LOCAL_TUNAKIT_PACKAGE="$SANDBOX/build/local-package" \
+TUNA_LOCAL_TUNAKIT_PACKAGE="$SANDBOX/build/local-package/TunaKit" \
   "$SANDBOX/build/scripts/build-local-extension-product.sh" \
     Source Release "platform=macOS,arch=$(uname -m)" "$SANDBOX/build/derived" >/dev/null
 rg -q '^build .* -configuration Release .* ONLY_ACTIVE_ARCH=YES$' "$SANDBOX/build/xcodebuild.log" ||
   fail "Local Release build did not set ONLY_ACTIVE_ARCH=YES."
+# Every rebuild of the local package re-tags the same versions at new revisions, so SwiftPM's
+# per-user fingerprints must not block resolution or building.
+for invocation in '^-resolvePackageDependencies ' '^build ' ' -showBuildSettings$'; do
+  rg -- "$invocation" "$SANDBOX/build/xcodebuild.log" | rg -q -- '-packageFingerprintPolicy warn' ||
+    fail "Local xcodebuild matching '$invocation' did not relax package fingerprint checking."
+done
 
 # Both quoted and unquoted project-local package paths must survive the isolated build.
 for package_path in '../ChromiumExtensionSupport' '"../ChromiumExtensionSupport"'; do
@@ -284,7 +290,7 @@ PY
   EXPECT_SHARED_PACKAGE=1 \
   SHARED_PACKAGE_SOURCE="$SANDBOX/build/ChromiumExtensionSupport" \
   LOCAL_PROJECT_PATH_FILE="$SANDBOX/build/local-project-path" \
-  TUNA_LOCAL_TUNAKIT_PACKAGE="$SANDBOX/build/local-package" \
+  TUNA_LOCAL_TUNAKIT_PACKAGE="$SANDBOX/build/local-package/TunaKit" \
     /bin/bash "$SANDBOX/build/scripts/build-local-extension-product.sh" \
       Source Release "platform=macOS,arch=$(uname -m)" "$SANDBOX/build/derived" >/dev/null
   cmp "$SANDBOX/build/original.pbxproj" "$SANDBOX/build/SourceExtension/Source.xcodeproj/project.pbxproj" ||

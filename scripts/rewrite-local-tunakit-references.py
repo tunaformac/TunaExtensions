@@ -199,6 +199,24 @@ def resolved_version(path):
     return pin["state"]["version"]
 
 
+def package_identity(location):
+    """Mirror SwiftPM: a location's identity is its last path component, minus .git, lowercased."""
+    name = location.rstrip("/").rsplit("/", 1)[-1]
+    if name.endswith(".git"):
+        name = name[: -len(".git")]
+    return name.lower()
+
+
+def validate_package_identity(package_url):
+    # The pin keeps its "tunakit" identity. A location with any other identity makes SwiftPM fetch
+    # the same repository twice in one resolve (once per identity), racing into one clone path.
+    if package_identity(package_url) != "tunakit":
+        fail(
+            f"local package location must end in TunaKit to match the TunaKit pin identity: "
+            f"{package_url!r}"
+        )
+
+
 def rewritten_resolved(path, package_url, revision):
     document = load_resolved(path)
     pin, location_key = resolved_pin(document, path)
@@ -243,6 +261,7 @@ def main():
         else:
             project = Path(arguments.project)
             resolved = Path(arguments.resolved)
+            validate_package_identity(arguments.package_url)
             project_content = rewritten_project(project, arguments.package_url)
             resolved_content = rewritten_resolved(resolved, arguments.package_url, arguments.revision)
             replace_files(((project, project_content), (resolved, resolved_content)))

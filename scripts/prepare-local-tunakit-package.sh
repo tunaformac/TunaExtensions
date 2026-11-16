@@ -16,7 +16,9 @@ fi
 TUNA_ROOT="$(cd "$TUNA_ROOT" && pwd -P)"
 TUNAKIT_PROJECT="$TUNA_ROOT/app/TunaKit/TunaKit.xcodeproj"
 DERIVED_DATA="$ROOT/build/local-tunakit-dd"
-PACKAGE_ROOT="$ROOT/build/local-tunakit-package"
+# SwiftPM derives package identity from the last path component; it must stay "TunaKit" so the
+# rewritten location keeps the identity the extensions' Package.resolved pins use.
+PACKAGE_ROOT="$ROOT/build/local-tunakit/TunaKit"
 ARCH="$(uname -m)"
 
 if [[ ! -d "$TUNAKIT_PROJECT" ]]; then
@@ -61,7 +63,7 @@ if [[ ! -d "$framework" ]]; then
 fi
 
 case "$PACKAGE_ROOT" in
-  "$ROOT"/build/local-tunakit-package) ;;
+  "$ROOT"/build/local-tunakit/TunaKit) ;;
   *) echo "Refusing to replace unexpected package path: $PACKAGE_ROOT" >&2; exit 1 ;;
 esac
 rm -rf "$PACKAGE_ROOT"

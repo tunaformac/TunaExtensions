@@ -5,7 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 FIXTURES="$ROOT/tests/fixtures/local-tunakit"
 REWRITER="$ROOT/scripts/rewrite-local-tunakit-references.py"
 SANDBOX="$(mktemp -d "${TMPDIR:-/tmp}/tuna-local-rewrite-test.XXXXXX")"
-PACKAGE_URL="file:///tmp/Local TunaKit"
+PACKAGE_URL="file:///tmp/Local Packages/TunaKit"
 REVISION="0123456789abcdef"
 
 cleanup() {
@@ -50,7 +50,7 @@ assert_rewrite_fails_unchanged() {
   cp "$case_dir/project.pbxproj" "$case_dir/project.before"
   cp "$case_dir/Package.resolved" "$case_dir/resolved.before"
   if "$REWRITER" rewrite --project "$case_dir/project.pbxproj" \
-    --resolved "$case_dir/Package.resolved" --package-url "$PACKAGE_URL" \
+    --resolved "$case_dir/Package.resolved" --package-url "${FAILING_PACKAGE_URL:-$PACKAGE_URL}" \
     --revision "$REVISION" >"$case_dir/stdout" 2>"$case_dir/stderr"
   then
     echo "Expected $label rewrite to fail." >&2
@@ -126,6 +126,10 @@ unsupported_resolved_format() {
   jq '.version = 4' "$1/Package.resolved" >"$1/changed" && mv "$1/changed" "$1/Package.resolved"
 }
 
+unchanged() {
+  :
+}
+
 malformed_resolved() {
   printf '{not json\n' >"$1/Package.resolved"
 }
@@ -150,5 +154,15 @@ assert_rewrite_fails_unchanged invalid-version 'invalid semantic version' invali
 assert_rewrite_fails_unchanged conflicting-state 'both version and branch' conflicting_resolved_state
 assert_rewrite_fails_unchanged unsupported-format 'unsupported Package.resolved version 4' unsupported_resolved_format
 assert_rewrite_fails_unchanged malformed-resolved 'malformed Package.resolved' malformed_resolved
+
+# A location whose SwiftPM identity differs from the "tunakit" pin makes one resolve fetch the same
+# repository under two identities, racing into a single clone directory ("... already exists").
+for url in "file:///tmp/local-tunakit-package" "/tmp/TunaKit-local" "file:///tmp/TunaKitX.git"; do
+  FAILING_PACKAGE_URL="$url" \
+    assert_rewrite_fails_unchanged "identity-$(basename "$url")" 'must end in TunaKit' unchanged
+done
+for url in "/tmp/TunaKit" "file:///tmp/TunaKit/" "file:///tmp/tunakit.git"; do
+  PACKAGE_URL="$url" rewrite_fixture project-multiline.pbxproj package-v3.resolved 1.22.0
+done
 
 echo "Local TunaKit rewrite tests passed."
