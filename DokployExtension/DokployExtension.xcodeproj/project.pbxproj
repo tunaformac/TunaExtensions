@@ -1,0 +1,341 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B10000290000000000000001 /* DokployItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000300000000000000001 /* DokployItems.swift */; };
+		C20000150000000000000001 /* DokployFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000160000000000000001 /* DokployFixtures.swift */; };
+		B10000010000000000000001 /* DokployExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000020000000000000001 /* DokployExtension.swift */; };
+		B10000210000000000000001 /* DokployClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000220000000000000001 /* DokployClient.swift */; };
+		B10000230000000000000001 /* DokployModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000240000000000000001 /* DokployModels.swift */; };
+		B10000250000000000000001 /* DokployCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000260000000000000001 /* DokployCatalog.swift */; };
+		B10000270000000000000001 /* DokployActionsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000280000000000000001 /* DokployActionsCatalog.swift */; };
+		C20000010000000000000001 /* DokployExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000020000000000000001 /* DokployExtensionTests.swift */; };
+		C20000030000000000000001 /* DokployExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10000040000000000000001 /* DokployExtension.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		C20000040000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B10000140000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B10000090000000000000001;
+			remoteInfo = DokployExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		B10000300000000000000001 /* DokployItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DokployItems.swift; sourceTree = "<group>"; };
+		C20000160000000000000001 /* DokployFixtures.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DokployFixtures.swift; sourceTree = "<group>"; };
+		B10000020000000000000001 /* DokployExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DokployExtension.swift; sourceTree = "<group>"; };
+		B10000030000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B10000040000000000000001 /* DokployExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DokployExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B10000220000000000000001 /* DokployClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DokployClient.swift; sourceTree = "<group>"; };
+		B10000240000000000000001 /* DokployModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DokployModels.swift; sourceTree = "<group>"; };
+		B10000260000000000000001 /* DokployCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DokployCatalog.swift; sourceTree = "<group>"; };
+		B10000280000000000000001 /* DokployActionsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DokployActionsCatalog.swift; sourceTree = "<group>"; };
+		C20000020000000000000001 /* DokployExtensionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DokployExtensionTests.swift; sourceTree = "<group>"; };
+		C20000050000000000000001 /* DokployExtensionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DokployExtensionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B10000050000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C20000060000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (C20000030000000000000001 /* DokployExtension.framework in Frameworks */);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		B10000060000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				B10000070000000000000001 /* DokployExtension */,
+				C20000020000000000000001 /* DokployExtensionTests.swift */,
+				C20000160000000000000001 /* DokployFixtures.swift */,
+				B10000080000000000000001 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B10000070000000000000001 /* DokployExtension */ = {
+			isa = PBXGroup;
+			children = (
+				B10000220000000000000001 /* DokployClient.swift */,
+				B10000240000000000000001 /* DokployModels.swift */,
+				B10000260000000000000001 /* DokployCatalog.swift */,
+				B10000280000000000000001 /* DokployActionsCatalog.swift */,
+				B10000300000000000000001 /* DokployItems.swift */,
+				B10000020000000000000001 /* DokployExtension.swift */,
+				B10000030000000000000001 /* Info.plist */,
+			);
+			sourceTree = "<group>";
+		};
+		B10000080000000000000001 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B10000040000000000000001 /* DokployExtension.framework */,
+				C20000050000000000000001 /* DokployExtensionTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B10000090000000000000001 /* DokployExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B10000100000000000000001 /* Build configuration list for PBXNativeTarget "DokployExtension" */;
+			buildPhases = (
+				B10000110000000000000001 /* Sources */,
+				B10000050000000000000001 /* Frameworks */,
+				B10000120000000000000001 /* Resources */,
+			);
+			buildRules = ();
+			dependencies = ();
+			name = DokployExtension;
+			packageProductDependencies = (B10000130000000000000001 /* TunaKit */);
+			productName = DokployExtension;
+			productReference = B10000040000000000000001 /* DokployExtension.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		C20000070000000000000001 /* DokployExtensionTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C20000080000000000000001 /* Build configuration list for PBXNativeTarget "DokployExtensionTests" */;
+			buildPhases = (
+				C20000090000000000000001 /* Sources */,
+				C20000060000000000000001 /* Frameworks */,
+				C20000100000000000000001 /* Resources */,
+			);
+			buildRules = ();
+			dependencies = (C20000110000000000000001 /* PBXTargetDependency */);
+			name = DokployExtensionTests;
+			packageProductDependencies = (C20000120000000000000001 /* TunaKit */);
+			productName = DokployExtensionTests;
+			productReference = C20000050000000000000001 /* DokployExtensionTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B10000140000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = { B10000090000000000000001 = { CreatedOnToolsVersion = 15.0; }; };
+			};
+			buildConfigurationList = B10000150000000000000001 /* Build configuration list for PBXProject "DokployExtension" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (en);
+			mainGroup = B10000060000000000000001;
+			packageReferences = (B10000160000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */);
+			productRefGroup = B10000080000000000000001 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B10000090000000000000001 /* DokployExtension */,
+				C20000070000000000000001 /* DokployExtensionTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B10000120000000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C20000100000000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B10000110000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B10000210000000000000001 /* DokployClient.swift in Sources */,
+				B10000230000000000000001 /* DokployModels.swift in Sources */,
+				B10000250000000000000001 /* DokployCatalog.swift in Sources */,
+				B10000270000000000000001 /* DokployActionsCatalog.swift in Sources */,
+				B10000290000000000000001 /* DokployItems.swift in Sources */,
+				B10000010000000000000001 /* DokployExtension.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C20000090000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C20000010000000000000001 /* DokployExtensionTests.swift in Sources */,
+				C20000150000000000000001 /* DokployFixtures.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C20000110000000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = DokployExtension;
+			target = B10000090000000000000001 /* DokployExtension */;
+			targetProxy = C20000040000000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		B10000170000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				ENABLE_TESTABILITY = YES;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@loader_path/Frameworks");
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.dokploy;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Debug;
+		};
+		B10000180000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@loader_path/Frameworks");
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.dokploy;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Release;
+		};
+		B10000190000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = { PRODUCT_NAME = DokployExtension; };
+			name = Debug;
+		};
+		B10000200000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = { PRODUCT_NAME = DokployExtension; };
+			name = Release;
+		};
+		C20000130000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.DokployExtensionTests;
+				PRODUCT_MODULE_NAME = DokployExtensionTests;
+				PRODUCT_NAME = DokployExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		C20000140000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.DokployExtensionTests;
+				PRODUCT_MODULE_NAME = DokployExtensionTests;
+				PRODUCT_NAME = DokployExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B10000100000000000000001 /* Build configuration list for PBXNativeTarget "DokployExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (B10000170000000000000001 /* Debug */, B10000180000000000000001 /* Release */);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B10000150000000000000001 /* Build configuration list for PBXProject "DokployExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (B10000190000000000000001 /* Debug */, B10000200000000000000001 /* Release */);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C20000080000000000000001 /* Build configuration list for PBXNativeTarget "DokployExtensionTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C20000130000000000000001 /* Debug */,
+				C20000140000000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B10000160000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tunaformac/TunaKit";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 1.22.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B10000130000000000000001 /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B10000160000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
+		C20000120000000000000001 /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B10000160000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = B10000140000000000000001 /* Project object */;
+}
