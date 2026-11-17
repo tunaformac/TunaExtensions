@@ -41,6 +41,9 @@
       location = "group:ObsidianExtension/ObsidianExtension.xcodeproj">
    </FileRef>
    <FileRef
+      location = "group:OpenTerminalHereExtension/OpenTerminalHereExtension.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:PoofExtension/PoofExtension.xcodeproj">
    </FileRef>
    <FileRef

@@ -1,0 +1,253 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F10000010000000000000001 /* OpenTerminalHereExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000020000000000000001 /* OpenTerminalHereExtension.swift */; };
+		F10000030000000000000001 /* OpenTerminalHereActionsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000040000000000000001 /* OpenTerminalHereActionsCatalog.swift */; };
+		F10000050000000000000001 /* TerminalApps.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000060000000000000001 /* TerminalApps.swift */; };
+		F10000110000000000000001 /* OpenTerminalHereExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000120000000000000001 /* OpenTerminalHereExtensionTests.swift */; };
+		F10000130000000000000001 /* OpenTerminalHereExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F10000140000000000000001 /* OpenTerminalHereExtension.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F10000150000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F10000160000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F10000170000000000000001;
+			remoteInfo = OpenTerminalHereExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		F10000020000000000000001 /* OpenTerminalHereExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenTerminalHereExtension.swift; sourceTree = "<group>"; };
+		F10000040000000000000001 /* OpenTerminalHereActionsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenTerminalHereActionsCatalog.swift; sourceTree = "<group>"; };
+		F10000060000000000000001 /* TerminalApps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalApps.swift; sourceTree = "<group>"; };
+		F10000120000000000000001 /* OpenTerminalHereExtensionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OpenTerminalHereExtensionTests.swift; sourceTree = "<group>"; };
+		F10000140000000000000001 /* OpenTerminalHereExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OpenTerminalHereExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		F10000180000000000000001 /* OpenTerminalHereExtensionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OpenTerminalHereExtensionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F10000190000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F10000200000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		F10000210000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (F10000130000000000000001 /* OpenTerminalHereExtension.framework in Frameworks */); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F10000220000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				F10000230000000000000001 /* OpenTerminalHereExtension */,
+				F10000120000000000000001 /* OpenTerminalHereExtensionTests.swift */,
+				F10000240000000000000001 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F10000230000000000000001 /* OpenTerminalHereExtension */ = {
+			isa = PBXGroup;
+			children = (
+				F10000020000000000000001 /* OpenTerminalHereExtension.swift */,
+				F10000040000000000000001 /* OpenTerminalHereActionsCatalog.swift */,
+				F10000060000000000000001 /* TerminalApps.swift */,
+				F10000190000000000000001 /* Info.plist */,
+			);
+			sourceTree = "<group>";
+		};
+		F10000240000000000000001 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F10000140000000000000001 /* OpenTerminalHereExtension.framework */,
+				F10000180000000000000001 /* OpenTerminalHereExtensionTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F10000170000000000000001 /* OpenTerminalHereExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F10000250000000000000001 /* Build configuration list for PBXNativeTarget "OpenTerminalHereExtension" */;
+			buildPhases = (
+				F10000260000000000000001 /* Sources */,
+				F10000200000000000000001 /* Frameworks */,
+				F10000270000000000000001 /* Resources */,
+			);
+			buildRules = ();
+			dependencies = ();
+			name = OpenTerminalHereExtension;
+			packageProductDependencies = (F10000280000000000000001 /* TunaKit */);
+			productName = OpenTerminalHereExtension;
+			productReference = F10000140000000000000001 /* OpenTerminalHereExtension.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		F10000290000000000000001 /* OpenTerminalHereExtensionTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F10000300000000000000001 /* Build configuration list for PBXNativeTarget "OpenTerminalHereExtensionTests" */;
+			buildPhases = (
+				F10000310000000000000001 /* Sources */,
+				F10000210000000000000001 /* Frameworks */,
+				F10000320000000000000001 /* Resources */,
+			);
+			buildRules = ();
+			dependencies = (F10000330000000000000001 /* PBXTargetDependency */);
+			name = OpenTerminalHereExtensionTests;
+			packageProductDependencies = (F10000340000000000000001 /* TunaKit */);
+			productName = OpenTerminalHereExtensionTests;
+			productReference = F10000180000000000000001 /* OpenTerminalHereExtensionTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F10000160000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = { F10000170000000000000001 = { CreatedOnToolsVersion = 15.0; }; };
+			};
+			buildConfigurationList = F10000350000000000000001 /* Build configuration list for PBXProject "OpenTerminalHereExtension" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (en);
+			mainGroup = F10000220000000000000001;
+			packageReferences = (F10000360000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */);
+			productRefGroup = F10000240000000000000001 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F10000170000000000000001 /* OpenTerminalHereExtension */,
+				F10000290000000000000001 /* OpenTerminalHereExtensionTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F10000270000000000000001 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		F10000320000000000000001 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F10000260000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F10000010000000000000001 /* OpenTerminalHereExtension.swift in Sources */,
+				F10000030000000000000001 /* OpenTerminalHereActionsCatalog.swift in Sources */,
+				F10000050000000000000001 /* TerminalApps.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F10000310000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (F10000110000000000000001 /* OpenTerminalHereExtensionTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F10000330000000000000001 /* PBXTargetDependency */ = {isa = PBXTargetDependency; name = OpenTerminalHereExtension; target = F10000170000000000000001 /* OpenTerminalHereExtension */; targetProxy = F10000150000000000000001 /* PBXContainerItemProxy */; };
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		F10000370000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				ENABLE_TESTABILITY = YES;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@loader_path/Frameworks");
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.open-terminal-here;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		F10000380000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@loader_path/Frameworks");
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.open-terminal-here;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		F10000390000000000000001 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = { PRODUCT_NAME = OpenTerminalHereExtension; }; name = Debug; };
+		F10000400000000000000001 /* Release */ = {isa = XCBuildConfiguration; buildSettings = { PRODUCT_NAME = OpenTerminalHereExtension; }; name = Release; };
+		F10000410000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.OpenTerminalHereExtensionTests;
+				PRODUCT_MODULE_NAME = OpenTerminalHereExtensionTests;
+				PRODUCT_NAME = OpenTerminalHereExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		F10000420000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.OpenTerminalHereExtensionTests;
+				PRODUCT_MODULE_NAME = OpenTerminalHereExtensionTests;
+				PRODUCT_NAME = OpenTerminalHereExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F10000250000000000000001 /* Build configuration list for PBXNativeTarget "OpenTerminalHereExtension" */ = {isa = XCConfigurationList; buildConfigurations = (F10000370000000000000001 /* Debug */, F10000380000000000000001 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		F10000300000000000000001 /* Build configuration list for PBXNativeTarget "OpenTerminalHereExtensionTests" */ = {isa = XCConfigurationList; buildConfigurations = (F10000410000000000000001 /* Debug */, F10000420000000000000001 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		F10000350000000000000001 /* Build configuration list for PBXProject "OpenTerminalHereExtension" */ = {isa = XCConfigurationList; buildConfigurations = (F10000390000000000000001 /* Debug */, F10000400000000000000001 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		F10000360000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tunaformac/TunaKit";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 1.22.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F10000280000000000000001 /* TunaKit */ = {isa = XCSwiftPackageProductDependency; package = F10000360000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */; productName = TunaKit; };
+		F10000340000000000000001 /* TunaKit */ = {isa = XCSwiftPackageProductDependency; package = F10000360000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */; productName = TunaKit; };
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = F10000160000000000000001 /* Project object */;
+}
