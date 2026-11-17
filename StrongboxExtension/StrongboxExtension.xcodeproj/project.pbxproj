@@ -1,0 +1,407 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A4B39AE3D4CB768E506F189D /* StrongboxExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 242C1CAD96996E0B143D1327 /* StrongboxExtension.swift */; };
+		CD1EF184AA70BB92DCC04DE9 /* StrongboxExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F44D5EDCE4E6394F28D05F88 /* StrongboxExtensionTests.swift */; };
+		08DA8B103A6AC80753087C9E /* StrongboxActionsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8817F91FB35DBC1C23D91A5A /* StrongboxActionsCatalog.swift */; };
+		809212067B129BA463EEF565 /* StrongboxCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60A4D2A24218FE7B4013236E /* StrongboxCatalog.swift */; };
+		DB5956AA9E60A7B368D1592D /* TunaStrongbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC39CE2DA2AB6412A6AD16BB /* TunaStrongbox.framework */; };
+		4593DDF94A5C19BC1C4DD831 /* StrongboxRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAF590BD6ED15BCC061D7499 /* StrongboxRuntime.swift */; };
+		96B7570794553E1B4BB3FFF9 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B6FDD1342C3AA67BD9752548 /* Cocoa.framework */; };
+		D21A3826D8FF2C2850CC5072 /* StrongboxClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4B1E89614EBA73B7FB5D64 /* StrongboxClient.swift */; };
+		9A908E7A7976D9EA3AF13894 /* StrongboxMCPConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = B11B5EC2D087E10975EACB1F /* StrongboxMCPConnection.swift */; };
+		30EE59E055B293C3D6005B29 /* StrongboxModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE932EB39B54E464C1A01DC2 /* StrongboxModels.swift */; };
+		754F5AB7B5D36B5A85EC0803 /* ConcealedClipboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D80B5B6F10B5C2F2FE59588 /* ConcealedClipboard.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		E988D0BDE85B6E3BE64EAD6E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D0750FFB70B90593EB6D8841 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 55BA8CFDD3BF50BCD3D173C1;
+			remoteInfo = StrongboxExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		242C1CAD96996E0B143D1327 /* StrongboxExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrongboxExtension.swift; sourceTree = "<group>"; };
+		B6FDD1342C3AA67BD9752548 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
+		8817F91FB35DBC1C23D91A5A /* StrongboxActionsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrongboxActionsCatalog.swift; sourceTree = "<group>"; };
+		60A4D2A24218FE7B4013236E /* StrongboxCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrongboxCatalog.swift; sourceTree = "<group>"; };
+		EAF590BD6ED15BCC061D7499 /* StrongboxRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrongboxRuntime.swift; sourceTree = "<group>"; };
+		C0A2D729B69D7365E48BAFE5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F44D5EDCE4E6394F28D05F88 /* StrongboxExtensionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StrongboxExtensionTests.swift; sourceTree = "<group>"; };
+		DC39CE2DA2AB6412A6AD16BB /* TunaStrongbox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TunaStrongbox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		0A995EDE22099CE3A20AB0A3 /* StrongboxExtensionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StrongboxExtensionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE4B1E89614EBA73B7FB5D64 /* StrongboxClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrongboxClient.swift; sourceTree = "<group>"; };
+		B11B5EC2D087E10975EACB1F /* StrongboxMCPConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrongboxMCPConnection.swift; sourceTree = "<group>"; };
+		AE932EB39B54E464C1A01DC2 /* StrongboxModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrongboxModels.swift; sourceTree = "<group>"; };
+		1D80B5B6F10B5C2F2FE59588 /* ConcealedClipboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConcealedClipboard.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		98EB452A5EE633B6CBC49934 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		123980563429ED3331698097 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				96B7570794553E1B4BB3FFF9 /* Cocoa.framework in Frameworks */,
+				DB5956AA9E60A7B368D1592D /* TunaStrongbox.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D1E370E1450D84B323DB54AB /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				65C8CAD72CE0C4853FAA0309 /* OS X */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		2DE43B2DE1A7226856E07DCA = {
+			isa = PBXGroup;
+			children = (
+				55C70D2C5D2DF61E5020A120 /* . */,
+				C730527A8ED9E9D253BF9C2C /* Products */,
+				D1E370E1450D84B323DB54AB /* Frameworks */,
+				F44D5EDCE4E6394F28D05F88 /* StrongboxExtensionTests.swift */,
+			);
+			sourceTree = "<group>";
+		};
+		65C8CAD72CE0C4853FAA0309 /* OS X */ = {
+			isa = PBXGroup;
+			children = (
+				B6FDD1342C3AA67BD9752548 /* Cocoa.framework */,
+			);
+			name = "OS X";
+			sourceTree = "<group>";
+		};
+		55C70D2C5D2DF61E5020A120 /* . */ = {
+			isa = PBXGroup;
+			children = (
+				242C1CAD96996E0B143D1327 /* StrongboxExtension.swift */,
+				60A4D2A24218FE7B4013236E /* StrongboxCatalog.swift */,
+				8817F91FB35DBC1C23D91A5A /* StrongboxActionsCatalog.swift */,
+				EAF590BD6ED15BCC061D7499 /* StrongboxRuntime.swift */,
+				FE4B1E89614EBA73B7FB5D64 /* StrongboxClient.swift */,
+				B11B5EC2D087E10975EACB1F /* StrongboxMCPConnection.swift */,
+				AE932EB39B54E464C1A01DC2 /* StrongboxModels.swift */,
+				1D80B5B6F10B5C2F2FE59588 /* ConcealedClipboard.swift */,
+				C0A2D729B69D7365E48BAFE5 /* Info.plist */,
+			);
+			path = .;
+			sourceTree = "<group>";
+		};
+		C730527A8ED9E9D253BF9C2C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DC39CE2DA2AB6412A6AD16BB /* TunaStrongbox.framework */,
+				0A995EDE22099CE3A20AB0A3 /* StrongboxExtensionTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		55BA8CFDD3BF50BCD3D173C1 /* StrongboxExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F87AC12B2A97D7D9775CD176 /* Build configuration list for PBXNativeTarget "StrongboxExtension" */;
+			buildPhases = (
+				5A0EC803FE855F20BC9EC6BC /* Sources */,
+				98EB452A5EE633B6CBC49934 /* Frameworks */,
+				1A1B20C965FD4842802BD404 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = StrongboxExtension;
+			packageProductDependencies = (
+				8087F95400E8EC2810C987E1 /* TunaKit */,
+			);
+			productName = TunaStrongbox;
+			productReference = DC39CE2DA2AB6412A6AD16BB /* TunaStrongbox.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		1A0D01245054B3330DC63F42 /* StrongboxExtensionTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CF96B5D73986C07EAFCAE26D /* Build configuration list for PBXNativeTarget "StrongboxExtensionTests" */;
+			buildPhases = (
+				C3A3ED49E327A4B6FB8862C0 /* Sources */,
+				123980563429ED3331698097 /* Frameworks */,
+				FD6031D68F7E393F1E7FA9D8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2A8B4805E06018A17DE20936 /* PBXTargetDependency */,
+			);
+			name = StrongboxExtensionTests;
+			packageProductDependencies = (
+				0ED060DB35A8B83589A6884C /* TunaKit */,
+			);
+			productName = StrongboxExtensionTests;
+			productReference = 0A995EDE22099CE3A20AB0A3 /* StrongboxExtensionTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D0750FFB70B90593EB6D8841 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					55BA8CFDD3BF50BCD3D173C1 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = E74E359CE43770B3BA3417A9 /* Build configuration list for PBXProject "StrongboxExtension" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 2DE43B2DE1A7226856E07DCA;
+			packageReferences = (
+				3AFFD997D79A6C8742855416 /* XCRemoteSwiftPackageReference "TunaKit" */,
+			);
+			productRefGroup = C730527A8ED9E9D253BF9C2C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				55BA8CFDD3BF50BCD3D173C1 /* StrongboxExtension */,
+				1A0D01245054B3330DC63F42 /* StrongboxExtensionTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1A1B20C965FD4842802BD404 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FD6031D68F7E393F1E7FA9D8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C3A3ED49E327A4B6FB8862C0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CD1EF184AA70BB92DCC04DE9 /* StrongboxExtensionTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5A0EC803FE855F20BC9EC6BC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A4B39AE3D4CB768E506F189D /* StrongboxExtension.swift in Sources */,
+				809212067B129BA463EEF565 /* StrongboxCatalog.swift in Sources */,
+				08DA8B103A6AC80753087C9E /* StrongboxActionsCatalog.swift in Sources */,
+				4593DDF94A5C19BC1C4DD831 /* StrongboxRuntime.swift in Sources */,
+				D21A3826D8FF2C2850CC5072 /* StrongboxClient.swift in Sources */,
+				9A908E7A7976D9EA3AF13894 /* StrongboxMCPConnection.swift in Sources */,
+				30EE59E055B293C3D6005B29 /* StrongboxModels.swift in Sources */,
+				754F5AB7B5D36B5A85EC0803 /* ConcealedClipboard.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		2A8B4805E06018A17DE20936 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = StrongboxExtension;
+			target = 55BA8CFDD3BF50BCD3D173C1 /* StrongboxExtension */;
+			targetProxy = E988D0BDE85B6E3BE64EAD6E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		FCE4FEF3C82CA66A25A450CA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.strongbox;
+				PRODUCT_MODULE_NAME = TunaStrongbox;
+				PRODUCT_NAME = TunaStrongbox;
+				SKIP_INSTALL = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Release;
+		};
+		0AE223AB1B04A18DED9E7C8F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TunaStrongbox;
+			};
+			name = Debug;
+		};
+		1B95065E8002C91FF6F37268 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				ENABLE_TESTABILITY = YES;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.strongbox;
+				PRODUCT_MODULE_NAME = TunaStrongbox;
+				PRODUCT_NAME = TunaStrongbox;
+				SKIP_INSTALL = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Debug;
+		};
+		FE8C698859360B86508B0CD2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.StrongboxExtensionTests;
+				PRODUCT_MODULE_NAME = StrongboxExtensionTests;
+				PRODUCT_NAME = StrongboxExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		1E64F715B6B149F2F8D4B03C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TunaStrongbox;
+			};
+			name = Release;
+		};
+		2143CB9BDDA87070620D05C0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.StrongboxExtensionTests;
+				PRODUCT_MODULE_NAME = StrongboxExtensionTests;
+				PRODUCT_NAME = StrongboxExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		E74E359CE43770B3BA3417A9 /* Build configuration list for PBXProject "StrongboxExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0AE223AB1B04A18DED9E7C8F /* Debug */,
+				1E64F715B6B149F2F8D4B03C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F87AC12B2A97D7D9775CD176 /* Build configuration list for PBXNativeTarget "StrongboxExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1B95065E8002C91FF6F37268 /* Debug */,
+				FCE4FEF3C82CA66A25A450CA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CF96B5D73986C07EAFCAE26D /* Build configuration list for PBXNativeTarget "StrongboxExtensionTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FE8C698859360B86508B0CD2 /* Release */,
+				2143CB9BDDA87070620D05C0 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		3AFFD997D79A6C8742855416 /* XCRemoteSwiftPackageReference "TunaKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tunaformac/TunaKit";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 1.22.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0ED060DB35A8B83589A6884C /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3AFFD997D79A6C8742855416 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
+		8087F95400E8EC2810C987E1 /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3AFFD997D79A6C8742855416 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = D0750FFB70B90593EB6D8841 /* Project object */;
+}
