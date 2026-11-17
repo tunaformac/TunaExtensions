@@ -5,7 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TARGET="${1:-}"
 CONFIGURATION="${2:-}"
 DESTINATION="${3:-generic/platform=macOS}"
-DERIVED_DATA="${4:-./build/dd}"
+DERIVED_DATA="${4:-}"
 
 if [[ -z "$TARGET" || -z "$CONFIGURATION" ]]; then
   echo "Usage: $0 TARGET CONFIGURATION [DESTINATION] [DERIVED_DATA]" >&2
@@ -13,6 +13,12 @@ if [[ -z "$TARGET" || -z "$CONFIGURATION" ]]; then
 fi
 
 IFS=$'\t' read -r PROJECT RESOLVED_TARGET < <("$ROOT/scripts/resolve-extension-scheme.sh" "$TARGET")
+
+# Each scheme gets its own derived data: extensions may pin different TunaKit versions, and a
+# shared folder lets one extension's resolved package satisfy another's build.
+if [[ -z "$DERIVED_DATA" ]]; then
+  DERIVED_DATA="${TUNA_EXTENSION_DERIVED_DATA:-$ROOT/build/dd}/$RESOLVED_TARGET"
+fi
 
 BUILD_SETTINGS=()
 if [[ "$CONFIGURATION" == "Debug" ]]; then

@@ -310,4 +310,19 @@ rg -Fq "build -project $SANDBOX/build/SourceExtension/Source.xcodeproj -scheme S
   "$SANDBOX/build/xcodebuild.log" ||
   fail "Normal Release build did not preserve the resolver's project path."
 
+# Extensions pin different TunaKit versions, so each scheme defaults to its own derived data;
+# TUNA_EXTENSION_DERIVED_DATA moves the parent folder.
+cp "$ROOT/scripts/tuna-extension" "$SANDBOX/build/scripts/"
+PATH="$SANDBOX/build/bin:$PATH" \
+XCODEBUILD_LOG="$SANDBOX/build/xcodebuild.log" \
+  "$SANDBOX/build/scripts/tuna-extension" build --scheme Source --release >/dev/null
+rg -Fq -- "-derivedDataPath $SANDBOX/build/build/dd/SourceExtension" "$SANDBOX/build/xcodebuild.log" ||
+  fail "Default build did not use a per-scheme derived data folder."
+PATH="$SANDBOX/build/bin:$PATH" \
+XCODEBUILD_LOG="$SANDBOX/build/xcodebuild.log" \
+TUNA_EXTENSION_DERIVED_DATA="$SANDBOX/build/custom-dd" \
+  "$SANDBOX/build/scripts/tuna-extension" build --scheme Source --release >/dev/null
+rg -Fq -- "-derivedDataPath $SANDBOX/build/custom-dd/SourceExtension" "$SANDBOX/build/xcodebuild.log" ||
+  fail "TUNA_EXTENSION_DERIVED_DATA did not move the per-scheme derived data folder."
+
 echo "Local extension tooling tests pass."

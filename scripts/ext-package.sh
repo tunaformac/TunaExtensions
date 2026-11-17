@@ -2,9 +2,9 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TARGET="${1:?Usage: ext-package.sh TARGET DESTINATION DERIVED_DATA}"
-DESTINATION="${2:?Usage: ext-package.sh TARGET DESTINATION DERIVED_DATA}"
-DERIVED_DATA="${3:?Usage: ext-package.sh TARGET DESTINATION DERIVED_DATA}"
+TARGET="${1:?Usage: ext-package.sh TARGET DESTINATION [DERIVED_DATA]}"
+DESTINATION="${2:?Usage: ext-package.sh TARGET DESTINATION [DERIVED_DATA]}"
+DERIVED_DATA="${3:-}"
 OUTDIR="$ROOT/dist/store"
 TEMP_SIGNING_KEY=""
 TEMP_DECLARATION_JSON=""

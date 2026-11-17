@@ -6,7 +6,7 @@ TARGET="${1:-}"
 INSTALL_DIR="${2:-}"
 CONFIGURATION="${3:-Debug}"
 DESTINATION="${4:-generic/platform=macOS}"
-DERIVED_DATA="${5:-./build/dd}"
+DERIVED_DATA="${5:-}"
 
 if [[ -z "$TARGET" || -z "$INSTALL_DIR" ]]; then
   echo "Usage: $0 TARGET INSTALL_DIR [CONFIGURATION] [DESTINATION] [DERIVED_DATA]" >&2

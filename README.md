@@ -93,6 +93,9 @@ Projects pin TunaKit with an up-to-next-minor requirement because TunaKit is
 in beta: breaking changes can land in minor releases and are called out in its
 [changelog](https://github.com/tunaformac/TunaKit/blob/main/CHANGELOG.md).
 Bump the pinned version deliberately, repo-wide, after reading the changelog.
+An extension may require a newer TunaKit than the rest when it needs new API, so each scheme
+builds into its own derived data folder (`build/dd/<Scheme>`; set `TUNA_EXTENSION_DERIVED_DATA`
+to move the parent folder).
 
 ## Packaging and releasing (maintainers)
 
