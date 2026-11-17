@@ -1,0 +1,389 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B1000001000000000000A001 /* VikunjaExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001000000000000F001 /* VikunjaExtension.swift */; };
+		B1000001000000000000A002 /* VikunjaAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001000000000000F002 /* VikunjaAPIClient.swift */; };
+		B1000001000000000000A003 /* VikunjaCatalogSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001000000000000F003 /* VikunjaCatalogSupport.swift */; };
+		B1000001000000000000A004 /* VikunjaItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001000000000000F004 /* VikunjaItems.swift */; };
+		B1000001000000000000A005 /* VikunjaTasksCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001000000000000F005 /* VikunjaTasksCatalog.swift */; };
+		B1000001000000000000A006 /* VikunjaProjectsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001000000000000F006 /* VikunjaProjectsCatalog.swift */; };
+		B1000001000000000000A007 /* VikunjaActionsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001000000000000F007 /* VikunjaActionsCatalog.swift */; };
+		B1000001000000000000A008 /* VikunjaExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001000000000000F008 /* VikunjaExtensionTests.swift */; };
+		B1000001000000000000A00C /* VikunjaLiveAPITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001000000000000F00C /* VikunjaLiveAPITests.swift */; };
+		B1000001000000000000A009 /* TunaVikunja.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B1000001000000000000F009 /* TunaVikunja.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B1000001000000000000C001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B1000001000000000000E001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B1000001000000000000D001;
+			remoteInfo = VikunjaExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		B1000001000000000000F001 /* VikunjaExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VikunjaExtension.swift; sourceTree = "<group>"; };
+		B1000001000000000000F002 /* VikunjaAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VikunjaAPIClient.swift; sourceTree = "<group>"; };
+		B1000001000000000000F003 /* VikunjaCatalogSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VikunjaCatalogSupport.swift; sourceTree = "<group>"; };
+		B1000001000000000000F004 /* VikunjaItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VikunjaItems.swift; sourceTree = "<group>"; };
+		B1000001000000000000F005 /* VikunjaTasksCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VikunjaTasksCatalog.swift; sourceTree = "<group>"; };
+		B1000001000000000000F006 /* VikunjaProjectsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VikunjaProjectsCatalog.swift; sourceTree = "<group>"; };
+		B1000001000000000000F007 /* VikunjaActionsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VikunjaActionsCatalog.swift; sourceTree = "<group>"; };
+		B1000001000000000000F008 /* VikunjaExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VikunjaExtensionTests.swift; sourceTree = "<group>"; };
+		B1000001000000000000F009 /* TunaVikunja.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TunaVikunja.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B1000001000000000000F00A /* VikunjaExtensionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VikunjaExtensionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B1000001000000000000F00C /* VikunjaLiveAPITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VikunjaLiveAPITests.swift; sourceTree = "<group>"; };
+		B1000001000000000000F00B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B1000001000000000000B001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B1000001000000000000B002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B1000001000000000000A009 /* TunaVikunja.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		B10000010000000000003001 = {
+			isa = PBXGroup;
+			children = (
+				B10000010000000000003002 /* . */,
+				B10000010000000000003003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B10000010000000000003002 /* . */ = {
+			isa = PBXGroup;
+			children = (
+				B1000001000000000000F001 /* VikunjaExtension.swift */,
+				B1000001000000000000F002 /* VikunjaAPIClient.swift */,
+				B1000001000000000000F003 /* VikunjaCatalogSupport.swift */,
+				B1000001000000000000F004 /* VikunjaItems.swift */,
+				B1000001000000000000F005 /* VikunjaTasksCatalog.swift */,
+				B1000001000000000000F006 /* VikunjaProjectsCatalog.swift */,
+				B1000001000000000000F007 /* VikunjaActionsCatalog.swift */,
+				B1000001000000000000F00B /* Info.plist */,
+				B1000001000000000000F008 /* VikunjaExtensionTests.swift */,
+				B1000001000000000000F00C /* VikunjaLiveAPITests.swift */,
+			);
+			path = .;
+			sourceTree = "<group>";
+		};
+		B10000010000000000003003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B1000001000000000000F009 /* TunaVikunja.framework */,
+				B1000001000000000000F00A /* VikunjaExtensionTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B1000001000000000000D001 /* VikunjaExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B10000010000000000004002 /* Build configuration list for PBXNativeTarget "VikunjaExtension" */;
+			buildPhases = (
+				B10000010000000000005001 /* Sources */,
+				B1000001000000000000B001 /* Frameworks */,
+				B10000010000000000006001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = VikunjaExtension;
+			packageProductDependencies = (
+				B10000010000000000009002 /* TunaKit */,
+			);
+			productName = TunaVikunja;
+			productReference = B1000001000000000000F009 /* TunaVikunja.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		B1000001000000000000D002 /* VikunjaExtensionTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B10000010000000000004003 /* Build configuration list for PBXNativeTarget "VikunjaExtensionTests" */;
+			buildPhases = (
+				B10000010000000000005002 /* Sources */,
+				B1000001000000000000B002 /* Frameworks */,
+				B10000010000000000006002 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B10000010000000000007001 /* PBXTargetDependency */,
+			);
+			name = VikunjaExtensionTests;
+			packageProductDependencies = (
+				B10000010000000000009003 /* TunaKit */,
+			);
+			productName = VikunjaExtensionTests;
+			productReference = B1000001000000000000F00A /* VikunjaExtensionTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B1000001000000000000E001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					B1000001000000000000D001 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = B10000010000000000004001 /* Build configuration list for PBXProject "VikunjaExtension" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = B10000010000000000003001;
+			packageReferences = (
+				B10000010000000000009001 /* XCRemoteSwiftPackageReference "TunaKit" */,
+			);
+			productRefGroup = B10000010000000000003003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B1000001000000000000D001 /* VikunjaExtension */,
+				B1000001000000000000D002 /* VikunjaExtensionTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B10000010000000000006001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B10000010000000000006002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B10000010000000000005001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B1000001000000000000A001 /* VikunjaExtension.swift in Sources */,
+				B1000001000000000000A002 /* VikunjaAPIClient.swift in Sources */,
+				B1000001000000000000A003 /* VikunjaCatalogSupport.swift in Sources */,
+				B1000001000000000000A004 /* VikunjaItems.swift in Sources */,
+				B1000001000000000000A005 /* VikunjaTasksCatalog.swift in Sources */,
+				B1000001000000000000A006 /* VikunjaProjectsCatalog.swift in Sources */,
+				B1000001000000000000A007 /* VikunjaActionsCatalog.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B10000010000000000005002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B1000001000000000000A008 /* VikunjaExtensionTests.swift in Sources */,
+				B1000001000000000000A00C /* VikunjaLiveAPITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B10000010000000000007001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = VikunjaExtension;
+			target = B1000001000000000000D001 /* VikunjaExtension */;
+			targetProxy = B1000001000000000000C001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		B10000010000000000008001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TunaVikunja;
+			};
+			name = Debug;
+		};
+		B10000010000000000008002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TunaVikunja;
+			};
+			name = Release;
+		};
+		B10000010000000000008003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				ENABLE_TESTABILITY = YES;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.crosbyh.tuna.vikunja;
+				PRODUCT_MODULE_NAME = TunaVikunja;
+				PRODUCT_NAME = TunaVikunja;
+				SKIP_INSTALL = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Debug;
+		};
+		B10000010000000000008004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.crosbyh.tuna.vikunja;
+				PRODUCT_MODULE_NAME = TunaVikunja;
+				PRODUCT_NAME = TunaVikunja;
+				SKIP_INSTALL = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Release;
+		};
+		B10000010000000000008005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.crosbyh.VikunjaExtensionTests;
+				PRODUCT_MODULE_NAME = VikunjaExtensionTests;
+				PRODUCT_NAME = VikunjaExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		B10000010000000000008006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.crosbyh.VikunjaExtensionTests;
+				PRODUCT_MODULE_NAME = VikunjaExtensionTests;
+				PRODUCT_NAME = VikunjaExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B10000010000000000004001 /* Build configuration list for PBXProject "VikunjaExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B10000010000000000008001 /* Debug */,
+				B10000010000000000008002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B10000010000000000004002 /* Build configuration list for PBXNativeTarget "VikunjaExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B10000010000000000008003 /* Debug */,
+				B10000010000000000008004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B10000010000000000004003 /* Build configuration list for PBXNativeTarget "VikunjaExtensionTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B10000010000000000008005 /* Debug */,
+				B10000010000000000008006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B10000010000000000009001 /* XCRemoteSwiftPackageReference "TunaKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tunaformac/TunaKit";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 1.22.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B10000010000000000009002 /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B10000010000000000009001 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
+		B10000010000000000009003 /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B10000010000000000009001 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = B1000001000000000000E001 /* Project object */;
+}
