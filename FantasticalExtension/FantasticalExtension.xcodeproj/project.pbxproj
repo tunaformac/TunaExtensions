@@ -1,0 +1,467 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		FE000000000000000000B101 /* FantasticalExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A101 /* FantasticalExtension.swift */; };
+		FE000000000000000000B102 /* FantasticalItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A102 /* FantasticalItems.swift */; };
+		FE000000000000000000B103 /* FantasticalCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A103 /* FantasticalCatalog.swift */; };
+		FE000000000000000000B104 /* FantasticalURLBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A104 /* FantasticalURLBuilder.swift */; };
+		FE000000000000000000B105 /* FantasticalActionsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A105 /* FantasticalActionsCatalog.swift */; };
+		FE000000000000000000B10B /* FantasticalFields.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A10B /* FantasticalFields.swift */; };
+		FE000000000000000000B10C /* FantasticalMCPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A10C /* FantasticalMCPClient.swift */; };
+		FE000000000000000000B112 /* FantasticalMCPTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A112 /* FantasticalMCPTypes.swift */; };
+		FE000000000000000000B113 /* FantasticalCreateWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A113 /* FantasticalCreateWatcher.swift */; };
+		FE000000000000000000B114 /* FantasticalAgendaParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A114 /* FantasticalAgendaParser.swift */; };
+		FE000000000000000000B115 /* FantasticalAgendaSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A115 /* FantasticalAgendaSupport.swift */; };
+		FE000000000000000000B10D /* FantasticalAgendaModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A10D /* FantasticalAgendaModels.swift */; };
+		FE000000000000000000B10E /* FantasticalAgendaItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A10E /* FantasticalAgendaItems.swift */; };
+		FE000000000000000000B10F /* FantasticalAgendaCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A10F /* FantasticalAgendaCatalog.swift */; };
+		FE000000000000000000B110 /* FantasticalAgendaActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A110 /* FantasticalAgendaActions.swift */; };
+		FE000000000000000000B111 /* FantasticalAgendaSections.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A111 /* FantasticalAgendaSections.swift */; };
+		FE000000000000000000B117 /* FantasticalStoreReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A117 /* FantasticalStoreReader.swift */; };
+		FE000000000000000000B116 /* FantasticalReminderStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A116 /* FantasticalReminderStore.swift */; };
+		FE000000000000000000B119 /* FantasticalAgendaTasks.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A119 /* FantasticalAgendaTasks.swift */; };
+		FE000000000000000000B106 /* FantasticalExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A106 /* FantasticalExtensionTests.swift */; };
+		FE000000000000000000B118 /* FantasticalTaskTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A118 /* FantasticalTaskTests.swift */; };
+		FE000000000000000000B120 /* FantasticalTaskGroupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A120 /* FantasticalTaskGroupTests.swift */; };
+		FE000000000000000000B121 /* FantasticalShowAllTasksTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A121 /* FantasticalShowAllTasksTests.swift */; };
+		FE000000000000000000B122 /* FantasticalMCPReconnectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A122 /* FantasticalMCPReconnectTests.swift */; };
+		FE000000000000000000B108 /* TunaFantastical.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A108 /* TunaFantastical.framework */; };
+		FE000000000000000000B10A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE000000000000000000A10A /* Cocoa.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		FE000000000000000000C103 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FE000000000000000000D101 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FE000000000000000000C101;
+			remoteInfo = FantasticalExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		FE000000000000000000A101 /* FantasticalExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalExtension.swift; sourceTree = "<group>"; };
+		FE000000000000000000A102 /* FantasticalItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalItems.swift; sourceTree = "<group>"; };
+		FE000000000000000000A103 /* FantasticalCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalCatalog.swift; sourceTree = "<group>"; };
+		FE000000000000000000A104 /* FantasticalURLBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalURLBuilder.swift; sourceTree = "<group>"; };
+		FE000000000000000000A105 /* FantasticalActionsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalActionsCatalog.swift; sourceTree = "<group>"; };
+		FE000000000000000000A10B /* FantasticalFields.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalFields.swift; sourceTree = "<group>"; };
+		FE000000000000000000A10C /* FantasticalMCPClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalMCPClient.swift; sourceTree = "<group>"; };
+		FE000000000000000000A112 /* FantasticalMCPTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalMCPTypes.swift; sourceTree = "<group>"; };
+		FE000000000000000000A113 /* FantasticalCreateWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalCreateWatcher.swift; sourceTree = "<group>"; };
+		FE000000000000000000A114 /* FantasticalAgendaParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalAgendaParser.swift; sourceTree = "<group>"; };
+		FE000000000000000000A115 /* FantasticalAgendaSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalAgendaSupport.swift; sourceTree = "<group>"; };
+		FE000000000000000000A10D /* FantasticalAgendaModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalAgendaModels.swift; sourceTree = "<group>"; };
+		FE000000000000000000A10E /* FantasticalAgendaItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalAgendaItems.swift; sourceTree = "<group>"; };
+		FE000000000000000000A10F /* FantasticalAgendaCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalAgendaCatalog.swift; sourceTree = "<group>"; };
+		FE000000000000000000A110 /* FantasticalAgendaActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalAgendaActions.swift; sourceTree = "<group>"; };
+		FE000000000000000000A111 /* FantasticalAgendaSections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalAgendaSections.swift; sourceTree = "<group>"; };
+		FE000000000000000000A117 /* FantasticalStoreReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalStoreReader.swift; sourceTree = "<group>"; };
+		FE000000000000000000A116 /* FantasticalReminderStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalReminderStore.swift; sourceTree = "<group>"; };
+		FE000000000000000000A119 /* FantasticalAgendaTasks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FantasticalAgendaTasks.swift; sourceTree = "<group>"; };
+		FE000000000000000000A106 /* FantasticalExtensionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FantasticalExtensionTests.swift; sourceTree = "<group>"; };
+		FE000000000000000000A118 /* FantasticalTaskTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FantasticalTaskTests.swift; sourceTree = "<group>"; };
+		FE000000000000000000A120 /* FantasticalTaskGroupTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FantasticalTaskGroupTests.swift; sourceTree = "<group>"; };
+		FE000000000000000000A121 /* FantasticalShowAllTasksTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FantasticalShowAllTasksTests.swift; sourceTree = "<group>"; };
+		FE000000000000000000A122 /* FantasticalMCPReconnectTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FantasticalMCPReconnectTests.swift; sourceTree = "<group>"; };
+		FE000000000000000000A107 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FE000000000000000000A108 /* TunaFantastical.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TunaFantastical.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE000000000000000000A109 /* FantasticalExtensionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FantasticalExtensionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE000000000000000000A10A /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		FE000000000000000000F102 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FE000000000000000000F105 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FE000000000000000000B10A /* Cocoa.framework in Frameworks */,
+				FE000000000000000000B108 /* TunaFantastical.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		FE000000000000000000E101 = {
+			isa = PBXGroup;
+			children = (
+				FE000000000000000000E102 /* . */,
+				FE000000000000000000E103 /* Products */,
+				FE000000000000000000E104 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		FE000000000000000000E102 /* . */ = {
+			isa = PBXGroup;
+			children = (
+				FE000000000000000000A101 /* FantasticalExtension.swift */,
+				FE000000000000000000A102 /* FantasticalItems.swift */,
+				FE000000000000000000A103 /* FantasticalCatalog.swift */,
+				FE000000000000000000A104 /* FantasticalURLBuilder.swift */,
+				FE000000000000000000A105 /* FantasticalActionsCatalog.swift */,
+				FE000000000000000000A10B /* FantasticalFields.swift */,
+				FE000000000000000000A10C /* FantasticalMCPClient.swift */,
+				FE000000000000000000A112 /* FantasticalMCPTypes.swift */,
+				FE000000000000000000A113 /* FantasticalCreateWatcher.swift */,
+				FE000000000000000000A114 /* FantasticalAgendaParser.swift */,
+				FE000000000000000000A115 /* FantasticalAgendaSupport.swift */,
+				FE000000000000000000A10D /* FantasticalAgendaModels.swift */,
+				FE000000000000000000A10E /* FantasticalAgendaItems.swift */,
+				FE000000000000000000A10F /* FantasticalAgendaCatalog.swift */,
+				FE000000000000000000A110 /* FantasticalAgendaActions.swift */,
+				FE000000000000000000A111 /* FantasticalAgendaSections.swift */,
+				FE000000000000000000A117 /* FantasticalStoreReader.swift */,
+				FE000000000000000000A116 /* FantasticalReminderStore.swift */,
+				FE000000000000000000A119 /* FantasticalAgendaTasks.swift */,
+				FE000000000000000000A107 /* Info.plist */,
+				FE000000000000000000A106 /* FantasticalExtensionTests.swift */,
+				FE000000000000000000A118 /* FantasticalTaskTests.swift */,
+				FE000000000000000000A120 /* FantasticalTaskGroupTests.swift */,
+				FE000000000000000000A121 /* FantasticalShowAllTasksTests.swift */,
+				FE000000000000000000A122 /* FantasticalMCPReconnectTests.swift */,
+			);
+			path = .;
+			sourceTree = "<group>";
+		};
+		FE000000000000000000E103 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FE000000000000000000A108 /* TunaFantastical.framework */,
+				FE000000000000000000A109 /* FantasticalExtensionTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FE000000000000000000E104 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				FE000000000000000000E105 /* OS X */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		FE000000000000000000E105 /* OS X */ = {
+			isa = PBXGroup;
+			children = (
+				FE000000000000000000A10A /* Cocoa.framework */,
+			);
+			name = "OS X";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		FE000000000000000000C101 /* FantasticalExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FE000000000000000000A013 /* Build configuration list for PBXNativeTarget "FantasticalExtension" */;
+			buildPhases = (
+				FE000000000000000000F101 /* Sources */,
+				FE000000000000000000F102 /* Frameworks */,
+				FE000000000000000000F103 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FantasticalExtension;
+			packageProductDependencies = (
+				FE000000000000000000AB02 /* TunaKit */,
+			);
+			productName = TunaFantastical;
+			productReference = FE000000000000000000A108 /* TunaFantastical.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		FE000000000000000000C102 /* FantasticalExtensionTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FE000000000000000000A023 /* Build configuration list for PBXNativeTarget "FantasticalExtensionTests" */;
+			buildPhases = (
+				FE000000000000000000F104 /* Sources */,
+				FE000000000000000000F105 /* Frameworks */,
+				FE000000000000000000F106 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FE000000000000000000C104 /* PBXTargetDependency */,
+			);
+			name = FantasticalExtensionTests;
+			packageProductDependencies = (
+				FE000000000000000000AB03 /* TunaKit */,
+			);
+			productName = FantasticalExtensionTests;
+			productReference = FE000000000000000000A109 /* FantasticalExtensionTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		FE000000000000000000D101 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					FE000000000000000000C101 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = FE000000000000000000A003 /* Build configuration list for PBXProject "FantasticalExtension" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = FE000000000000000000E101;
+			packageReferences = (
+				FE000000000000000000AB01 /* XCRemoteSwiftPackageReference "TunaKit" */,
+			);
+			productRefGroup = FE000000000000000000E103 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				FE000000000000000000C101 /* FantasticalExtension */,
+				FE000000000000000000C102 /* FantasticalExtensionTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		FE000000000000000000F103 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FE000000000000000000F106 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		FE000000000000000000F101 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FE000000000000000000B101 /* FantasticalExtension.swift in Sources */,
+				FE000000000000000000B102 /* FantasticalItems.swift in Sources */,
+				FE000000000000000000B103 /* FantasticalCatalog.swift in Sources */,
+				FE000000000000000000B104 /* FantasticalURLBuilder.swift in Sources */,
+				FE000000000000000000B105 /* FantasticalActionsCatalog.swift in Sources */,
+				FE000000000000000000B10B /* FantasticalFields.swift in Sources */,
+				FE000000000000000000B10C /* FantasticalMCPClient.swift in Sources */,
+				FE000000000000000000B112 /* FantasticalMCPTypes.swift in Sources */,
+				FE000000000000000000B113 /* FantasticalCreateWatcher.swift in Sources */,
+				FE000000000000000000B114 /* FantasticalAgendaParser.swift in Sources */,
+				FE000000000000000000B115 /* FantasticalAgendaSupport.swift in Sources */,
+				FE000000000000000000B10D /* FantasticalAgendaModels.swift in Sources */,
+				FE000000000000000000B10E /* FantasticalAgendaItems.swift in Sources */,
+				FE000000000000000000B10F /* FantasticalAgendaCatalog.swift in Sources */,
+				FE000000000000000000B110 /* FantasticalAgendaActions.swift in Sources */,
+				FE000000000000000000B111 /* FantasticalAgendaSections.swift in Sources */,
+				FE000000000000000000B117 /* FantasticalStoreReader.swift in Sources */,
+				FE000000000000000000B116 /* FantasticalReminderStore.swift in Sources */,
+				FE000000000000000000B119 /* FantasticalAgendaTasks.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FE000000000000000000F104 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FE000000000000000000B106 /* FantasticalExtensionTests.swift in Sources */,
+				FE000000000000000000B118 /* FantasticalTaskTests.swift in Sources */,
+				FE000000000000000000B120 /* FantasticalTaskGroupTests.swift in Sources */,
+				FE000000000000000000B121 /* FantasticalShowAllTasksTests.swift in Sources */,
+				FE000000000000000000B122 /* FantasticalMCPReconnectTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		FE000000000000000000C104 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = FantasticalExtension;
+			target = FE000000000000000000C101 /* FantasticalExtension */;
+			targetProxy = FE000000000000000000C103 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		FE000000000000000000A001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TunaFantastical;
+			};
+			name = Debug;
+		};
+		FE000000000000000000A002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TunaFantastical;
+			};
+			name = Release;
+		};
+		FE000000000000000000A011 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				ENABLE_TESTABILITY = YES;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.fantastical;
+				PRODUCT_MODULE_NAME = TunaFantastical;
+				PRODUCT_NAME = TunaFantastical;
+				SKIP_INSTALL = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Debug;
+		};
+		FE000000000000000000A012 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.fantastical;
+				PRODUCT_MODULE_NAME = TunaFantastical;
+				PRODUCT_NAME = TunaFantastical;
+				SKIP_INSTALL = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 6;
+			};
+			name = Release;
+		};
+		FE000000000000000000A021 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.FantasticalExtensionTests;
+				PRODUCT_MODULE_NAME = FantasticalExtensionTests;
+				PRODUCT_NAME = FantasticalExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		FE000000000000000000A022 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.FantasticalExtensionTests;
+				PRODUCT_MODULE_NAME = FantasticalExtensionTests;
+				PRODUCT_NAME = FantasticalExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		FE000000000000000000A003 /* Build configuration list for PBXProject "FantasticalExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FE000000000000000000A001 /* Debug */,
+				FE000000000000000000A002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FE000000000000000000A013 /* Build configuration list for PBXNativeTarget "FantasticalExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FE000000000000000000A011 /* Debug */,
+				FE000000000000000000A012 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FE000000000000000000A023 /* Build configuration list for PBXNativeTarget "FantasticalExtensionTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FE000000000000000000A021 /* Debug */,
+				FE000000000000000000A022 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		FE000000000000000000AB01 /* XCRemoteSwiftPackageReference "TunaKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tunaformac/TunaKit";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 1.22.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		FE000000000000000000AB02 /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FE000000000000000000AB01 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
+		FE000000000000000000AB03 /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FE000000000000000000AB01 /* XCRemoteSwiftPackageReference "TunaKit" */;
+			productName = TunaKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = FE000000000000000000D101 /* Project object */;
+}

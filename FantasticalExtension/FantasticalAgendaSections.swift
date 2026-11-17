@@ -1,0 +1,143 @@
+import AppKit
+import Foundation
+import TunaKit
+
+enum FantasticalAgendaRange: CaseIterable, Sendable {
+  case today, tomorrow, thisWeek, next7Days, thisMonth, thisQuarter, thisYear, tasks
+
+  var title: String {
+    switch self {
+    case .today: return "Today"
+    case .tomorrow: return "Tomorrow"
+    case .thisWeek: return "This Week"
+    case .next7Days: return "Next 7 Days"
+    case .thisMonth: return "This Month"
+    case .thisQuarter: return "This Quarter"
+    case .thisYear: return "This Year"
+    case .tasks: return "Tasks"
+    }
+  }
+
+  var symbolName: String {
+    switch self {
+    case .today: return "sun.max"
+    case .tomorrow: return "sunrise"
+    case .thisWeek, .next7Days: return "calendar"
+    case .thisMonth: return "calendar.badge.clock"
+    case .thisQuarter: return "square.grid.2x2"
+    case .thisYear: return "calendar.circle"
+    case .tasks: return "checklist"
+    }
+  }
+
+  var iconColor: CatalogIconColor {
+    switch self {
+    case .today: return .orange
+    case .tomorrow: return .yellow
+    case .thisWeek, .next7Days: return .red
+    case .thisMonth: return .purple
+    case .thisQuarter, .thisYear: return .gray
+    case .tasks: return .blue
+    }
+  }
+
+  var tasksOnly: Bool { self == .tasks }
+
+  static let taskWindowDays = 30
+  static let overdueYears = 5
+
+  var windowDescription: String? { nil }
+
+  /// The window a task list is asked for when the helper wants a date: years of backlog through
+  /// the days ahead, inclusive as the helper spells it.
+  static func taskWhen(now: Date, calendar: Calendar = .autoupdatingCurrent) -> String {
+    let day = calendar.startOfDay(for: now)
+    let start = calendar.date(byAdding: .year, value: -overdueYears, to: day) ?? day
+    let last = calendar.date(byAdding: .day, value: taskWindowDays - 1, to: day) ?? day
+    return FantasticalWhen.range(from: start, to: last, calendar: calendar)
+  }
+
+  /// Groups that need their own query. Today and Tomorrow are sliced from Next 7 Days.
+  static let queried: [FantasticalAgendaRange] = [.next7Days, .thisWeek, .thisMonth, .thisQuarter, .thisYear]
+
+  var sortOrder: Int {
+    switch self {
+    case .today: return 0
+    case .tomorrow: return 1
+    case .thisWeek: return 2
+    case .thisMonth: return 3
+    case .thisQuarter: return 4
+    case .tasks: return 5
+    case .thisYear: return 6
+    case .next7Days: return 8
+    }
+  }
+
+  func interval(now: Date, calendar: Calendar = .autoupdatingCurrent) -> DateInterval {
+    let day = calendar.startOfDay(for: now)
+    func days(_ n: Int, from start: Date) -> DateInterval {
+      DateInterval(start: start, end: calendar.date(byAdding: .day, value: n, to: start) ?? start)
+    }
+    switch self {
+    case .today: return days(1, from: day)
+    case .tomorrow: return days(1, from: calendar.date(byAdding: .day, value: 1, to: day) ?? day)
+    case .thisWeek: return calendar.dateInterval(of: .weekOfYear, for: now) ?? days(7, from: day)
+    case .next7Days: return days(7, from: day)
+    case .thisMonth: return calendar.dateInterval(of: .month, for: now) ?? days(30, from: day)
+    case .thisQuarter: return calendar.dateInterval(of: .quarter, for: now) ?? days(90, from: day)
+    case .thisYear: return calendar.dateInterval(of: .year, for: now) ?? days(365, from: day)
+    case .tasks: return days(Self.taskWindowDays, from: day)
+    }
+  }
+
+  /// The helper wants inclusive plain-language dates, so the exclusive end steps back a day.
+  func when(now: Date, calendar: Calendar = .autoupdatingCurrent) -> String {
+    let interval = interval(now: now, calendar: calendar)
+    let lastDay = calendar.date(byAdding: .second, value: -1, to: interval.end) ?? interval.end
+    if calendar.isDate(interval.start, inSameDayAs: lastDay) {
+      return FantasticalWhen.day(interval.start, calendar: calendar)
+    }
+    return FantasticalWhen.range(from: interval.start, to: lastDay, calendar: calendar)
+  }
+}
+
+protocol FantasticalScoredItem: AnyObject {
+  var sortScore: Double { get }
+}
+
+/// Sections keep their declared order and outrank items; items go soonest first. Tuna's time
+/// sort shows the newest `capturedAtDate` first, so timestamps are mirrored.
+enum FantasticalAgendaSort {
+  static let optionID = "fantastical.agenda-order"
+  private static let mirrorPoint = Date(timeIntervalSinceReferenceDate: 1_500_000_000)
+
+  static func sectionScore(_ order: Int) -> Double { 1_000_000_000_000 - Double(max(0, min(order, 10_000))) }
+  static func sectionTimestamp(_ order: Int) -> Date {
+    Date.distantFuture.addingTimeInterval(-Double(max(0, min(order, 10_000))))
+  }
+  static func itemScore(start: Date?) -> Double {
+    guard let start else { return 0 }
+    return 1_000 + max(0, 2 * mirrorPoint.timeIntervalSinceReferenceDate - start.timeIntervalSinceReferenceDate)
+  }
+  static func itemTimestamp(start: Date?) -> Date {
+    guard let start else { return .distantPast }
+    return Date(timeIntervalSinceReferenceDate: 2 * mirrorPoint.timeIntervalSinceReferenceDate - start.timeIntervalSinceReferenceDate)
+  }
+
+  /// Small enough never to reorder two different due dates (a second apart at least), large enough
+  /// to order same-day and undated tasks by priority.
+  static func priorityBonus(_ rank: Int) -> Double { Double(10 - max(1, min(rank, 10))) / 1_000 }
+
+  static let options: [CatalogSortOption] = [
+    CatalogSortOption(id: optionID, title: "Agenda", detail: "Groups in order, then soonest first", comparator: compare),
+    .nameAscending,
+    .nameDescending,
+  ]
+
+  static func compare(_ lhs: CatalogItem, _ rhs: CatalogItem) -> Bool {
+    let l = (lhs as? FantasticalScoredItem)?.sortScore ?? -1
+    let r = (rhs as? FantasticalScoredItem)?.sortScore ?? -1
+    if l != r { return l > r }
+    return lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
+  }
+}
