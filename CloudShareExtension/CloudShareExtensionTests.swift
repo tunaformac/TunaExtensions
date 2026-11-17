@@ -114,16 +114,50 @@ final class CloudShareExtensionTests: XCTestCase {
       "Resume-final.pdf")
   }
 
-  func testExtPlaceholderPlacesTheExtensionOnce() {
+  func testExtensionEndsTheNameExactlyOnce() {
+    func name(_ original: String, _ template: String) -> String {
+      var generator = SeededGenerator()
+      return CloudShareFilename.filename(
+        for: original, template: template, date: Date(), generator: &generator)
+    }
+    XCTAssertEqual(name("a.png", "%filename%.%ext%"), "a.png")
+    XCTAssertEqual(name("a.png", "%filename%"), "a.png")
+    XCTAssertEqual(name("Shot.PNG", "%filename%.%ext%"), "Shot.png")
+    XCTAssertEqual(name("a.png", "%filename%.PNG"), "a.PNG", "A literal extension counts")
+    // %ext% elsewhere in the name still leaves the file with its extension.
+    XCTAssertEqual(name("a.png", "%ext%-%filename%"), "png-a.png")
+    XCTAssertEqual(name("notes", "%filename%.%ext%"), "notes")
+  }
+
+  func testCompoundExtensionsStayTogether() {
     var generator = SeededGenerator()
     XCTAssertEqual(
       CloudShareFilename.filename(
-        for: "a.png", template: "%filename%.%ext%", date: Date(), generator: &generator),
-      "a.png")
-    XCTAssertEqual(
-      CloudShareFilename.filename(
-        for: "a.png", template: "%ext%-%filename%", date: Date(), generator: &generator),
-      "png-a")
+        for: "backup.tar.gz", template: "%filename%.%ext%", date: Date(), generator: &generator),
+      "backup.tar.gz")
+    let name = CloudShareFilename.filename(
+      for: "Backup.TAR.GZ", template: "%filename%-%random-6%", date: Date(),
+      generator: &generator)
+    XCTAssertTrue(name.hasPrefix("Backup-"), name)
+    XCTAssertTrue(name.hasSuffix(".tar.gz"), name)
+    XCTAssertEqual(name.count, "Backup-".count + 6 + ".tar.gz".count)
+    XCTAssertEqual(CloudShareFilename.splitExtension("a.b.zip").base, "a.b")
+  }
+
+  func testImageTitlesDropTheirOwnExtensionBeforePNG() {
+    XCTAssertEqual(CloudShareUpload.pngFilename(title: "Screen Shot.jpg"), "Screen-Shot.png")
+    XCTAssertEqual(CloudShareUpload.pngFilename(title: "Release v1.2"), "Release-v1.2.png")
+    XCTAssertEqual(CloudShareUpload.pngFilename(title: "✨"), "image.png")
+  }
+
+  func testFilenameSettingListsTheREADMEPlaceholders() throws {
+    let description = try XCTUnwrap(CloudShareSettings.filenameTemplate.description)
+    for placeholder in [
+      "%filename%", "%ext%", "%random-N%", "%uuid%", "%date%", "%year%", "%month%", "%day%",
+      "%timestamp%",
+    ] {
+      XCTAssertTrue(description.contains(placeholder), placeholder)
+    }
   }
 
   func testRandomOnlyTemplateAndPrefixDates() throws {
@@ -222,6 +256,43 @@ final class CloudShareExtensionTests: XCTestCase {
     XCTAssertLoading(store.state(for: destination, catalogIdentifier: "c"))
     try await waitUntil { if case .loaded = store.state(for: destination, catalogIdentifier: "c") { true } else { false } }
     XCTAssertEqual(loader.calls, 2)
+  }
+
+  func testOldListingKeepsShowingWhileTheBucketIsListedAgain() async throws {
+    let destination = try makeDestination(["Bucket": "b"])
+    let clock = TestClock()
+    let old = CloudShareObject(key: "old.png", size: 1, lastModified: Date())
+    let new = CloudShareObject(key: "new.png", size: 1, lastModified: Date())
+    let loader = CountingLoader(results: [.success([old]), .success([new, old])])
+    let store = CloudShareListingStore(loader: loader.load, now: clock.now)
+    func keys() -> [String]? {
+      guard case .loaded(let objects, _) = store.state(for: destination, catalogIdentifier: "c")
+      else { return nil }
+      return objects.map(\.key)
+    }
+
+    _ = store.state(for: destination, catalogIdentifier: "c")
+    try await waitUntil { keys() == ["old.png"] }
+    clock.advance(CloudShareListingStore.refreshInterval - 1)
+    XCTAssertEqual(keys(), ["old.png"])
+    XCTAssertEqual(loader.calls, 1, "A recent listing is reused")
+
+    clock.advance(1)
+    XCTAssertEqual(keys(), ["old.png"], "Shown while listing again, not replaced by loading")
+    try await waitUntil { keys() == ["new.png", "old.png"] }
+    XCTAssertEqual(loader.calls, 2)
+  }
+
+  func testInvalidatedListingLoadsAgain() async throws {
+    let destination = try makeDestination(["Bucket": "b"])
+    let loader = CountingLoader(results: [.success([]), .success([])])
+    let store = CloudShareListingStore(loader: loader.load)
+
+    _ = store.state(for: destination, catalogIdentifier: "c")
+    try await waitUntil { if case .loaded = store.state(for: destination, catalogIdentifier: "c") { true } else { false } }
+    store.invalidate(destinationID: destination.id)
+    XCTAssertLoading(store.state(for: destination, catalogIdentifier: "c"))
+    try await waitUntil { loader.calls == 2 }
   }
 
   func testEditedDestinationAndResetListAgain() async throws {

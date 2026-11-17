@@ -117,8 +117,10 @@ enum CloudShareCatalogSupport {
 /// invalidate them regardless of which catalog snapshot the user is browsing.
 ///
 /// A listing belongs to the destination settings it was made with: editing a destination lists
-/// again. Rescans drop every listing, failures are retried when browsed again after a short
-/// cooldown, and a load that finishes after being superseded is ignored.
+/// again. Rescans drop every listing. Browsing a listing older than `refreshInterval` keeps
+/// showing it while the bucket is listed again, so files added elsewhere appear; a failure is
+/// retried when browsed after `retryInterval`. A load that finishes after being superseded is
+/// ignored.
 final class CloudShareListingStore: @unchecked Sendable {
   static let shared = CloudShareListingStore()
 
@@ -134,13 +136,15 @@ final class CloudShareListingStore: @unchecked Sendable {
 
   private struct Entry {
     let listingKey: String
-    let token: UUID
     var state: State
     var finishedAt: Date?
-    var task: Task<Void, Never>?
+    /// The load in flight, if any; only its result is kept.
+    var load: (token: UUID, task: Task<Void, Never>)?
   }
 
+  /// Waits between retries of a failed listing, so re-showing the failure doesn't relist.
   static let retryInterval: TimeInterval = 5
+  static let refreshInterval: TimeInterval = 30
 
   private let entries = LockedValue<[String: Entry]>([:])
   private let loader: Loader
@@ -156,40 +160,45 @@ final class CloudShareListingStore: @unchecked Sendable {
 
   func state(for destination: CloudShareDestination, catalogIdentifier: String) -> State {
     let date = now()
-    let (state, token): (State, UUID?) = entries.withValue { entries in
-      if let entry = entries[destination.id], entry.listingKey == destination.listingKey {
-        let retry: Bool
-        if case .failed = entry.state, let finishedAt = entry.finishedAt {
-          retry = date.timeIntervalSince(finishedAt) >= Self.retryInterval
-        } else {
-          retry = false
+    return entries.withValue { entries in
+      let id = destination.id
+      if let entry = entries[id], entry.listingKey == destination.listingKey {
+        guard entry.load == nil, let finishedAt = entry.finishedAt else { return entry.state }
+        let age = date.timeIntervalSince(finishedAt)
+        switch entry.state {
+        case .loaded where age >= Self.refreshInterval:
+          entries[id]?.load = startLoad(destination, catalogIdentifier: catalogIdentifier)
+          return entry.state
+        case .failed where age >= Self.retryInterval:
+          break
+        default:
+          return entry.state
         }
-        if !retry { return (entry.state, nil) }
       }
-      entries[destination.id]?.task?.cancel()
-      let token = UUID()
-      entries[destination.id] = Entry(
-        listingKey: destination.listingKey, token: token, state: .loading)
-      return (.loading, token)
+      entries[id]?.load?.task.cancel()
+      entries[id] = Entry(
+        listingKey: destination.listingKey, state: .loading,
+        load: startLoad(destination, catalogIdentifier: catalogIdentifier))
+      return .loading
     }
-    if let token {
-      start(destination, token: token, catalogIdentifier: catalogIdentifier)
-    }
-    return state
   }
 
   func invalidate(destinationID: String) {
-    entries.withValue { $0.removeValue(forKey: destinationID)?.task?.cancel() }
+    entries.withValue { $0.removeValue(forKey: destinationID)?.load?.task.cancel() }
   }
 
   func reset() {
     entries.withValue { entries in
-      entries.values.forEach { $0.task?.cancel() }
+      entries.values.forEach { $0.load?.task.cancel() }
       entries = [:]
     }
   }
 
-  private func start(_ destination: CloudShareDestination, token: UUID, catalogIdentifier: String) {
+  /// Called with the entries locked; the task only touches them once it finishes.
+  private func startLoad(_ destination: CloudShareDestination, catalogIdentifier: String)
+    -> (token: UUID, task: Task<Void, Never>)
+  {
+    let token = UUID()
     let task = Task { [weak self, loader] in
       let state: State
       do {
@@ -201,21 +210,17 @@ final class CloudShareListingStore: @unchecked Sendable {
       guard !Task.isCancelled, let self else { return }
       let finishedAt = self.now()
       let current = self.entries.withValue { entries -> Bool in
-        guard entries[destination.id]?.token == token else { return false }
+        guard entries[destination.id]?.load?.token == token else { return false }
         entries[destination.id]?.state = state
         entries[destination.id]?.finishedAt = finishedAt
-        entries[destination.id]?.task = nil
+        entries[destination.id]?.load = nil
         return true
       }
       if current {
         NotificationCenter.default.post(name: CatalogDidFinishScan, object: catalogIdentifier)
       }
     }
-    entries.withValue { entries in
-      if entries[destination.id]?.token == token, entries[destination.id]?.finishedAt == nil {
-        entries[destination.id]?.task = task
-      }
-    }
+    return (token, task)
   }
 }
 

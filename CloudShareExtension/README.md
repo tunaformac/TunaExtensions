@@ -14,7 +14,7 @@ Open Tuna Settings → Extensions → Cloud Share and choose **Add Destination**
 | Access Key ID, Region, Bucket | Required. |
 | Path Prefix | Optional folder, e.g. `uploads/%year%/%month%`. |
 | Public URL | Optional base for links, e.g. `https://files.example.com`. Defaults to the S3 URL. |
-| Filename | Template; default `%filename%-%random-6%`. Supports `%filename%`, `%ext%`, `%random-N%` (1–64), `%uuid%`, `%date%`, `%year%`, `%month%`, `%day%`, `%timestamp%`. The file extension is added unless the template places `%ext%` itself, and a template without placeholders gets a random suffix so uploads never overwrite each other. Names are made URL-safe. |
+| Filename | Template; default `%filename%-%random-6%`. Supports `%filename%`, `%ext%`, `%random-N%` (1–64), `%uuid%`, `%date%`, `%year%`, `%month%`, `%day%`, `%timestamp%`. Names always end in the file's extension, once: `%filename%.%ext%` and `%filename%` both give `shot.png`, and `.tar.gz` stays together. A template without placeholders gets a random suffix so uploads never overwrite each other. Names are made URL-safe. |
 | Upload with public-read ACL | Off by default. New AWS buckets disable ACLs and reject uploads that send one. |
 | Use path-style requests | For services that need it. Buckets with dots in their name always use it. |
 
@@ -52,8 +52,9 @@ in front. Then set the Public URL to that domain.
   put the links on Shelf, so you can keep working while large files upload.
 - **Cloud Shared** lists the bucket newest first, under the prefix's fixed folders, and filters as
   you type. With one destination it opens straight to the files. Listing stops after 5,000 files.
-  Listings refresh when Tuna rescans the catalog or a destination changes, and a failed listing is
-  retried when you browse it again. Shared files are URLs, so the usual Open and Copy actions
+  Listings refresh when Tuna rescans the catalog or a destination changes. Browsing a listing
+  older than 30 seconds shows it while the bucket is listed again, so files added elsewhere
+  appear; a failed listing is retried when you browse it again. Shared files are URLs, so the usual Open and Copy actions
   apply; **Delete from Cloud** removes them after confirmation.
 
 Folders are not uploaded. Nothing is uploaded or listed until you run an action or browse.

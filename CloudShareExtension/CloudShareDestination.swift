@@ -134,7 +134,7 @@ enum CloudShareSettings {
     key: "FilenameTemplate", type: .string, label: "Filename",
     defaultValue: CloudShareFilename.defaultTemplate,
     description:
-      "%filename%, %ext%, %random-6%, %uuid%, %date%, %year%, %month%, %day%, %timestamp%. The extension is added unless you place %ext%. A name without placeholders gets a random suffix."
+      "Supports %filename%, %ext%, %random-N% (1–64), %uuid%, %date%, %year%, %month%, %day%, and %timestamp%. Names always end in the file's extension; a name without placeholders gets a random suffix."
   )
   static let publicACL = CatalogSettingDefinition(
     key: "PublicACL", type: .bool, label: "Upload with public-read ACL", defaultValue: "false",
@@ -272,9 +272,7 @@ enum CloudShareFilename {
     date: Date,
     generator: inout R
   ) -> String {
-    let original = originalFilename as NSString
-    let pathExtension = sanitize(original.pathExtension).lowercased()
-    let base = sanitize(original.deletingPathExtension)
+    let (base, pathExtension) = splitExtension(originalFilename)
 
     var effectiveTemplate = template
     // As in Dropshare, a fixed name would overwrite the previous upload every time.
@@ -298,9 +296,21 @@ enum CloudShareFilename {
     if result.isEmpty {
       result = randomString(length: 8, generator: &generator)
     }
-    // A template that places %ext% itself decides where the extension goes.
-    if pathExtension.isEmpty || effectiveTemplate.contains("%ext%") { return result }
+    // The extension always ends the name, once: `%filename%.%ext%` already ends with it.
+    if pathExtension.isEmpty || result.lowercased().hasSuffix(".\(pathExtension)") { return result }
     return "\(result).\(pathExtension)"
+  }
+
+  /// The sanitized base name and lowercased extension. `.tar.gz` and friends count as one
+  /// extension so a suffix lands before them, not between.
+  static func splitExtension(_ filename: String) -> (base: String, ext: String) {
+    var base = (filename as NSString).deletingPathExtension
+    var ext = (filename as NSString).pathExtension
+    if !ext.isEmpty, (base as NSString).pathExtension.lowercased() == "tar" {
+      ext = "tar.\(ext)"
+      base = (base as NSString).deletingPathExtension
+    }
+    return (sanitize(base), sanitize(ext).lowercased())
   }
 
   /// Keeps names URL-friendly: folds diacritics, turns whitespace into dashes, and drops

@@ -314,9 +314,19 @@ struct CloudShareUpload: Sendable {
       let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:])
     else { return nil }
     source = .png(png)
-    let title = CloudShareFilename.sanitize(item.title)
-    filename = "\(title.isEmpty ? "image" : title).png"
+    filename = Self.pngFilename(title: item.title)
     contentType = "image/png"
+  }
+
+  /// Images are re-encoded as PNG, so a title that names an image file drops its own extension
+  /// rather than ending up as `shot.jpg.png`.
+  static func pngFilename(title: String) -> String {
+    var name = title as NSString
+    if UTType(filenameExtension: name.pathExtension)?.conforms(to: .image) == true {
+      name = name.deletingPathExtension as NSString
+    }
+    let base = CloudShareFilename.sanitize(name as String)
+    return "\(base.isEmpty ? "image" : base).png"
   }
 
   func materialize() throws -> Materialized {
