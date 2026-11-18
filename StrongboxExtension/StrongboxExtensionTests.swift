@@ -89,10 +89,12 @@ final class StrongboxExtensionTests: XCTestCase {
 
   func testOnlyVaultIsUsedWithoutAChoice() throws {
     XCTAssertEqual(StrongboxDatabase.selectedForSearch(try databases(personal), preferredID: nil)?.id, personal)
+    XCTAssertEqual(StrongboxDatabase.selectedForSearch(try databases(personal), preferredID: "")?.id, personal)
   }
 
   func testSeveralVaultsNeedAChoice() throws {
     XCTAssertNil(StrongboxDatabase.selectedForSearch(try databases(work, personal), preferredID: nil))
+    XCTAssertNil(StrongboxDatabase.selectedForSearch(try databases(work, personal), preferredID: ""))
   }
 
   func testRememberedVaultIsUsed() throws {
@@ -230,6 +232,36 @@ final class StrongboxProtocolTests: XCTestCase {
     }
   }
 
+  func testAProtocolErrorIsAnUnexpectedResponse() async throws {
+    let client = try fakeClient(["list_databases": "rpc-error"])
+    await assertThrows(.invalidResponse) { _ = try await client.databases() }
+  }
+
+  func testHelpersNotSignedByStrongboxAreRefused() throws {
+    let app = directory.appendingPathComponent("Strongbox.app")
+    let macOS = app.appendingPathComponent("Contents/MacOS")
+    try FileManager.default.createDirectory(at: macOS, withIntermediateDirectories: true)
+    let helper = macOS.appendingPathComponent("strongbox-mcp")
+    let installation = StrongboxInstallation(applicationURL: app)
+
+    try "#!/bin/sh\n".write(to: helper, atomically: true, encoding: .utf8)
+    try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: helper.path)
+    XCTAssertThrowsError(try installation.mcpHelper()) { XCTAssertEqual($0 as? StrongboxError, .untrustedHelper) }
+
+    // Validly signed by Apple, but not Strongbox's helper.
+    try FileManager.default.removeItem(at: helper)
+    try FileManager.default.copyItem(at: URL(fileURLWithPath: "/usr/bin/true"), to: helper)
+    XCTAssertThrowsError(try installation.mcpHelper()) { XCTAssertEqual($0 as? StrongboxError, .untrustedHelper) }
+  }
+
+  /// Reads the signature only. The helper is not launched.
+  func testInstalledStrongboxHelperIsAccepted() throws {
+    let installation = StrongboxInstallation()
+    let helper = installation.applicationURL.appendingPathComponent("Contents/MacOS/strongbox-mcp")
+    try XCTSkipUnless(FileManager.default.fileExists(atPath: helper.path), "Strongbox is not installed.")
+    XCTAssertEqual(try installation.mcpHelper(), helper)
+  }
+
   func testAnotherProtocolVersionIsRefused() async throws {
     let client = try fakeClient(["protocolVersion": "2024-11-05"])
     await assertThrows(.invalidResponse) { _ = try await client.databases() }
@@ -330,6 +362,10 @@ final class StrongboxProtocolTests: XCTestCase {
         if behaviour == "exit": sys.exit(0)
         if behaviour in ("garbage", "huge"):
             sys.stdout.write(("not json" if behaviour == "garbage" else "x" * (9 * 1024 * 1024)) + "\n")
+            sys.stdout.flush()
+            continue
+        if behaviour == "rpc-error":
+            sys.stdout.write(json.dumps({"jsonrpc": "2.0", "id": message["id"], "error": {"code": -32603, "message": "Internal error"}}) + "\n")
             sys.stdout.flush()
             continue
         if isinstance(behaviour, dict): time.sleep(behaviour.get("delay", 0))

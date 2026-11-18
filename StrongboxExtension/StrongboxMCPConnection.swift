@@ -3,15 +3,18 @@ import Foundation
 import Security
 
 struct StrongboxInstallation: Sendable {
-  let applicationURL: URL
+  private static let teamIdentifier = "4326J8XDF2"
+  /// The helper's own designated requirement. Its App Store branch can't name the team, because
+  /// App Store signing certificates don't carry one, so `mcpHelper()` also checks the signed Team ID.
+  private static let requirement = """
+    anchor apple generic and identifier "com.markmcguill.strongbox.mcp" and \
+    (certificate leaf[field.1.2.840.113635.100.6.1.9] exists or \
+    certificate 1[field.1.2.840.113635.100.6.2.6] exists and \
+    certificate leaf[field.1.2.840.113635.100.6.1.13] exists and \
+    certificate leaf[subject.OU] = "\(teamIdentifier)")
+    """
 
-  init(applicationURL: URL? = nil) {
-    self.applicationURL = applicationURL ?? [
-      "/Applications/Strongbox.app", "/Applications/Setapp/Strongbox.app",
-    ].map { URL(fileURLWithPath: $0) }.first {
-      FileManager.default.fileExists(atPath: $0.path)
-    } ?? URL(fileURLWithPath: "/Applications/Strongbox.app")
-  }
+  var applicationURL = URL(fileURLWithPath: "/Applications/Strongbox.app")
 
   func mcpHelper() throws -> URL {
     let url = applicationURL.appendingPathComponent("Contents/MacOS/strongbox-mcp")
@@ -19,15 +22,14 @@ struct StrongboxInstallation: Sendable {
     var code: SecStaticCode?
     var requirement: SecRequirement?
     var information: CFDictionary?
-    let rule = "anchor apple generic"
+    let validation = SecCSFlags(rawValue: kSecCSStrictValidate | kSecCSCheckAllArchitectures)
     guard SecStaticCodeCreateWithPath(url as CFURL, [], &code) == errSecSuccess,
-       SecRequirementCreateWithString(rule as CFString, [], &requirement) == errSecSuccess,
+       SecRequirementCreateWithString(Self.requirement as CFString, [], &requirement) == errSecSuccess,
        let code, let requirement,
-       SecStaticCodeCheckValidity(code, [], requirement) == errSecSuccess,
+       SecStaticCodeCheckValidity(code, validation, requirement) == errSecSuccess,
        SecCodeCopySigningInformation(code, SecCSFlags(rawValue: kSecCSSigningInformation), &information) == errSecSuccess,
        let metadata = information as? [String: Any],
-       metadata[kSecCodeInfoTeamIdentifier as String] as? String == "4326J8XDF2",
-       metadata[kSecCodeInfoIdentifier as String] as? String == "com.markmcguill.strongbox.mcp" else {
+       metadata[kSecCodeInfoTeamIdentifier as String] as? String == Self.teamIdentifier else {
       throw StrongboxError.untrustedHelper
     }
     return url
@@ -187,7 +189,7 @@ final class MCPConnection {
       }
       guard message["id"]?.number == Double(sequence) else { continue }
       guard message["error"] == nil, let result = message["result"] else {
-        throw StrongboxError.denied
+        throw StrongboxError.invalidResponse
       }
       return result
     }

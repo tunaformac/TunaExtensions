@@ -4,10 +4,9 @@ import TunaKit
 
 /// Two search roots, `pass` and `otp`. Typing contacts nothing; Strongbox is asked only on Enter.
 @MainActor
-public final class StrongboxCatalog: Catalog, StartupScanningCatalog {
+public final class StrongboxCatalog: Catalog {
   public let identifier: String
   public let name: String
-  public let scansOnStartup = true
   public let objects: [CatalogItem]
 
   public init(definition: CatalogDefinition) {
@@ -49,13 +48,9 @@ public final class StrongboxCatalog: Catalog, StartupScanningCatalog {
   }
 }
 
-final class StrongboxEntryItem: CatalogEntity, ActionFilteringProviding, Runnable,
-  @unchecked Sendable
-{
+final class StrongboxEntryItem: CatalogEntity, ActionFilteringProviding, @unchecked Sendable {
   let entry: StrongboxEntry
   let field: StrongboxField
-  let headlessEligibility: CommandHeadlessEligibility = .requiresInterface
-  let executionPolicy: CommandExecutionPolicy = .dismiss
 
   init(_ entry: StrongboxEntry, field: StrongboxField) {
     self.entry = entry
@@ -83,17 +78,11 @@ final class StrongboxEntryItem: CatalogEntity, ActionFilteringProviding, Runnabl
     action.id == StrongboxActionsCatalog.copy
       && catalogIdentifier == StrongboxExtension.actionsCatalogIdentifier
   }
-
-  func run() async -> ActionResult { await StrongboxRuntime.copy(field, of: entry) }
 }
 
-final class StrongboxQueryItem: CatalogEntity, ActionFilteringProviding, Runnable,
-  @unchecked Sendable
-{
+final class StrongboxQueryItem: CatalogEntity, ActionFilteringProviding, @unchecked Sendable {
   let query: String
   let field: StrongboxField
-  let headlessEligibility: CommandHeadlessEligibility = .requiresInterface
-  let executionPolicy: CommandExecutionPolicy = .resultDriven
 
   init(_ query: String, field: StrongboxField) {
     self.query = query
@@ -117,8 +106,6 @@ final class StrongboxQueryItem: CatalogEntity, ActionFilteringProviding, Runnabl
     action.id == StrongboxActionsCatalog.find
       && catalogIdentifier == StrongboxExtension.actionsCatalogIdentifier
   }
-
-  func run() async -> ActionResult { await StrongboxRuntime.find(query, field: field) }
 }
 
 final class StrongboxCommand: CatalogEntity, Runnable, @unchecked Sendable {

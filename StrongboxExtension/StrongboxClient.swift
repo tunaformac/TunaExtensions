@@ -30,7 +30,7 @@ final class StrongboxClient: @unchecked Sendable {
   }
 
   /// A request already sent can't be withdrawn, so a result that arrives after cancellation is dropped.
-  private func perform<Value>(_ operation: @escaping (StrongboxWorker) throws -> Value) async throws -> Value {
+  private func perform<Value>(_ operation: @escaping @Sendable (StrongboxWorker) throws -> Value) async throws -> Value {
     try Task.checkCancellation()
     let cancellation = RequestCancellation()
     let value = try await withTaskCancellationHandler {

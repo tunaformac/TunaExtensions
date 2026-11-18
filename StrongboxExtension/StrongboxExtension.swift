@@ -4,7 +4,7 @@ import TunaKit
 @objc(StrongboxExtension)
 public final class StrongboxExtension: Extension {
   static let catalogIdentifier = "strongbox.search"
-  static let actionsCatalogIdentifier = "strongbox.actions"
+  nonisolated static let actionsCatalogIdentifier = "strongbox.actions"
 
   public override var declaration: ExtensionDeclaration? {
     ExtensionDeclaration(

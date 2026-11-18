@@ -3,8 +3,8 @@ import TunaKit
 
 @MainActor
 public final class StrongboxActionsCatalog: ActionCatalog {
-  static let copy = "copy"
-  static let find = "find-and-copy"
+  nonisolated static let copy = "copy"
+  nonisolated static let find = "find-and-copy"
 
   public let identifier: String
   public let name: String

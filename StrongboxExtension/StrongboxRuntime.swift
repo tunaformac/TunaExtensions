@@ -8,15 +8,21 @@ import TunaKit
 enum StrongboxRuntime {
   static let client = StrongboxClient()
   private static var busy = false
-  private static let vaultPreference = "com.brnbw.tuna.plugins.strongbox.preferred-vault"
+  /// Chosen in the launcher, so it isn't declared on the catalog and has no settings row.
+  private static let preferredVault = CatalogSettingDefinition(
+    key: "PreferredVault", type: .string, label: "Preferred Vault", defaultValue: "", description: nil)
+
+  private static var settings: CatalogSettingStore {
+    let bundle = Bundle(for: StrongboxExtension.self)
+    return CatalogSettingStore(catalogIdentifier: bundle.bundleIdentifier ?? "TunaStrongbox")
+  }
 
   private static func preferredDatabase(in databases: [StrongboxDatabase]) -> StrongboxDatabase? {
-    StrongboxDatabase.selectedForSearch(
-      databases, preferredID: UserDefaults.standard.string(forKey: vaultPreference))
+    StrongboxDatabase.selectedForSearch(databases, preferredID: settings.stringValue(for: preferredVault))
   }
 
   private static func remember(_ database: StrongboxDatabase) {
-    UserDefaults.standard.set(database.id, forKey: vaultPreference)
+    settings.setStringValue(database.id, for: preferredVault)
   }
 
   private static func chooseDatabase(_ database: StrongboxDatabase, query: String, field: StrongboxField)

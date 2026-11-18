@@ -8,7 +8,7 @@ enum StrongboxError: Error, LocalizedError, Sendable, Equatable {
   var errorDescription: String? {
     switch self {
     case .unavailable:
-      return "Open Strongbox and enable its local MCP integration. Strongbox must be installed in /Applications or /Applications/Setapp."
+      return "Open Strongbox and enable its local MCP integration. Strongbox must be installed in /Applications."
     case .untrustedHelper:
       return "The Strongbox helper could not be verified as signed by Strongbox. No helper was launched."
     case .invalidResponse:
@@ -61,7 +61,7 @@ struct StrongboxDatabase: Decodable, Sendable, Identifiable {
   /// A remembered vault that is no longer listed asks for a new choice, even if one vault is left,
   /// so a search never moves to another vault on its own.
   static func selectedForSearch(_ databases: [StrongboxDatabase], preferredID: String?) -> StrongboxDatabase? {
-    guard let preferredID else { return databases.count == 1 ? databases[0] : nil }
+    guard let preferredID, !preferredID.isEmpty else { return databases.count == 1 ? databases[0] : nil }
     guard let identifier = UUID(uuidString: preferredID) else { return nil }
     return databases.first { UUID(uuidString: $0.id) == identifier }
   }

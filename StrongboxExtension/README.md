@@ -28,8 +28,9 @@ search asks again instead of using another vault.
 
 ## Setup
 
-Requires Strongbox with MCP (tested with 1.65.2). The free version includes MCP. Each vault it
-uses needs AutoFill on.
+Requires the App Store version of Strongbox with MCP in `/Applications` (tested with 1.65.2). The
+free version includes MCP. The Setapp build isn't supported, because its helper hasn't been
+verified. Each vault it uses needs AutoFill on.
 
 1. In Strongbox, open **Settings → Extensions**, enable MCP, and enable only the vaults you want
    to search. A vault can be ticked only with AutoFill on; if it stays greyed out after turning
