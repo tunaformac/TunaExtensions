@@ -1,5 +1,9 @@
 # Are.na Extension Changelog
 
+## 0.7
+
+- Require Tuna 0.96 / TunaKit 1.22.0, which this build already needed.
+
 ## 0.6
 
 - Compatibility updates.
