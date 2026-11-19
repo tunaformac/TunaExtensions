@@ -198,6 +198,11 @@ if [[ -z "$MIN_TUNAKIT_VALUE" ]]; then
   exit 1
 fi
 ARGS+=(--min-tunakit "$MIN_TUNAKIT_VALUE")
+
+# Refuse floors the build can't run on: TunaKit symbols missing from the minimum TunaKit release,
+# or a minimum Tuna that ships an older TunaKit than the minimum TunaKit.
+"$ROOT/scripts/check-tunakit-floor.py" --bundle "$SRC" --label "$TARGET" \
+  --min-tuna "$MIN_TUNA_VALUE" --min-tunakit "$MIN_TUNAKIT_VALUE"
 if [[ -n "${MIN_MACOS:-}" ]]; then
   ARGS+=(--min-macos "$MIN_MACOS")
 fi

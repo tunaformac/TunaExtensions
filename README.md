@@ -130,6 +130,15 @@ with `EXTENSIONS_STORE_SIGNING_PRIVATE_KEY_OP`, or set `SIGNING_KEY` to a PEM fi
 Packaging requires both `minTuna` and `minTunaKit` from the declaration or explicit `MIN_TUNA` and
 `MIN_TUNAKIT` overrides; it never invents either floor.
 
+Packaging also refuses a floor the build can't run on. Every TunaKit symbol the built binary
+imports must exist in the minimum TunaKit release, whose published xcframework is downloaded once,
+checked against the checksum in TunaKit's `Package.swift` at that tag, and reduced to a list of
+exported symbols cached in `build/tunakit-floor/` (a warm cache needs no network). A failure names
+the missing symbols and the first TunaKit and Tuna releases that have them. The minimum Tuna must
+also ship at least the minimum TunaKit, per `scripts/tuna-tunakit-versions.tsv`; add a row there
+when a Tuna release bumps TunaKit. Run the check alone with
+`scripts/check-tunakit-floor.py --bundle <built bundle> --min-tuna 0.96 --min-tunakit 1.22.0`.
+
 ### Store listing copy
 
 The store listing is built from files beside each extension's sources:

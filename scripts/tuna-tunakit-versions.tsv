@@ -1,0 +1,26 @@
+# The first Tuna release that ships each TunaKit version. A Tuna release ships the TunaKit of the
+# newest row at or below it (Tuna 0.110 ships TunaKit 1.22.0). Add a row when a Tuna release
+# bumps TunaKit; regenerate from a Tuna checkout with:
+#   prev=; for t in $(git tag -l 'v0.*' | sort -V); do
+#     v=$(git show "$t:app/TunaKit/TunaKit.xcodeproj/project.pbxproj" 2>/dev/null \
+#       | grep -m1 MARKETING_VERSION | sed 's/.*= //;s/;//')
+#     [ "$v" != "$prev" ] && printf '%s\t%s\n' "${t#v}" "$v"; prev=$v; done
+# tuna	tunakit
+0.43	1.1.0
+0.50	1.2.0
+0.52	1.3.0
+0.66	1.4.0
+0.67	1.5.0
+0.70	1.6.0
+0.75	1.7.0
+0.76	1.8.0
+0.80	1.14.0
+0.83	1.15.0
+0.84	1.16.1
+0.85	1.17.0
+0.90	1.18.0
+0.92	1.19.0
+0.93	1.20.0
+0.95	1.21.0
+0.96	1.22.0
+0.113	1.23.0
