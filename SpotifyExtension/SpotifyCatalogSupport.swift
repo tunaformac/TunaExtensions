@@ -2,31 +2,7 @@ import AppKit
 import Foundation
 import TunaKit
 
-struct SpotifyConnection: Sendable {
-  let record: ExtensionConnectionRecord
-  let accessToken: String
-}
-
 enum SpotifyCatalogSupport {
-  static let providerIdentifier = "spotify"
-
-  static let connectionDefinition = ExtensionConnectionDefinition(
-    providerIdentifier: providerIdentifier,
-    providerName: "Spotify",
-    kind: .oauth,
-    description: "Connect your Spotify account to search Spotify and browse your library.",
-    connectButtonLabel: "Connect Spotify"
-  )
-
-  static func authRequiredItem() -> CatalogMessageItem {
-    CatalogMessageItem(
-      title: "Connect Spotify",
-      message: "Connect Spotify in extension settings to search and browse your library.",
-      symbolName: "person.crop.circle.badge.exclamationmark",
-      tintColor: .systemOrange
-    )
-  }
-
   static func loadingItem(_ title: String = "Spotify") -> CatalogLoadingItem {
     CatalogLoadingItem(title: "Loading \(title)", message: "Asking Spotify.")
   }
@@ -36,8 +12,10 @@ enum SpotifyCatalogSupport {
       title: title, message: message, symbolName: "tray", tintColor: .secondaryLabelColor)
   }
 
-  static func messageItem(for error: Error) -> CatalogMessageItem {
-    if case SpotifyAPIError.missingConnection = error { return authRequiredItem() }
+  static func messageItem(for error: Error) -> CatalogItem {
+    if let apiError = error as? SpotifyAPIError, apiError.needsAccountSetup {
+      return apiError == .missingClientID ? setupItem() : signInItem(apiError)
+    }
     let apiError = error as? SpotifyAPIError
     return CatalogMessageItem(
       title: apiError?.title ?? "Spotify Unavailable",
@@ -46,106 +24,76 @@ enum SpotifyCatalogSupport {
       tintColor: .systemOrange
     )
   }
-}
 
-private struct SpotifyRefreshResponse: Decodable {
-  struct Payload: Decodable {
-    let accessToken: String
-    let refreshToken: String?
-    let scopes: [String]
-    let expiresAt: Date?
-
-    enum CodingKeys: String, CodingKey {
-      case accessToken = "access_token"
-      case refreshToken = "refresh_token"
-      case scopes
-      case expiresAt = "expires_at"
+  /// What a Web API root shows instead of content when the account isn't ready, or nil when it is.
+  static func accountItem() -> CatalogItem? {
+    switch SpotifyAuth.state() {
+    case .needsClientID: return setupItem()
+    case .needsSignIn: return signInItem(.missingConnection)
+    case .signedIn: return nil
     }
   }
 
-  let data: Payload
-}
-
-actor SpotifyTokenManager {
-  static let shared = SpotifyTokenManager()
-
-  #if DEBUG
-    private static let defaultRefreshURL = URL(
-      string: "http://127.0.0.1:3038/api/v1/extension_oauth/token_refresh")!
-  #else
-    private static let defaultRefreshURL = URL(
-      string: "https://tunaformac.com/api/v1/extension_oauth/token_refresh")!
-  #endif
-
-  private let refreshURL: URL
-  private let session: URLSession
-  private var refreshTasks: [String: Task<SpotifyConnection, Error>] = [:]
-
-  init(session: URLSession = .shared, refreshURL: URL = defaultRefreshURL) {
-    self.session = session
-    self.refreshURL = refreshURL
+  /// Account commands for global search: offer sign-in once a client ID is set, sign-out after.
+  static func accountCommands() -> [CatalogItem] {
+    switch SpotifyAuth.state() {
+    case .needsClientID: return []
+    case .needsSignIn: return [signInItem(.missingConnection)]
+    case .signedIn(let record): return [signOutItem(record)]
+    }
   }
 
-  func connection(extensionIdentifier: String, forceRefresh: Bool = false) async throws
-    -> SpotifyConnection
-  {
-    let store = ExtensionConnectionStore(
-      extensionIdentifier: extensionIdentifier,
-      providerIdentifier: SpotifyCatalogSupport.providerIdentifier
-    )
-    guard let record = store.defaultRecord(), let accessToken = store.accessToken(for: record),
-      !accessToken.isEmpty
-    else {
-      throw SpotifyAPIError.missingConnection
+  /// Calls `handler` after sign-in or sign-out, so catalogs drop what they showed before.
+  @MainActor
+  static func observeAccount(_ handler: @escaping @MainActor () -> Void) -> NSObjectProtocol {
+    NotificationCenter.default.addObserver(
+      forName: SpotifyAuth.accountDidChange, object: nil, queue: .main
+    ) { _ in
+      MainActor.assumeIsolated { handler() }
     }
-    if !forceRefresh, record.expiresAt.map({ $0 > Date().addingTimeInterval(60) }) ?? true {
-      return SpotifyConnection(record: record, accessToken: accessToken)
-    }
-
-    if let task = refreshTasks[extensionIdentifier] { return try await task.value }
-    let task = Task { try await refresh(record: record, store: store) }
-    refreshTasks[extensionIdentifier] = task
-    defer { refreshTasks[extensionIdentifier] = nil }
-    return try await task.value
   }
 
-  private func refresh(record: ExtensionConnectionRecord, store: ExtensionConnectionStore)
-    async throws -> SpotifyConnection
-  {
-    guard let currentRefreshToken = store.refreshToken(for: record), !currentRefreshToken.isEmpty
-    else {
-      throw SpotifyAPIError.reconnectRequired
+  static func setupItem() -> CatalogItem {
+    CommandItem(
+      id: "spotify.set-up-web-api",
+      title: SpotifyAPIError.missingClientID.title,
+      symbol: "key",
+      detail: "Search and Your Library need your own Spotify app. Opens the setup guide.",
+      tintColor: .systemGreen,
+      headlessEligibility: .guaranteed,
+      executionPolicy: .dismiss
+    ) {
+      NSWorkspace.shared.open(SpotifyAuth.setupGuideURL)
+      return .success
     }
-    var request = URLRequest(url: refreshURL)
-    request.httpMethod = "POST"
-    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    request.httpBody = try JSONSerialization.data(withJSONObject: [
-      "provider_identifier": SpotifyCatalogSupport.providerIdentifier,
-      "refresh_token": currentRefreshToken,
-    ])
-    let (data, response) = try await session.data(for: request)
-    guard let http = response as? HTTPURLResponse else {
-      throw SpotifyAPIError.invalidResponse
+  }
+
+  static func signInItem(_ reason: SpotifyAPIError) -> CatalogItem {
+    CommandItem(
+      id: "spotify.sign-in",
+      title: reason == .reconnectRequired ? reason.title : "Sign In to Spotify",
+      symbol: "person.crop.circle.badge.plus",
+      detail: reason.errorDescription,
+      tintColor: .systemGreen,
+      headlessEligibility: .guaranteed,
+      executionPolicy: .dismiss
+    ) {
+      SpotifySignIn.start()
     }
-    guard (200..<300).contains(http.statusCode) else {
-      if http.statusCode == 400 || http.statusCode == 401 {
-        throw SpotifyAPIError.reconnectRequired
-      }
-      if http.statusCode == 429 { throw SpotifyAPIError.rateLimited }
-      throw SpotifyAPIError.unexpectedStatus(http.statusCode, nil)
+  }
+
+  static func signOutItem(_ record: ExtensionConnectionRecord) -> CatalogItem {
+    CommandItem(
+      id: "spotify.sign-out",
+      title: "Sign Out of Spotify",
+      symbol: "person.crop.circle.badge.minus",
+      detail: "Signed in as \(record.trimmedDisplayName)",
+      tintColor: .systemGreen,
+      headlessEligibility: .guaranteed,
+      executionPolicy: .dismiss
+    ) {
+      SpotifyAuth.signOut()
+      return .success
     }
-    let decoder = JSONDecoder()
-    decoder.dateDecodingStrategy = .iso8601
-    let payload = try decoder.decode(SpotifyRefreshResponse.self, from: data).data
-    var updated = record
-    updated.expiresAt = payload.expiresAt
-    if !payload.scopes.isEmpty { updated.scopes = payload.scopes }
-    try store.save(
-      updated,
-      accessToken: payload.accessToken,
-      refreshToken: payload.refreshToken ?? currentRefreshToken,
-      makeDefault: true
-    )
-    return SpotifyConnection(record: updated, accessToken: payload.accessToken)
   }
 }

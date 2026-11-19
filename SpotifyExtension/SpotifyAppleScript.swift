@@ -17,11 +17,14 @@ struct SpotifyNowPlaying: Equatable, Sendable {
 }
 
 enum SpotifyScriptError: LocalizedError {
+  case notInstalled
   case automationDenied
   case failed(String)
 
   var errorDescription: String? {
     switch self {
+    case .notInstalled:
+      return "Spotify isn’t installed. Install the Spotify app to control playback from Tuna."
     case .automationDenied:
       return
         "Tuna isn’t allowed to control Spotify. Allow it under Privacy & Security › Automation."
@@ -37,6 +40,13 @@ enum SpotifyAppleScript {
 
   nonisolated(unsafe) static var runOverride: (@Sendable (String) throws -> String)?
   nonisolated(unsafe) static var isSpotifyRunningOverride: (@Sendable () -> Bool)?
+  nonisolated(unsafe) static var isInstalledOverride: (@Sendable () -> Bool)?
+
+  /// Without the app, `tell application "Spotify"` would ask the user to locate it.
+  static func isInstalled() -> Bool {
+    if let isInstalledOverride { return isInstalledOverride() }
+    return NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleIdentifier) != nil
+  }
 
   static func isSpotifyRunning() -> Bool {
     if let isSpotifyRunningOverride { return isSpotifyRunningOverride() }
@@ -66,12 +76,19 @@ enum SpotifyAppleScript {
   static func playPause() throws { try run(Scripts.command("playpause")) }
   static func nextTrack() throws { try run(Scripts.command("next track")) }
   static func previousTrack() throws { try run(Scripts.command("previous track")) }
+  static func toggleShuffle() throws {
+    try run(Scripts.command("set shuffling to not shuffling"))
+  }
+  static func toggleRepeat() throws {
+    try run(Scripts.command("set repeating to not repeating"))
+  }
   static func play(uri: String) throws {
     try run(Scripts.command("play track \(Scripts.literal(uri))"))
   }
 
   @discardableResult
   static func run(_ source: String) throws -> String {
+    guard isInstalled() else { throw SpotifyScriptError.notInstalled }
     if let runOverride { return try runOverride(source) }
 
     let result: CLIProcessResult

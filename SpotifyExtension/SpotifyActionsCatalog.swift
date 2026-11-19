@@ -24,8 +24,10 @@ public final class SpotifyActionsCatalog: NSObject, ActionCatalog {
       SpotifyActions.play(subject)
     }
     play.systemSymbolName = "play.fill"
-    play.supportedSubjectTypes = resourceTypes
-    play.subjectPredicate = { $0 is SpotifyItem || $0 is SpotifyNowPlayingItem }
+    play.supportedSubjectTypes = resourceTypes.union([.url])
+    play.subjectPredicate = {
+      $0 is SpotifyNowPlayingItem || SpotifyActions.spotifyURI(of: $0) != nil
+    }
     items.append(play)
 
     let save = PredicateAwareAction(id: "save", title: "Save to Library") { subject, _ in
@@ -33,7 +35,11 @@ public final class SpotifyActionsCatalog: NSObject, ActionCatalog {
     }
     save.systemSymbolName = "plus.circle"
     save.supportedSubjectTypes = [.spotifyTrack, .spotifyAlbum]
-    save.subjectPredicate = { ($0 as? SpotifyItem)?.resource.isSaved != true }
+    save.subjectPredicate = { subject in
+      if let item = subject as? SpotifyItem { return item.resource.isSaved != true }
+      // Now Playing comes from the app, so saving it needs a Web API sign-in.
+      return (subject as? SpotifyNowPlayingItem)?.resource != nil && SpotifyAuth.isSignedIn
+    }
     items.append(save)
 
     let remove = PredicateAwareAction(id: "remove-from-library", title: "Remove from Library") {
@@ -81,7 +87,8 @@ public final class SpotifyActionsCatalog: NSObject, ActionCatalog {
     transfer.targetSearchScope = .catalogs(
       [SpotifyExtension.devicesCatalogIdentifier], preparation: .refresh)
     transfer.subjectPredicate = {
-      SpotifyActions.isSpotifyApplication($0) || $0 is SpotifyNowPlayingItem
+      (SpotifyActions.isSpotifyApplication($0) || $0 is SpotifyNowPlayingItem)
+        && SpotifyAuth.isSignedIn
     }
     transfer.targetPredicate = { ($0 as? SpotifyDeviceItem)?.device.isRestricted == false }
     items.append(transfer)
@@ -90,23 +97,15 @@ public final class SpotifyActionsCatalog: NSObject, ActionCatalog {
       SpotifyActions.open(subject)
     }
     open.systemSymbolName = "arrow.up.right.square"
-    open.supportedSubjectTypes = resourceTypes
-    open.subjectPredicate = { SpotifyActions.url(of: $0) != nil }
+    open.supportedSubjectTypes = resourceTypes.union([.url])
+    open.subjectPredicate = { SpotifyActions.spotifyURI(of: $0) != nil }
     items.append(open)
 
-    let transport: [(String, String, String, @Sendable () throws -> Void)] = [
-      ("play-pause", "Play/Pause", "playpause", { try SpotifyAppleScript.playPause() }),
-      ("next-track", "Next Track", "forward.end", { try SpotifyAppleScript.nextTrack() }),
-      (
-        "previous-track", "Previous Track", "backward.end",
-        { try SpotifyAppleScript.previousTrack() }
-      ),
-    ]
-    for command in transport {
-      let action = PredicateAwareAction(id: command.0, title: command.1) { _, _ in
-        SpotifyActions.perform(command.3)
+    for command in SpotifyTransport.commands {
+      let action = PredicateAwareAction(id: command.id, title: command.title) { _, _ in
+        SpotifyActions.perform(command.run)
       }
-      action.systemSymbolName = command.2
+      action.systemSymbolName = command.symbol
       action.supportedSubjectTypes = [.application]
       action.subjectPredicate = SpotifyActions.isSpotifyApplication
       items.append(action)
@@ -116,8 +115,42 @@ public final class SpotifyActionsCatalog: NSObject, ActionCatalog {
   }
 }
 
+/// Playback commands for the Spotify app, shared by the controls catalog and app actions.
+enum SpotifyTransport {
+  typealias Command = (
+    id: String, title: String, symbol: String, detail: String, run: @Sendable () throws -> Void
+  )
+
+  static let commands: [Command] = [
+    (
+      "play-pause", "Play/Pause", "playpause", "Play or pause Spotify",
+      { try SpotifyAppleScript.playPause() }
+    ),
+    (
+      "next-track", "Next Track", "forward.end", "Skip to the next track",
+      { try SpotifyAppleScript.nextTrack() }
+    ),
+    (
+      "previous-track", "Previous Track", "backward.end", "Go back to the previous track",
+      { try SpotifyAppleScript.previousTrack() }
+    ),
+    (
+      "toggle-shuffle", "Toggle Shuffle", "shuffle", "Turn shuffle on or off",
+      { try SpotifyAppleScript.toggleShuffle() }
+    ),
+    (
+      "toggle-repeat", "Toggle Repeat", "repeat", "Turn repeat on or off",
+      { try SpotifyAppleScript.toggleRepeat() }
+    ),
+  ]
+}
+
 enum SpotifyActions {
+  /// Runs an Apple Event in the background; fails right away when Spotify isn't installed.
   static func perform(_ work: @escaping @Sendable () throws -> Void) -> ActionResult {
+    guard SpotifyAppleScript.isInstalled() else {
+      return .failure(SpotifyScriptError.notInstalled.localizedDescription)
+    }
     Task.detached(priority: .userInitiated) {
       do { try work() } catch { report(error) }
     }
@@ -131,16 +164,24 @@ enum SpotifyActions {
     return .success
   }
 
+  /// Plays in the Spotify app on this Mac, or on the active device through the Web API when the
+  /// app isn't installed here.
   static func play(_ subject: CatalogItem) -> ActionResult {
     if subject is SpotifyNowPlayingItem { return perform { try SpotifyAppleScript.playPause() } }
-    guard let item = subject as? SpotifyItem else {
+    guard let uri = spotifyURI(of: subject)?.uri else {
       return .failure("Select something from Spotify")
     }
-    return perform { try SpotifyAppleScript.play(uri: item.resource.uri) }
+    if !SpotifyAppleScript.isInstalled(), SpotifyAuth.isSignedIn {
+      return perform { try await SpotifyAPIClient().play(uri: uri) }
+    }
+    return perform { try SpotifyAppleScript.play(uri: uri) }
   }
 
   static func setSaved(_ saved: Bool, _ subject: CatalogItem) -> ActionResult {
-    guard let resource = (subject as? SpotifyItem)?.resource else {
+    guard
+      let resource = (subject as? SpotifyItem)?.resource
+        ?? (subject as? SpotifyNowPlayingItem)?.resource
+    else {
       return .failure("Select something from Spotify")
     }
     return perform { try await SpotifyAPIClient().setSaved(saved, resource: resource) }
@@ -169,7 +210,9 @@ enum SpotifyActions {
   }
 
   static func open(_ subject: CatalogItem) -> ActionResult {
-    guard let url = url(of: subject) else { return .failure("No Spotify link available") }
+    guard let url = spotifyURI(of: subject)?.webURL else {
+      return .failure("No Spotify link available")
+    }
     guard
       let appURL = NSWorkspace.shared.urlForApplication(
         withBundleIdentifier: SpotifyAppleScript.bundleIdentifier)
@@ -183,10 +226,13 @@ enum SpotifyActions {
     return .success
   }
 
-  static func url(of subject: CatalogItem?) -> URL? {
-    if let item = subject as? SpotifyItem { return item.resource.externalURL }
-    if let entity = subject as? CatalogEntity, let path = entity.path { return URL(string: path) }
-    return nil
+  static func spotifyURI(of subject: CatalogItem?) -> SpotifyURI? {
+    if let item = subject as? SpotifyItem { return SpotifyURI(item.resource.uri) }
+    if let item = subject as? SpotifyNowPlayingItem { return SpotifyURI(item.nowPlaying.uri) }
+    if let text = (subject as? TextValueProviding)?.textValue, let uri = SpotifyURI(text) {
+      return uri
+    }
+    return (subject as? CatalogEntity)?.path.flatMap(SpotifyURI.init)
   }
 
   static func isSpotifyApplication(_ subject: CatalogItem?) -> Bool {
