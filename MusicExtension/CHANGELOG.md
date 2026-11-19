@@ -1,5 +1,9 @@
 # Music Extension Changelog
 
+## 0.2
+
+- Compatibility updates; requires Tuna 0.96 / TunaKit 1.22.0.
+
 ## 0.1.1
 
 - Fix albums not appearing in search or browse results.
