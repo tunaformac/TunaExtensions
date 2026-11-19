@@ -1,6 +1,10 @@
 # Reminders Extension Changelog
 
-## Unreleased
+## 0.12
+
+- Compatibility updates; requires Tuna 0.96 / TunaKit 1.22.0.
+
+## 0.11
 
 - Declare catalog presentation for Tuna 0.95's Sources pane; requires Tuna 0.95 / TunaKit 1.21.0.
 
