@@ -394,6 +394,32 @@ def media_recovery_reasons(item):
     return reasons
 
 
+LISTING_TEXT_FIELDS = (
+    "description", "developer_url", "support_url", "privacy_url", "release_notes",
+)
+LISTING_LIST_FIELDS = ("categories", "tags", "warnings", "works_with_bundle_ids")
+
+
+def listing_mismatches(candidate_item, remote_item):
+    """Listing fields the candidate sets that the store does not match. Fields the
+    candidate leaves empty are not sent, so the store keeps (and may differ in) them."""
+    mismatches = []
+    for key in LISTING_TEXT_FIELDS:
+        value = candidate_item.get(key)
+        if isinstance(value, str) and value.strip():
+            remote_value = remote_item.get(key)
+            if not isinstance(remote_value, str) or remote_value.strip() != value.strip():
+                mismatches.append(f"{key} differs")
+    for key in LISTING_LIST_FIELDS:
+        value = candidate_item.get(key)
+        if isinstance(value, list) and value and remote_item.get(key) != value:
+            mismatches.append(f"{key} differs")
+    contents = candidate_item.get("contents")
+    if isinstance(contents, dict) and remote_item.get("contents") != contents:
+        mismatches.append("contents differ")
+    return mismatches
+
+
 def remote_download_url(item):
     download = item.get("download")
     if not isinstance(download, dict):
@@ -449,15 +475,22 @@ if mode == "preflight":
     if recovery_reasons:
         print(f"recover\t{remote['version']}\t" + "; ".join(recovery_reasons))
         raise SystemExit(0)
-    print(f"equal\t{remote['version']}")
+    listing_drift = listing_mismatches(candidate_document, remote_document)
+    print(f"equal\t{remote['version']}\t" + "; ".join(listing_drift))
     raise SystemExit(0)
 
-if mode != "exact":
+if mode not in {"exact", "listing"}:
     fail(f"unknown comparison mode {mode!r}.")
 
-mismatches = exact_mismatches(candidate, remote)
+# A listing refresh leaves the published artifact alone, so only an upload
+# compares the candidate's bytes.
+mismatches = exact_mismatches(candidate, remote, include_artifact=mode == "exact")
 if mismatches:
     fail("release differs: " + "; ".join(mismatches) + ".")
+
+listing_drift = listing_mismatches(candidate_document, remote_document)
+if listing_drift:
+    fail("listing differs: " + "; ".join(listing_drift) + ".")
 
 media_mismatches = media_recovery_reasons(remote_document)
 if media_mismatches:
@@ -643,6 +676,27 @@ if [[ "$CREATE_GIT_TAG" == "1" ]]; then
   esac
 fi
 
+# Listing copy from STORE.md, CHANGELOG.md, and the declaration's contents. Only fields the
+# package sets are sent; the store keeps its current value for any field left out.
+add_listing_form_fields() {
+  local FIELD VALUE
+  for FIELD in description developer_url support_url privacy_url release_notes; do
+    VALUE="$(read_field "d.get('$FIELD') or ''")"
+    if [[ -n "$VALUE" ]]; then
+      CURL_ARGS+=(--form-string "store_item[$FIELD]=$VALUE")
+    fi
+  done
+  for FIELD in categories tags warnings works_with_bundle_ids; do
+    while IFS= read -r VALUE; do
+      [[ -n "$VALUE" ]] && CURL_ARGS+=(--form-string "store_item[$FIELD][]=$VALUE")
+    done < <(read_field "'\\n'.join(d.get('$FIELD') or [])")
+  done
+  VALUE="$(read_field "json.dumps(d['contents'], sort_keys=True) if isinstance(d.get('contents'), dict) else ''")"
+  if [[ -n "$VALUE" ]]; then
+    CURL_ARGS+=(--form-string "store_item[contents]=$VALUE")
+  fi
+}
+
 RESPONSE_BODY="$(mktemp "${TMPDIR:-/tmp}/tuna-extension-upload-response.XXXXXX")"
 print_response_body() {
   if [[ -s "$RESPONSE_BODY" ]]; then
@@ -796,7 +850,9 @@ extension_source_matches_release_tag() {
   [[ -n "$TAG" ]] || return 1
   git -C "$ROOT" show-ref --verify --quiet "refs/tags/$TAG" || return 1
   [[ "$(git -C "$ROOT" cat-file -t "$TAG")" == "tag" ]] || return 1
-  git -C "$ROOT" diff --quiet "${TAG}^{commit}" HEAD -- "${SOURCE_INPUTS[@]}"
+  # Listing copy is not built into the bundle, so editing it doesn't change the source.
+  git -C "$ROOT" diff --quiet "${TAG}^{commit}" HEAD -- "${SOURCE_INPUTS[@]}" \
+    ':(exclude,glob)**/STORE.md' ':(exclude,glob)**/CHANGELOG.md' ':(exclude,glob)**/README.md'
 }
 
 write_upload_auth_config() {
@@ -878,15 +934,21 @@ case "$PREFLIGHT_HTTP_CODE" in
       equal)
         REMOTE_DOWNLOAD_URL="$(store_download_url)"
         if verify_public_artifact "$REMOTE_DOWNLOAD_URL" "Store preflight"; then
-          echo "Store already has the exact verified $ID $VERSION release; skipping PUT."
+          echo "Store already has the exact verified $ID $VERSION release."
         elif verify_public_package_contents "Store preflight"; then
-          echo "Store already has the same signed $ID $VERSION contents; skipping PUT."
+          echo "Store already has the same signed $ID $VERSION contents."
         elif extension_source_matches_release_tag \
           && verify_downloaded_artifact_against_store "Store preflight"; then
-          echo "Store already has $ID $VERSION from its unchanged tagged source; skipping PUT."
+          echo "Store already has $ID $VERSION from its unchanged tagged source."
         else
           echo "Store release $ID $VERSION differs from the candidate; bump its version." >&2
           exit 1
+        fi
+        if [[ -n "$RECOVERY_REASON" ]]; then
+          RELEASE_ACTION="refresh"
+          echo "Store listing for $ID $VERSION will be refreshed: $RECOVERY_REASON."
+        else
+          echo "Store listing for $ID $VERSION is current; skipping PUT."
         fi
         ;;
       *)
@@ -903,15 +965,16 @@ case "$PREFLIGHT_HTTP_CODE" in
 esac
 
 if [[ "$PREFLIGHT_ONLY" == "1" ]]; then
-  if [[ -n "$TAG" ]]; then
+  # An equal or refreshed release reuses its existing tag, wherever it points.
+  if [[ -n "$TAG" && "$RELEASE_ACTION" != "equal" && "$RELEASE_ACTION" != "refresh" ]]; then
     ensure_tag_available_at_commit "$ROOT" "$TAG" "$RELEASE_COMMIT"
   fi
   echo "Preflight passed: $NAME $VERSION"
   exit 0
 fi
 
-if [[ "$RELEASE_ACTION" == "upload" || "$RELEASE_ACTION" == "recover" ]]; then
-  if [[ -n "$TAG" ]]; then
+if [[ "$RELEASE_ACTION" == "upload" || "$RELEASE_ACTION" == "recover" || "$RELEASE_ACTION" == "refresh" ]]; then
+  if [[ -n "$TAG" && "$RELEASE_ACTION" != "refresh" ]]; then
     ensure_tag_available_at_commit "$ROOT" "$TAG" "$RELEASE_COMMIT"
   fi
   write_upload_auth_config
@@ -939,6 +1002,8 @@ if [[ "$RELEASE_ACTION" == "upload" || "$RELEASE_ACTION" == "recover" ]]; then
     CURL_ARGS+=(--form-string "store_item[compatibility_arch][]=$ARCH")
   done
 
+  add_listing_form_fields
+
   if [[ -n "$ICON_PATH" ]]; then
     echo "Using icon: $ICON_PATH"
     CURL_ARGS+=(--form "$(form_file_arg "store_item[icon]" "$ICON_PATH")")
@@ -951,15 +1016,20 @@ if [[ "$RELEASE_ACTION" == "upload" || "$RELEASE_ACTION" == "recover" ]]; then
     done
   fi
 
-  CURL_ARGS+=(--form "$(form_file_arg "store_item[asset]" "$UPLOAD_PKG" "$PACKAGE_FILENAME")")
+  # A listing refresh keeps the published package; everything else uploads it.
+  if [[ "$RELEASE_ACTION" == "refresh" ]]; then
+    echo "Refreshing listing $ID $VERSION → $API_URL/$ID (package unchanged) ..."
+  else
+    CURL_ARGS+=(--form "$(form_file_arg "store_item[asset]" "$UPLOAD_PKG" "$PACKAGE_FILENAME")")
+    echo "Uploading $PKG → $API_URL/$ID ..."
+  fi
 
   ensure_paths_committed "$ROOT" "${RELEASE_INPUTS[@]}"
   ensure_head_unchanged "$ROOT" "$RELEASE_COMMIT"
-  if [[ -n "$TAG" ]]; then
+  if [[ -n "$TAG" && "$RELEASE_ACTION" != "refresh" ]]; then
     ensure_tag_available_at_commit "$ROOT" "$TAG" "$RELEASE_COMMIT"
   fi
 
-  echo "Uploading $PKG → $API_URL/$ID ..."
   : >"$RESPONSE_BODY"
   if ! HTTP_CODE="$(curl "${CURL_ARGS[@]}" -o "$RESPONSE_BODY" -w "%{http_code}")"; then
     echo "Upload failed before receiving an HTTP response." >&2
@@ -978,7 +1048,9 @@ if [[ "$RELEASE_ACTION" == "upload" || "$RELEASE_ACTION" == "recover" ]]; then
     exit 1
   fi
 
-  inspect_store_item exact "Upload response" "$EXPECT_ICON" "$EXPECT_SCREENSHOT_COUNT"
+  VERIFY_MODE="exact"
+  [[ "$RELEASE_ACTION" == "refresh" ]] && VERIFY_MODE="listing"
+  inspect_store_item "$VERIFY_MODE" "Upload response" "$EXPECT_ICON" "$EXPECT_SCREENSHOT_COUNT"
   python3 -m json.tool <"$RESPONSE_BODY"
 
   if ! READBACK_HTTP_CODE="$(fetch_public_item "Post-upload readback")"; then
@@ -989,16 +1061,20 @@ if [[ "$RELEASE_ACTION" == "upload" || "$RELEASE_ACTION" == "recover" ]]; then
     print_response_body
     exit 1
   fi
-  inspect_store_item exact "Post-upload readback" "$EXPECT_ICON" "$EXPECT_SCREENSHOT_COUNT"
-  REMOTE_DOWNLOAD_URL="$(store_download_url)"
-  if ! verify_public_artifact "$REMOTE_DOWNLOAD_URL" "Post-upload readback"; then
-    exit 1
+  inspect_store_item "$VERIFY_MODE" "Post-upload readback" "$EXPECT_ICON" "$EXPECT_SCREENSHOT_COUNT"
+  if [[ "$RELEASE_ACTION" == "refresh" ]]; then
+    echo "Verified refreshed store listing: $ID $VERSION"
+  else
+    REMOTE_DOWNLOAD_URL="$(store_download_url)"
+    if ! verify_public_artifact "$REMOTE_DOWNLOAD_URL" "Post-upload readback"; then
+      exit 1
+    fi
+    echo "Verified public store release: $ID $VERSION"
   fi
-  echo "Verified public store release: $ID $VERSION"
 fi
 
 if [[ -n "$TAG" ]]; then
-  if [[ "$RELEASE_ACTION" == "equal" ]] \
+  if [[ "$RELEASE_ACTION" == "equal" || "$RELEASE_ACTION" == "refresh" ]] \
     && git -C "$ROOT" show-ref --verify --quiet "refs/tags/$TAG"; then
     [[ "$(git -C "$ROOT" cat-file -t "$TAG")" == "tag" ]] || {
       echo "Existing release tag must be annotated: $TAG" >&2

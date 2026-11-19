@@ -226,7 +226,14 @@ upload_preflight() {
     "$SANDBOX/scripts/upload-extension.sh" AExtension >"$SANDBOX/stdout" 2>"$SANDBOX/stderr"
 }
 upload_preflight
-grep -q 'unchanged tagged source; skipping PUT' "$SANDBOX/stdout"
+grep -q 'unchanged tagged source' "$SANDBOX/stdout"
+grep -q 'is current; skipping PUT' "$SANDBOX/stdout"
+# Listing copy is not built into the bundle, so editing it keeps the tagged source unchanged.
+printf 'Listing copy.\n' >"$SANDBOX/AExtension/STORE.md"
+git -C "$SANDBOX" add AExtension/STORE.md
+git -C "$SANDBOX" commit -qm 'Add listing copy'
+upload_preflight
+grep -q 'unchanged tagged source' "$SANDBOX/stdout"
 printf '// committed shared change\n' >>"$SANDBOX/ChromiumExtensionSupport/Package.swift"
 git -C "$SANDBOX" add ChromiumExtensionSupport
 git -C "$SANDBOX" commit -qm 'Change shared browser support only'

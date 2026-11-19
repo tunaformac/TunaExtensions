@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import plistlib
+import re
 import shutil
 import stat
 import subprocess
@@ -156,7 +157,122 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--category", action="append", default=[])
     parser.add_argument("--tag", action="append", default=[])
     parser.add_argument("--warning", action="append", default=[])
+    parser.add_argument("--store-metadata", default="", help="Path to the extension's STORE.md")
+    parser.add_argument("--changelog", default="", help="Path to the extension's CHANGELOG.md")
     return parser.parse_args()
+
+
+WARNING_CODES = {
+    "automation", "accessibility", "full_disk_access", "screen_recording", "microphone",
+    "camera", "contacts", "calendar", "reminders", "photos", "location", "network",
+}
+CATEGORIES = {
+    "browsers", "developer", "files", "media", "notes", "productivity", "security", "tasks",
+    "text", "web",
+}
+STORE_LIST_KEYS = {"categories", "tags", "warnings"}
+STORE_URL_KEYS = {"developer_url", "support_url", "privacy_url"}
+# Mirrors the server's StoreItemRelease::CONTENTS_KEYS so a listing compares equal after upload.
+CONTENTS_KEYS = {
+    "catalogs": ["id", "name", "description", "presentation", "contents_catalog_id"],
+    "action_catalogs": ["id", "name", "actions"],
+    "settings": ["key", "label", "kind", "description", "catalog_id"],
+    "connections": ["provider_id", "name", "kind", "description"],
+}
+ACTION_KEYS = ["id", "title", "symbol"]
+
+
+def parse_store_metadata(path: str) -> dict:
+    """Reads STORE.md: optional `---` frontmatter of `key: value` / `key: [a, b]`, then a
+    Markdown body that becomes the listing description."""
+    if not path:
+        return {}
+    with open(path, encoding="utf-8") as fh:
+        text = fh.read()
+
+    fields: dict = {}
+    body = text
+    lines = text.splitlines()
+    if lines and lines[0].strip() == "---":
+        try:
+            end = next(i for i, line in enumerate(lines[1:], start=1) if line.strip() == "---")
+        except StopIteration:
+            raise ValueError(f"{path}: frontmatter is missing its closing ---")
+        for number, line in enumerate(lines[1:end], start=2):
+            if not line.strip() or line.lstrip().startswith("#"):
+                continue
+            key, sep, value = line.partition(":")
+            key, value = key.strip(), value.strip()
+            if not sep or key not in STORE_LIST_KEYS | STORE_URL_KEYS:
+                raise ValueError(f"{path}:{number}: unknown or malformed field {line.strip()!r}")
+            if key in STORE_LIST_KEYS:
+                if not (value.startswith("[") and value.endswith("]")):
+                    raise ValueError(f"{path}:{number}: {key} must be a list like [a, b]")
+                fields[key] = [part.strip() for part in value[1:-1].split(",") if part.strip()]
+            elif value:
+                if not re.match(r"https?://", value):
+                    raise ValueError(f"{path}:{number}: {key} must be an http(s) URL")
+                fields[key] = value
+        body = "\n".join(lines[end + 1:])
+
+    for warning in fields.get("warnings", []):
+        if warning not in WARNING_CODES:
+            raise ValueError(f"{path}: unknown warning {warning!r}")
+    for category in fields.get("categories", []):
+        if category not in CATEGORIES:
+            raise ValueError(f"{path}: unknown category {category!r}")
+
+    fields["description"] = body.strip() or None
+    return fields
+
+
+def changelog_release_notes(path: str, version: str) -> "str | None":
+    """The CHANGELOG section for `version`, else its `## Unreleased` section."""
+    if not path:
+        return None
+    with open(path, encoding="utf-8") as fh:
+        lines = fh.read().splitlines()
+
+    sections: dict[str, list[str]] = {}
+    current = None
+    for line in lines:
+        if line.startswith("## "):
+            current = line[3:].split()[0].lstrip("v") if line[3:].split() else ""
+            sections.setdefault(current, [])
+            continue
+        if current is not None:
+            sections[current].append(line)
+
+    for heading in (version, "Unreleased"):
+        notes = "\n".join(sections.get(heading, [])).strip()
+        if notes:
+            return notes
+    return None
+
+
+def sanitize_contents(value) -> "dict | None":
+    if not isinstance(value, dict):
+        return None
+
+    def entry(raw: dict, keys: list[str]) -> dict:
+        result = {}
+        for key in keys:
+            item = raw.get(key)
+            if key == "actions":
+                result[key] = [entry(a, ACTION_KEYS) for a in item or [] if isinstance(a, dict)]
+            else:
+                result[key] = item if isinstance(item, str) and item else None
+        return result
+
+    return {
+        section: [entry(e, keys) for e in value.get(section) or [] if isinstance(e, dict)]
+        for section, keys in CONTENTS_KEYS.items()
+    }
+
+
+def unique(values: list[str]) -> list[str]:
+    seen = set()
+    return [v for v in values if v and not (v in seen or seen.add(v))]
 
 
 def normalize_arches(raw_values: list[str]) -> list[str]:
@@ -359,9 +475,16 @@ def main() -> int:
         summary = description.splitlines()[0]
     else:
         summary = ""
-    # Extensions no longer declare categories; store categorization is curated
-    # web-side (admin or --category at packaging time).
-    categories = args.category
+    try:
+        store = parse_store_metadata(args.store_metadata)
+    except (OSError, ValueError) as error:
+        print("Invalid store metadata: %s" % error, file=sys.stderr)
+        return 1
+    # Categories, tags, and warnings come from STORE.md (or --category/--tag/--warning).
+    # Extension declarations do not carry them.
+    categories = unique(args.category + store.get("categories", []))
+    tags = unique(args.tag + store.get("tags", []))
+    warnings = unique(args.warning + store.get("warnings", []))
 
     declaration_compatibility = declaration.get("compatibility") or {}
     min_tuna = str(args.min_tuna or declaration_compatibility.get("min_tuna") or "").strip()
@@ -467,9 +590,16 @@ def main() -> int:
             "icon_url": None,
             "version": version,
             "updated_at": utc_now_iso8601(),
+            "description": store.get("description"),
+            "developer_url": store.get("developer_url"),
+            "support_url": store.get("support_url"),
+            "privacy_url": store.get("privacy_url"),
+            "release_notes": changelog_release_notes(args.changelog, version),
             "categories": categories,
-            "tags": args.tag,
-            "warnings": args.warning,
+            "tags": tags,
+            "warnings": warnings,
+            "contents": sanitize_contents(declaration.get("contents")),
+            "works_with_bundle_ids": unique(declaration.get("works_with_bundle_ids") or []),
             "compatibility": compatibility,
             "download": {
                 "url": download_url,

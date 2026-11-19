@@ -29,6 +29,7 @@ test: test-release-scripts test-chromium-support test-extensions
 
 test-release-scripts:
 	@./tests/release-all-extensions-test.sh
+	@./tests/store-listing-test.sh
 	@./tests/cross-repo-paths-test.sh
 	@./tests/run-xcodebuild-test.sh
 	@./tests/local-tunakit-rewrite-test.sh

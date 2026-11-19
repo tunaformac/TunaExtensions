@@ -141,7 +141,9 @@ compiler errors plus the log path on failure. Use `make test-release-scripts` wh
 repository tooling, and `make test-extensions` when validating extension test targets.
 
 Before opening a pull request, build and test the extension, document setup and privacy behavior,
-and add focused tests. Maintainers use the repository release tooling for packaging and publication;
+and add focused tests. Add a `STORE.md` with the store description, category, and the permissions
+the extension asks for, and keep `CHANGELOG.md` current; the
+[README](../README.md#store-listing-copy) describes both. Maintainers use the repository release tooling for packaging and publication;
 contributors should not upload extension packages directly.
 
 ## Validation checklist

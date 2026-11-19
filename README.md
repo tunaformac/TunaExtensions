@@ -126,8 +126,41 @@ listing-media source.
 with `op://Brainbow/Tuna/EXTENSIONS_STORE_SIGNING_PRIVATE_KEY` by default. Override that provider
 with `EXTENSIONS_STORE_SIGNING_PRIVATE_KEY_OP`, or set `SIGNING_KEY` to a PEM file directly.
 Packaging requires both `minTuna` and `minTunaKit` from the declaration or explicit `MIN_TUNA` and
-`MIN_TUNAKIT` overrides; it never invents either floor. Store categories are curated separately and
-are not copied from declarations.
+`MIN_TUNAKIT` overrides; it never invents either floor.
+
+### Store listing copy
+
+The store listing is built from files beside each extension's sources:
+
+- The **summary** is the first line of the declaration's `description`.
+- **What it adds** (catalog names, action titles, setting and connection kinds) and the apps it
+  **works with** come from the built declaration via `Tuna --dump-extension-declaration`.
+- **Release notes** are the extension's `CHANGELOG.md` section headed with the packaged version
+  (`## 0.13`), or its `## Unreleased` section when there is none yet.
+- The **description**, categories, permissions, and links come from an optional `STORE.md`:
+
+```markdown
+---
+categories: [media]
+warnings: [automation]
+support_url: https://github.com/tunaformac/TunaExtensions/tree/main/CleanShotExtension
+---
+Run CleanShot X captures from Tuna and act on recent screenshots…
+```
+
+The frontmatter accepts `categories`, `tags`, `warnings` (inline lists) and `developer_url`,
+`support_url`, `privacy_url` (http(s) URLs); anything else fails packaging. Categories must be one
+of `browsers`, `developer`, `files`, `media`, `notes`, `productivity`, `security`, `tasks`, `text`,
+or `web`. Warnings are the permissions users are asked for, from the store's codes: `automation`,
+`accessibility`, `full_disk_access`, `screen_recording`, `microphone`, `camera`, `contacts`,
+`calendar`, `reminders`, `photos`, `location`, `network`. The body is the listing's Markdown
+description, written for people using Tuna rather than building it. Uploads send only the fields a
+package sets, so values curated in the store admin survive for anything left out.
+
+Listing copy is not part of the package. When the store already has the same version and bytes but
+its listing differs, `make ext-upload` and `make release` refresh the listing without re-uploading
+the package, and editing `STORE.md`, `CHANGELOG.md`, or `README.md` does not count as a source
+change for release-tag reuse. To backfill listings, commit the copy and run `make release-all`.
 
 Uploads require the selected extension, `.gitignore`, `Makefile`, `scripts/`, and `media/` to remain
 clean before and after packaging, including staged and untracked files. `release-all` applies that
@@ -147,7 +180,8 @@ Before uploading, the release command reads the public store item without authen
 same-version release is accepted only when uploader-controlled metadata, expected listing media,
 and the public artifact's downloaded size and SHA-256 all match. Missing media, a missing artifact,
 or mismatched public bytes triggers a same-version recovery upload; controlled metadata drift still
-fails closed. After any upload, the response and a fresh public readback must match, and the public
+fails closed, while drift in listing copy (description, release notes, categories, warnings, links,
+contents) triggers a package-free listing refresh. After any upload, the response and a fresh public readback must match, and the public
 artifact is downloaded and verified again before a release tag can be created. Upload credentials
 are resolved only when a PUT is needed and are passed through a private curl configuration file;
 public metadata and artifact requests never receive the bearer header.

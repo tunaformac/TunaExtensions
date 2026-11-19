@@ -207,6 +207,17 @@ if [[ -n "${ARCH:-}" ]]; then
   done
 fi
 
+# Listing copy lives beside the extension's sources: STORE.md for the description,
+# categories, warnings, and links; CHANGELOG.md for the version's release notes.
+IFS=$'\t' read -r PROJECT_PATH _ < <("$ROOT/scripts/resolve-extension-scheme.sh" "$TARGET")
+EXTENSION_DIR="$(dirname "$PROJECT_PATH")"
+if [[ -f "$EXTENSION_DIR/STORE.md" ]]; then
+  ARGS+=(--store-metadata "$EXTENSION_DIR/STORE.md")
+fi
+if [[ -f "$EXTENSION_DIR/CHANGELOG.md" ]]; then
+  ARGS+=(--changelog "$EXTENSION_DIR/CHANGELOG.md")
+fi
+
 resolve_signing_key
 if [[ -n "$SIGNING_KEY_PATH" ]]; then
   ARGS+=(--signing-key "$SIGNING_KEY_PATH")
