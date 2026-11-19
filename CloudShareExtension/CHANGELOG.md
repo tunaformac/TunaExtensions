@@ -1,6 +1,6 @@
 # Cloud Share Extension Changelog
 
-## Unreleased
+## 0.1
 
 - First release: Cloud Share files and images to Amazon S3 or S3-compatible storage and copy the
   public link, returned inline; Cloud Share to… picks among several destinations; Cloud Share to
