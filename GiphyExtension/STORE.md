@@ -7,4 +7,4 @@ Browse **GIPHY** for trending GIFs, or type to search. The selected GIF animates
 
 It works right away with a shared key that is limited to 100 requests an hour across all Tuna users. For your own quota, add a personal GIPHY API key in the extension's settings. It is stored in your Mac Keychain. You can also set the highest content rating, from G to R.
 
-Searches go straight from your Mac to GIPHY, along with the anonymous usage events GIPHY requires. Powered by GIPHY.
+Searches go straight from your Mac to GIPHY, along with a random ID saved for this Mac and the events GIPHY asks apps to report when a GIF is shown, picked, or pasted. Powered by GIPHY.

@@ -3,7 +3,7 @@ categories: [security]
 warnings: [full_disk_access]
 support_url: https://github.com/tunaformac/TunaExtensions/tree/main/Messages2FAExtension
 ---
-Browse **Messages 2FA** to see verification codes from messages you received recently, then paste or copy one with Tuna's usual text actions. You can also select Messages in Tuna and browse it.
+Browse **Recent 2FA Codes** to see verification codes from messages you received recently, then paste or copy one with Tuna's usual text actions. You can also select Messages in Tuna and browse it.
 
 Only the code, sender, and time are shown. The rest of the message stays hidden. Codes never show up in Tuna's global search, and nothing is sent anywhere or saved.
 

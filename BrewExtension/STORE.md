@@ -3,7 +3,7 @@ categories: [developer]
 warnings: [network]
 support_url: https://github.com/tunaformac/TunaExtensions/tree/main/BrewExtension
 ---
-Find formulae and casks with **Homebrew Search**, then install, uninstall, or upgrade them, or open their info page, without opening a terminal.
+Browse **Homebrew** and type to find formulae and casks, then install, uninstall, or upgrade them, or open their info page, without opening a terminal.
 
 The **Homebrew** item also gives you:
 
