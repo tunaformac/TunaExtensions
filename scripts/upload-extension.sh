@@ -410,6 +410,11 @@ def listing_mismatches(candidate_item, remote_item):
     anything else keeps the store's value, which may differ."""
     managed = set(candidate_item.get("managed_listing_fields") or [])
     mismatches = []
+    value = candidate_item.get("requires_app")
+    if (value is not None or "requires_app" in managed) and bool(
+        remote_item.get("requires_app")
+    ) != bool(value):
+        mismatches.append("requires_app differs")
     for key in LISTING_TEXT_FIELDS:
         value = clean_text(candidate_item.get(key))
         if (value or key in managed) and clean_text(remote_item.get(key)) != value:
@@ -691,6 +696,9 @@ add_listing_form_fields() {
       CURL_ARGS+=(--form-string "store_item[$FIELD]=$VALUE")
     fi
   done
+  if [[ "$(read_field "int(d.get('requires_app') is not None or 'requires_app' in (d.get('managed_listing_fields') or []))")" == 1 ]]; then
+    CURL_ARGS+=(--form-string "store_item[requires_app]=$(read_field "'true' if d.get('requires_app') else 'false'")")
+  fi
   for FIELD in categories tags warnings works_with_bundle_ids; do
     if [[ "$(read_field "int(not d.get('$FIELD') and '$FIELD' in (d.get('managed_listing_fields') or []))")" == 1 ]]; then
       CURL_ARGS+=(--form-string "store_item[$FIELD]=")

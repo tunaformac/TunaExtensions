@@ -1,6 +1,7 @@
 ---
 categories: [media]
 support_url: https://github.com/tunaformac/TunaExtensions/tree/main/CleanShotExtension
+requires_app: true
 ---
 Run CleanShot X commands from Tuna: **Capture Area**, **Capture Window**, **Capture Full Screen**, **Scrolling Capture**, **Capture Text (OCR)**, **Record Screen**, **All-in-One Capture**, and more, plus **Annotate from Clipboard**, **Open History**, and the desktop icon toggles.
 

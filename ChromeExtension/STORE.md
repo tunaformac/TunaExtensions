@@ -2,6 +2,7 @@
 categories: [browsers]
 warnings: [automation]
 support_url: https://github.com/tunaformac/TunaExtensions/tree/main/ChromeExtension
+requires_app: true
 ---
 Search your Chrome bookmarks across every profile, or open a profile directly. **Open in Google Chrome** and **Copy URL** work on any bookmark.
 

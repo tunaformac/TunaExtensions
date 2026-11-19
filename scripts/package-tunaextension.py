@@ -172,8 +172,10 @@ CATEGORIES = {
 }
 STORE_LIST_KEYS = {"categories", "tags", "warnings"}
 STORE_URL_KEYS = {"developer_url", "support_url", "privacy_url"}
+STORE_BOOL_KEYS = {"requires_app"}
 STORE_MANAGED_FIELDS = (
     "description", "developer_url", "support_url", "privacy_url", "categories", "tags", "warnings",
+    "requires_app",
 )
 # Mirrors the server's StoreItemRelease::CONTENTS_KEYS so a listing compares equal after upload.
 CONTENTS_KEYS = {
@@ -206,12 +208,16 @@ def parse_store_metadata(path: str) -> dict:
                 continue
             key, sep, value = line.partition(":")
             key, value = key.strip(), value.strip()
-            if not sep or key not in STORE_LIST_KEYS | STORE_URL_KEYS:
+            if not sep or key not in STORE_LIST_KEYS | STORE_URL_KEYS | STORE_BOOL_KEYS:
                 raise ValueError(f"{path}:{number}: unknown or malformed field {line.strip()!r}")
             if key in STORE_LIST_KEYS:
                 if not (value.startswith("[") and value.endswith("]")):
                     raise ValueError(f"{path}:{number}: {key} must be a list like [a, b]")
                 fields[key] = [part.strip() for part in value[1:-1].split(",") if part.strip()]
+            elif key in STORE_BOOL_KEYS:
+                if value not in {"true", "false"}:
+                    raise ValueError(f"{path}:{number}: {key} must be true or false")
+                fields[key] = value == "true"
             elif value:
                 if not re.match(r"https?://", value):
                     raise ValueError(f"{path}:{number}: {key} must be an http(s) URL")
@@ -613,6 +619,7 @@ def main() -> int:
             "developer_url": store.get("developer_url"),
             "support_url": store.get("support_url"),
             "privacy_url": store.get("privacy_url"),
+            "requires_app": store.get("requires_app", False) if args.store_metadata else None,
             "release_notes": release_notes,
             "unreleased_release_notes": unreleased_release_notes,
             "categories": categories,

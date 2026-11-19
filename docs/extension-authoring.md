@@ -142,7 +142,8 @@ repository tooling, and `make test-extensions` when validating extension test ta
 
 Before opening a pull request, build and test the extension, document setup and privacy behavior,
 and add focused tests. Add a `STORE.md` with the store description, category, and the permissions
-the extension asks for, and keep `CHANGELOG.md` current; the
+the extension asks for (plus `requires_app: true` if it does nothing without its app), and keep
+`CHANGELOG.md` current; the
 [README](../README.md#store-listing-copy) describes both. Maintainers use the repository release tooling for packaging and publication;
 contributors should not upload extension packages directly.
 

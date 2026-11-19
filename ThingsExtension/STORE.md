@@ -1,6 +1,7 @@
 ---
 categories: [tasks]
 support_url: https://github.com/tunaformac/TunaExtensions/tree/main/ThingsExtension
+requires_app: true
 ---
 Jump to any Things list, such as Inbox, Today, Upcoming, Anytime, Someday, or Logbook, with **Show in Things**. Select or type some text and run **Add to Things**, **Add to Today in Things**, or **Add to Things (Quick Entry)** to turn it into to-dos. **Search Things** searches Things for the text.
 

@@ -146,12 +146,16 @@ The store listing is built from files beside each extension's sources:
 categories: [media]
 warnings: [automation]
 support_url: https://github.com/tunaformac/TunaExtensions/tree/main/CleanShotExtension
+requires_app: true
 ---
 Run CleanShot X captures from Tuna and act on recent screenshots…
 ```
 
 The frontmatter accepts `categories`, `tags`, `warnings` (inline lists) and `developer_url`,
-`support_url`, `privacy_url` (http(s) URLs); anything else fails packaging. Categories must be one
+`support_url`, `privacy_url` (http(s) URLs), and `requires_app` (`true` or `false`); anything else
+fails packaging. Set `requires_app: true` only when the extension does nothing useful without the
+app it works with installed. The store then warns people who don't have that app; otherwise it
+says the extension works best with it. Leaving it out means `false`. Categories must be one
 of `browsers`, `developer`, `files`, `media`, `notes`, `productivity`, `security`, `tasks`, `text`,
 or `web`. Warnings are the permissions users are asked for, from the store's codes: `automation`,
 `accessibility`, `full_disk_access`, `screen_recording`, `microphone`, `camera`, `contacts`,

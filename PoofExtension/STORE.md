@@ -1,6 +1,7 @@
 ---
 categories: [text]
 support_url: https://github.com/tunaformac/TunaExtensions/tree/main/PoofExtension
+requires_app: true
 ---
 Browse **Poof Snippets** to search your snippets by description, trigger, or text, and paste one. Date, time, UUID, and clipboard placeholders are filled in when you paste.
 

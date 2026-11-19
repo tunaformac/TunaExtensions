@@ -107,8 +107,9 @@ assert item["release_notes"] == "- Shipped change.\n- Another one.", item["relea
 assert item["unreleased_release_notes"] == "- Upcoming change.", item["unreleased_release_notes"]
 assert set(item["managed_listing_fields"]) == {
     "description", "developer_url", "support_url", "privacy_url", "categories", "tags", "warnings",
-    "works_with_bundle_ids",
+    "requires_app", "works_with_bundle_ids",
 }, item["managed_listing_fields"]
+assert item["requires_app"] is False, item["requires_app"]
 assert item["categories"] == ["productivity"], item["categories"]
 assert item["warnings"] == ["automation", "network"], item["warnings"]
 assert item["support_url"] == "https://example.com/support"
@@ -131,10 +132,10 @@ sed -i '' 's/<string>1.3</<string>1.2</' "$BUNDLE/Contents/Info.plist"
 # Without STORE.md or CHANGELOG.md the listing copy is simply absent.
 "$ROOT/scripts/package-tunaextension.py" --bundle "$BUNDLE" --out "$SANDBOX/dist" --arch arm64 \
   --declaration-json "$SANDBOX/declaration.json" \
-  | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["description"] is None and d["release_notes"] is None and d["categories"] == [] and d["managed_listing_fields"] == ["works_with_bundle_ids"], d'
+  | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["description"] is None and d["release_notes"] is None and d["categories"] == [] and d["managed_listing_fields"] == ["works_with_bundle_ids"] and d["requires_app"] is None, d'
 
 # Unknown warnings, categories, or fields fail packaging.
-for bad in 'warnings: [telepathy]' 'categories: [games]' 'colour: blue'; do
+for bad in 'warnings: [telepathy]' 'categories: [games]' 'colour: blue' 'requires_app: yes'; do
   printf -- '---\n%s\n---\nBody\n' "$bad" >"$SANDBOX/BAD.md"
   if "$ROOT/scripts/package-tunaextension.py" --bundle "$BUNDLE" --out "$SANDBOX/dist" \
     --arch arm64 --declaration-json "$SANDBOX/declaration.json" \
@@ -143,6 +144,12 @@ for bad in 'warnings: [telepathy]' 'categories: [games]' 'colour: blue'; do
   fi
   grep -q 'Invalid store metadata' "$SANDBOX/stderr"
 done
+
+# requires_app: true marks an extension that does nothing without its app.
+printf -- '---\nrequires_app: true\n---\nBody\n' >"$SANDBOX/REQUIRES.md"
+"$ROOT/scripts/package-tunaextension.py" --bundle "$BUNDLE" --out "$SANDBOX/dist" --arch arm64 \
+  --declaration-json "$SANDBOX/declaration.json" --store-metadata "$SANDBOX/REQUIRES.md" \
+  | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["requires_app"] is True, d'
 
 # --- Upload ----------------------------------------------------------------------------------
 
@@ -191,6 +198,8 @@ def apply_put(item, form, download):
                 lists[name].append(value.strip())
         elif key in TEXT:
             item[key] = value.strip() or None
+        elif key == "requires_app":
+            item[key] = value == "true"
         elif key == "contents":
             item[key] = json.loads(value)
     item.update(lists)
@@ -248,6 +257,7 @@ write("metadata.json", item)
 unreleased = dict(item, release_notes=None)
 write("metadata-unreleased.json", unreleased)
 write("metadata-cleared.json", dict(item, description=None, categories=[], warnings=[]))
+write("metadata-requires-app.json", dict(item, requires_app=True))
 
 # The store before listing copy existed, after a full upload of the candidate, holding an older
 # version, and holding this version with notes published before Unreleased moved on.
@@ -356,6 +366,7 @@ assert_listing_sent() {
   # STORE.md manages its links, so an unset one is sent empty and clears the store's value.
   sent 'store_item[developer_url]='
   sent 'store_item[tags]='
+  sent 'store_item[requires_app]=false'
 }
 
 # Same version, same bytes, stale listing: refresh the listing without re-uploading the package.
@@ -406,6 +417,14 @@ sent 'store_item[categories]='
 sent 'store_item[warnings]='
 stored 'd["description"] is None and d["categories"] == [] and d["warnings"] == []'
 grep -q 'Verified refreshed store listing' "$SANDBOX/stdout" || fail "cleared listing not verified"
+
+# --- STORE.md's requires_app is sent and checked like the rest of the listing ----------------
+
+STORE_STATE=fresh METADATA=metadata-requires-app.json upload requires-app
+grep -q 'will be refreshed: requires_app differs' "$SANDBOX/stdout" || fail "requires_app drift not noticed"
+sent 'store_item[requires_app]=true'
+stored 'd["requires_app"] is True'
+grep -q 'Verified refreshed store listing' "$SANDBOX/stdout" || fail "requires_app not verified"
 
 # --- Preflight checks the release tag the real run will use -----------------------------------
 
