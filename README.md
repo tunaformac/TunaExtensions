@@ -116,7 +116,9 @@ which requires a Tuna binary. It uses `TUNA_BINARY` when provided, then the debu
 explicit `TUNA_ROOT`, then falls back to `/Applications/Tuna.app` and `~/Applications/Tuna.app`.
 When coordinating changes from a Tuna worktree, prefer Tuna's
 `scripts/tuna-extensions.sh <target>` wrapper; it passes both paths explicitly. A store icon belongs beside its sources at
-`<Extension>/icon.png` — every extension here has one except CloudShareExtension, which still needs one. `media/icons/<id-or-slug>.<extension>` still
+`<Extension>/icon.png`, a 1024×1024 PNG. For an SF Symbol on a flat tile (Cloud Share, Strongbox),
+`swift scripts/render-symbol-icon.swift <symbol> <hex> <weight> <glyph-height> <out.png>` renders one in
+the same style. `media/icons/<id-or-slug>.<extension>` still
 works for icons curated outside an extension directory. Screenshots live at
 `media/screenshots/<id-or-slug>/*`. Media supplied by this tooling must be tracked; curated server
 media need not be duplicated here. `dist/store/` is generated output and is never used as a
