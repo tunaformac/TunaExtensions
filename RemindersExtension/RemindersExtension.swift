@@ -11,7 +11,7 @@ public final class RemindersExtension: Extension {
         description: "Search reminders and create them in specific lists.",
         iconName: "checklist"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.95", minTunaKit: "1.21.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.96", minTunaKit: "1.22.0"),
       catalogs: [
         CatalogDeclaration(
           id: "reminders", type: RemindersCatalog.self, name: "Reminders",

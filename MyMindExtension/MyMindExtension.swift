@@ -13,7 +13,7 @@ public final class MyMindExtension: Extension {
         description: "Search, browse, resolve, and save objects in your mind.",
         iconName: "brain"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.95", minTunaKit: "1.21.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.96", minTunaKit: "1.22.0"),
       settings: MyMindSettings.definitions,
       catalogs: [
         CatalogDeclaration(

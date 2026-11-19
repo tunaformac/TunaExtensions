@@ -11,7 +11,7 @@ public final class ThingsExtension: Extension {
         description: "Create Things to-dos and jump to lists.",
         iconName: "checkmark.circle"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.95", minTunaKit: "1.21.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.96", minTunaKit: "1.22.0"),
       settings: [
         CatalogSettingDefinition(
           key: "ShowThingsWhenAdding",

@@ -11,7 +11,7 @@ public final class Messages2FAExtension: Extension {
         description: "Find and use recent two-factor authentication codes from Messages.",
         iconName: "message.badge"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.95", minTunaKit: "1.21.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.96", minTunaKit: "1.22.0"),
       settings: Messages2FASettings.definitions,
       catalogs: [
         CatalogDeclaration(

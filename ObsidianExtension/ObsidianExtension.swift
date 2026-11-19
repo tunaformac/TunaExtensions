@@ -11,7 +11,7 @@ public final class ObsidianExtension: Extension {
         description: "Browse Obsidian vaults, folders, and notes, with quick capture actions.",
         iconName: "square.stack.3d.up"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.95", minTunaKit: "1.21.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.96", minTunaKit: "1.22.0"),
       catalogs: [
         CatalogDeclaration(
           id: "obsidian", type: ObsidianVaultsCatalog.self, name: "Vaults",

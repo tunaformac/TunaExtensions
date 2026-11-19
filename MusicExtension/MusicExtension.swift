@@ -14,7 +14,7 @@ public final class MusicExtension: Extension {
         description: "Control Music, browse your library, and search Apple Music.",
         iconName: "music.note"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.95", minTunaKit: "1.21.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.96", minTunaKit: "1.22.0"),
       catalogs: [
         CatalogDeclaration(
           id: "music.controls", type: MusicControlsCatalog.self, name: "Music Controls",
