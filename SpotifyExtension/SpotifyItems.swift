@@ -10,6 +10,47 @@ extension TypeID {
   static let spotifyDevice = TypeID("com.tuna.type.spotify-device")
 }
 
+/// A Spotify object named by a `spotify:` URI or an open.spotify.com link.
+struct SpotifyURI: Equatable, Sendable {
+  static let playableTypes: Set<String> = [
+    "track", "album", "artist", "playlist", "episode", "show",
+  ]
+
+  let type: String
+  let id: String
+
+  var uri: String { "spotify:\(type):\(id)" }
+  var webURL: URL { URL(string: "https://open.spotify.com/\(type)/\(id)")! }
+  var resourceKind: SpotifyResource.Kind? { SpotifyResource.Kind(rawValue: type) }
+
+  init?(type: String, id: String) {
+    guard Self.playableTypes.contains(type), !id.isEmpty,
+      id.allSatisfy({ $0.isLetter || $0.isNumber })
+    else { return nil }
+    self.type = type
+    self.id = id
+  }
+
+  /// Accepts `spotify:track:ID` and `https://open.spotify.com/[intl-xx/]track/ID?si=…`.
+  init?(_ string: String) {
+    let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+    if trimmed.lowercased().hasPrefix("spotify:") {
+      let parts = trimmed.split(separator: ":").map(String.init)
+      guard parts.count == 3 else { return nil }
+      self.init(type: parts[1], id: parts[2])
+      return
+    }
+    guard let components = URLComponents(string: trimmed),
+      components.scheme?.lowercased() == "https",
+      components.host?.lowercased() == "open.spotify.com"
+    else { return nil }
+    var segments = components.path.split(separator: "/").map(String.init)
+    if segments.first?.hasPrefix("intl-") == true { segments.removeFirst() }
+    guard segments.count >= 2 else { return nil }
+    self.init(type: segments[0], id: segments[1])
+  }
+}
+
 class SpotifyItem: CatalogEntity, TextValueProviding, CatalogAsyncPreviewProviding,
   @unchecked Sendable
 {
@@ -122,7 +163,7 @@ final class SpotifyNowPlayingItem: CatalogEntity, TextValueProviding, CatalogAsy
 
   init(nowPlaying: SpotifyNowPlaying) {
     self.nowPlaying = nowPlaying
-    let url = SpotifyNowPlayingItem.openURL(for: nowPlaying.uri)
+    let url = SpotifyURI(nowPlaying.uri)?.webURL
     super.init(id: Self.identifier, title: "Now Playing", path: url?.absoluteString)
     typeID = .spotifyTrack
     previewIdentityVersion = UInt64(
@@ -130,6 +171,23 @@ final class SpotifyNowPlayingItem: CatalogEntity, TextValueProviding, CatalogAsy
   }
 
   var textValue: String { [nowPlaying.title, nowPlaying.artist].joined(separator: " — ") }
+
+  /// The playing track as a Web API resource, for Save to Library. Nil for ads and local files.
+  var resource: SpotifyResource? {
+    guard let uri = SpotifyURI(nowPlaying.uri), uri.type == "track" else { return nil }
+    return SpotifyResource(
+      kind: .track,
+      id: uri.id,
+      title: nowPlaying.title,
+      subtitle: nowPlaying.artist,
+      uri: uri.uri,
+      externalURL: uri.webURL,
+      artworkURL: nowPlaying.artworkURL,
+      isSaved: nil,
+      isBrowsable: false,
+      canModifyPlaylist: false
+    )
+  }
 
   override var detail: String? {
     [textValue, nowPlaying.state == .paused ? "Paused" : ""].filter { !$0.isEmpty }.joined(
@@ -148,12 +206,6 @@ final class SpotifyNowPlayingItem: CatalogEntity, TextValueProviding, CatalogAsy
   func asyncPreview(maxDimension: CGFloat) async -> CatalogItemPreview? {
     guard let url = nowPlaying.artworkURL else { return nil }
     return await SpotifyArtworkLoader.shared.preview(for: url, maxDimension: maxDimension)
-  }
-
-  private static func openURL(for uri: String) -> URL? {
-    let parts = uri.split(separator: ":")
-    guard parts.count == 3, parts[0] == "spotify" else { return nil }
-    return URL(string: "https://open.spotify.com/\(parts[1])/\(parts[2])")
   }
 }
 

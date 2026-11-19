@@ -28,9 +28,26 @@ struct SpotifyDevice: Sendable {
   let isRestricted: Bool
 }
 
-enum SpotifyAPIError: LocalizedError {
+struct SpotifyProfile: Equatable, Sendable {
+  let id: String
+  let displayName: String?
+  /// Spotify's stable account identifier (added May 2026); `id` may change.
+  let accountID: String?
+
+  init?(_ payload: [String: Any]) {
+    guard let id = payload["id"] as? String, !id.isEmpty else { return nil }
+    self.id = id
+    displayName = (payload["display_name"] as? String).flatMap { $0.isEmpty ? nil : $0 }
+    accountID = (payload["account_id"] as? String).flatMap { $0.isEmpty ? nil : $0 }
+  }
+}
+
+enum SpotifyAPIError: LocalizedError, Equatable {
+  case missingClientID
   case missingConnection
   case reconnectRequired
+  case invalidClientID
+  case notAllowlisted
   case premiumRequired
   case noActiveDevice
   case rateLimited
@@ -39,8 +56,11 @@ enum SpotifyAPIError: LocalizedError {
 
   var title: String {
     switch self {
-    case .missingConnection: return "Connect Spotify"
-    case .reconnectRequired: return "Reconnect Spotify"
+    case .missingClientID: return "Set Up Spotify Web API"
+    case .missingConnection: return "Sign In to Spotify"
+    case .reconnectRequired: return "Sign In to Spotify Again"
+    case .invalidClientID: return "Spotify Client ID Not Recognized"
+    case .notAllowlisted: return "Spotify Account Not Allowed"
     case .premiumRequired: return "Spotify Premium Required"
     case .noActiveDevice: return "No Active Spotify Device"
     case .rateLimited: return "Spotify Rate Limit Reached"
@@ -51,10 +71,16 @@ enum SpotifyAPIError: LocalizedError {
 
   var errorDescription: String? {
     switch self {
+    case .missingClientID:
+      return "Add your own Spotify app’s client ID in Tuna’s Spotify settings."
     case .missingConnection:
-      return "Connect Spotify in extension settings and try again."
+      return "Sign in to Spotify to search and browse your library."
     case .reconnectRequired:
-      return "Your Spotify connection expired. Reconnect it in extension settings."
+      return "Spotify sign-ins last six months. Sign in again to keep using your library."
+    case .invalidClientID:
+      return "Check the client ID in Tuna’s Spotify settings against your Spotify app."
+    case .notAllowlisted:
+      return "Add this Spotify account under User Management in your Spotify app’s settings."
     case .premiumRequired:
       return "Spotify requires Premium for this playback action."
     case .noActiveDevice:
@@ -67,15 +93,43 @@ enum SpotifyAPIError: LocalizedError {
       return "Could not parse Spotify’s response."
     }
   }
+
+  /// Errors after which the stored tokens are useless and only a new sign-in helps.
+  var endsSession: Bool {
+    self == .reconnectRequired || self == .invalidClientID
+  }
+
+  /// Whether the fix is signing in (or setting up) rather than retrying.
+  var needsAccountSetup: Bool {
+    switch self {
+    case .missingClientID, .missingConnection, .reconnectRequired, .invalidClientID: return true
+    default: return false
+    }
+  }
 }
 
 struct SpotifyAPIClient: Sendable {
-  private let extensionType: AnyClass
   private let session: URLSession
 
-  init(extensionType: AnyClass = SpotifyExtension.self, session: URLSession = .shared) {
-    self.extensionType = extensionType
+  init(session: URLSession = .shared) {
     self.session = session
+  }
+
+  /// The signed-in user, read with a fresh access token during sign-in. Needs no scope.
+  static func profile(accessToken: String, session: URLSession = .shared) async throws
+    -> SpotifyProfile
+  {
+    var request = URLRequest(url: URL(string: "https://api.spotify.com/v1/me")!)
+    request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+    request.setValue("application/json", forHTTPHeaderField: "Accept")
+    let (data, response) = try await session.data(for: request)
+    guard let http = response as? HTTPURLResponse else { throw SpotifyAPIError.invalidResponse }
+    let payload = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] ?? [:]
+    guard (200..<300).contains(http.statusCode) else {
+      throw error(status: http.statusCode, payload: payload, path: "/v1/me")
+    }
+    guard let profile = SpotifyProfile(payload) else { throw SpotifyAPIError.invalidResponse }
+    return profile
   }
 
   func search(_ query: String, limit: Int = 8) async throws -> [SpotifyResource] {
@@ -128,14 +182,13 @@ struct SpotifyAPIClient: Sendable {
   }
 
   func playlists(limit: Int = 50) async throws -> [SpotifyResource] {
-    let connection = try await connection()
+    let userID = try await SpotifyTokenManager.shared.session().record.userID
     let payload = try await request(
       path: "/v1/me/playlists", query: [URLQueryItem(name: "limit", value: String(limit))])
     return items(payload).compactMap {
       let ownerID = ($0["owner"] as? [String: Any])?["id"] as? String
       let canModify =
-        ownerID == (connection.record.userID ?? connection.record.id)
-        || $0["collaborative"] as? Bool == true
+        (ownerID != nil && ownerID == userID) || $0["collaborative"] as? Bool == true
       return parse(
         $0,
         kind: .playlist,
@@ -234,6 +287,16 @@ struct SpotifyAPIClient: Sendable {
     }
   }
 
+  /// Starts playback on the active device; used when the Spotify app isn't installed here.
+  func play(uri: String) async throws {
+    let isSingleItem = uri.hasPrefix("spotify:track:") || uri.hasPrefix("spotify:episode:")
+    _ = try await request(
+      path: "/v1/me/player/play",
+      method: "PUT",
+      body: isSingleItem ? ["uris": [uri]] : ["context_uri": uri]
+    )
+  }
+
   func addToQueue(_ resource: SpotifyResource) async throws {
     _ = try await request(
       path: "/v1/me/player/queue", method: "POST",
@@ -249,12 +312,12 @@ struct SpotifyAPIClient: Sendable {
     attempt: Int = 0,
     forceRefresh: Bool = false
   ) async throws -> [String: Any] {
-    let connection = try await connection(forceRefresh: forceRefresh)
+    let account = try await SpotifyTokenManager.shared.session(forceRefresh: forceRefresh)
     var components = URLComponents(string: "https://api.spotify.com\(path)")!
     components.queryItems = query.isEmpty ? nil : query
     var urlRequest = URLRequest(url: components.url!)
     urlRequest.httpMethod = method
-    urlRequest.setValue("Bearer \(connection.accessToken)", forHTTPHeaderField: "Authorization")
+    urlRequest.setValue("Bearer \(account.accessToken)", forHTTPHeaderField: "Authorization")
     urlRequest.setValue("application/json", forHTTPHeaderField: "Accept")
     if let body {
       urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -275,30 +338,26 @@ struct SpotifyAPIClient: Sendable {
       return try await request(path: path, method: method, query: query, body: body, attempt: 1)
     }
     guard (200..<300).contains(http.statusCode) else {
-      let message =
-        ((try? JSONSerialization.jsonObject(with: data)) as? [String: Any])
-        .flatMap { $0["error"] as? [String: Any] }?["message"] as? String
-      switch http.statusCode {
-      case 401: throw SpotifyAPIError.reconnectRequired
-      case 403 where path.hasPrefix("/v1/me/player"):
-        throw SpotifyAPIError.premiumRequired
-      case 403:
-        throw SpotifyAPIError.unexpectedStatus(http.statusCode, message)
-      case 404 where path.hasPrefix("/v1/me/player"):
-        throw SpotifyAPIError.noActiveDevice
-      case 429: throw SpotifyAPIError.rateLimited
-      default: throw SpotifyAPIError.unexpectedStatus(http.statusCode, message)
-      }
+      let payload = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] ?? [:]
+      throw Self.error(status: http.statusCode, payload: payload, path: path)
     }
     if data.isEmpty { return [:] }
     return (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] ?? [:]
   }
 
-  private func connection(forceRefresh: Bool = false) async throws -> SpotifyConnection {
-    try await SpotifyTokenManager.shared.connection(
-      extensionIdentifier: Bundle(for: extensionType).bundleIdentifier ?? "",
-      forceRefresh: forceRefresh
-    )
+  static func error(status: Int, payload: [String: Any], path: String) -> SpotifyAPIError {
+    let message = (payload["error"] as? [String: Any])?["message"] as? String
+    let isPlayer = path.hasPrefix("/v1/me/player")
+    switch status {
+    case 401: return .reconnectRequired
+    // Development-mode apps answer 403 for Spotify accounts missing from the app's allowlist.
+    case 403 where message?.localizedCaseInsensitiveContains("registered") == true:
+      return .notAllowlisted
+    case 403 where isPlayer: return .premiumRequired
+    case 404 where isPlayer: return .noActiveDevice
+    case 429: return .rateLimited
+    default: return .unexpectedStatus(status, message)
+    }
   }
 
   private func resources(

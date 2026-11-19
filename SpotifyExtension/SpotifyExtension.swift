@@ -17,6 +17,7 @@ public final class SpotifyExtension: Extension {
         iconName: "music.note"
       ),
       compatibility: ExtensionDeclarationCompatibility(minTuna: "0.95", minTunaKit: "1.21.0"),
+      settings: [SpotifyAuth.clientIDSetting],
       catalogs: [
         CatalogDeclaration(
           id: "spotify.controls", type: SpotifyControlsCatalog.self, name: "Spotify Controls",
@@ -87,10 +88,6 @@ public final class SpotifyExtension: Extension {
         )
       ]
     )
-  }
-
-  public override var connectionDefinitions: [ExtensionConnectionDefinition] {
-    [SpotifyCatalogSupport.connectionDefinition]
   }
 
   private static func ranking(_ typeID: TypeID, _ actionIDs: [String])

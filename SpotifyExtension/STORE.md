@@ -3,8 +3,8 @@ categories: [media]
 warnings: [automation, network]
 support_url: https://github.com/tunaformac/TunaExtensions/tree/main/SpotifyExtension
 ---
-Select Spotify in Tuna and browse it for **Now Playing & Controls**, which controls the Spotify app, and **Your Library**, your saved music and playlists. **Spotify** searches tracks, albums, artists, and playlists as you type. You can **Play**, **Save to Library**, **Remove from Library**, **Add to Playlist**, **Add to Queue**, **Play on Device**, or **Open in Spotify**.
+Control the Spotify app from Tuna with no setup: **Now Playing**, play/pause, next and previous track, shuffle, and repeat. Select Spotify in Tuna and browse it for **Now Playing & Controls**. **Play** and **Open in Spotify** work on any Spotify link. macOS asks once for permission for Tuna to control Spotify.
 
-Connect your Spotify account in the extension's settings, and allow Tuna to control Spotify when macOS asks. Search, your library, saves, queueing, and playlist changes go through Spotify's servers. Playback through Spotify's servers needs Spotify Premium, while the Spotify app controls work without it.
+For search, **Your Library**, **Save to Library**, **Add to Playlist**, **Add to Queue**, and **Play on Device**, create your own free app on Spotify's developer dashboard (its owner needs Spotify Premium), paste its client ID into the extension's settings, and run **Sign In to Spotify**. The [setup guide](https://github.com/tunaformac/TunaExtensions/tree/main/SpotifyExtension#web-api-setup) takes a few minutes. Your sign-in stays in your Keychain and talks to Spotify directly.
 
-Tuna can only browse the contents of playlists you own or collaborate on. Other playlists can still be played or opened in Spotify. Spotify access is currently limited to a small number of approved users while Spotify reviews Tuna's app.
+Tuna can only browse the contents of playlists you own or collaborate on. Other playlists can still be played or opened in Spotify.

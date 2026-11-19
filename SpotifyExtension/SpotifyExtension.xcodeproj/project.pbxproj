@@ -14,6 +14,8 @@
 		B00000000000000000000005 /* SpotifyCatalogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000005 /* SpotifyCatalogs.swift */; };
 		B00000000000000000000006 /* SpotifyCatalogSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000006 /* SpotifyCatalogSupport.swift */; };
 		B00000000000000000000007 /* SpotifyActionsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000007 /* SpotifyActionsCatalog.swift */; };
+		B00000000000000000000009 /* SpotifyAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000009 /* SpotifyAuth.swift */; };
+		B0000000000000000000000A /* SpotifyLoopbackReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000000A /* SpotifyLoopbackReceiver.swift */; };
 		B00000000000000000000008 /* SpotifyExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000008 /* SpotifyExtensionTests.swift */; };
 		DD8BA524B3EB7B38AE4DA0AD /* TunaSpotify.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C8A601D9ECA6E3A372DE7CE8 /* TunaSpotify.framework */; };
 		FB336C65005BFAABF2A547B6 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32E6D2EBD17720CC4DC9CB0F /* Cocoa.framework */; };
@@ -37,6 +39,8 @@
 		F00000000000000000000005 /* SpotifyCatalogs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyCatalogs.swift; sourceTree = "<group>"; };
 		F00000000000000000000006 /* SpotifyCatalogSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyCatalogSupport.swift; sourceTree = "<group>"; };
 		F00000000000000000000007 /* SpotifyActionsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyActionsCatalog.swift; sourceTree = "<group>"; };
+		F00000000000000000000009 /* SpotifyAuth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyAuth.swift; sourceTree = "<group>"; };
+		F0000000000000000000000A /* SpotifyLoopbackReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyLoopbackReceiver.swift; sourceTree = "<group>"; };
 		F00000000000000000000008 /* SpotifyExtensionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SpotifyExtensionTests.swift; sourceTree = "<group>"; };
 		32E6D2EBD17720CC4DC9CB0F /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
 		8C114AA1E9D5BFE3A30AF882 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -100,6 +104,8 @@
 				F00000000000000000000005 /* SpotifyCatalogs.swift */,
 				F00000000000000000000006 /* SpotifyCatalogSupport.swift */,
 				F00000000000000000000007 /* SpotifyActionsCatalog.swift */,
+				F0000000000000000000000A /* SpotifyLoopbackReceiver.swift */,
+				F00000000000000000000009 /* SpotifyAuth.swift */,
 				8C114AA1E9D5BFE3A30AF882 /* Info.plist */,
 			);
 			path = .;
@@ -230,6 +236,8 @@
 				B00000000000000000000005 /* SpotifyCatalogs.swift in Sources */,
 				B00000000000000000000006 /* SpotifyCatalogSupport.swift in Sources */,
 				B00000000000000000000007 /* SpotifyActionsCatalog.swift in Sources */,
+				B0000000000000000000000A /* SpotifyLoopbackReceiver.swift in Sources */,
+				B00000000000000000000009 /* SpotifyAuth.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -10,12 +10,13 @@ public final class SpotifyControlsCatalog: NSObject, Catalog, RescanSchedulingCa
   public let name: String
   public var rescanHandler: (() -> Void)?
 
-  private var nowPlayingItem: CatalogItem?
-  private lazy var commands = Self.makeCommands()
+  private var playerItems: [CatalogItem] = []
+  private var accountItems: [CatalogItem] = []
   private var observer: NSObjectProtocol?
+  private var accountObserver: NSObjectProtocol?
   private var refreshTask: Task<Void, Never>?
 
-  public var objects: [CatalogItem] { (nowPlayingItem.map { [$0] } ?? []) + commands }
+  public var objects: [CatalogItem] { playerItems + accountItems }
 
   public required init(definition: CatalogDefinition) {
     identifier = definition.identifier
@@ -26,19 +27,39 @@ public final class SpotifyControlsCatalog: NSObject, Catalog, RescanSchedulingCa
     ) { [weak self] _ in
       MainActor.assumeIsolated { self?.scheduleRefresh() }
     }
+    accountObserver = SpotifyCatalogSupport.observeAccount { [weak self] in self?.rescanHandler?() }
   }
 
   deinit {
     if let observer { DistributedNotificationCenter.default().removeObserver(observer) }
+    if let accountObserver { NotificationCenter.default.removeObserver(accountObserver) }
     refreshTask?.cancel()
   }
 
   public func scan() async {
+    let isInstalled = SpotifyAppleScript.isInstalled()
     let nowPlaying = await Task.detached(priority: .utility) {
       try? SpotifyAppleScript.nowPlaying()
     }.value
-    nowPlayingItem = (nowPlaying ?? nil).map(SpotifyNowPlayingItem.init)
+    playerItems = Self.playerItems(isInstalled: isInstalled, nowPlaying: nowPlaying ?? nil)
+    accountItems = SpotifyCatalogSupport.accountCommands()
     reportScanFinished()
+  }
+
+  nonisolated static func playerItems(isInstalled: Bool, nowPlaying: SpotifyNowPlaying?)
+    -> [CatalogItem]
+  {
+    guard isInstalled else {
+      return [
+        CatalogMessageItem(
+          title: "Spotify Isn’t Installed",
+          message: "Install the Spotify app to control playback from Tuna.",
+          symbolName: "exclamationmark.triangle",
+          tintColor: .systemOrange
+        )
+      ]
+    }
+    return (nowPlaying.map { [SpotifyNowPlayingItem(nowPlaying: $0)] } ?? []) + makeCommands()
   }
 
   private func scheduleRefresh() {
@@ -51,21 +72,7 @@ public final class SpotifyControlsCatalog: NSObject, Catalog, RescanSchedulingCa
   }
 
   nonisolated static func makeCommands() -> [CatalogItem] {
-    let definitions: [(String, String, String, String, @Sendable () throws -> Void)] = [
-      (
-        "play-pause", "Play/Pause", "playpause", "Play or pause Spotify",
-        { try SpotifyAppleScript.playPause() }
-      ),
-      (
-        "next-track", "Next Track", "forward.end", "Skip to the next track",
-        { try SpotifyAppleScript.nextTrack() }
-      ),
-      (
-        "previous-track", "Previous Track", "backward.end", "Go back to the previous track",
-        { try SpotifyAppleScript.previousTrack() }
-      ),
-    ]
-    return definitions.map { id, title, symbol, detail, run in
+    SpotifyTransport.commands.map { id, title, symbol, detail, run in
       CommandItem(
         id: id,
         title: title,
@@ -91,12 +98,19 @@ public final class SpotifySearchCatalog: NSObject, Catalog {
     id: "spotify.search",
     detail: "Search tracks, albums, artists, and playlists",
     catalogIcon: .init(symbolName: "music.note", color: .green),
-    childrenProvider: { [] },
+    childrenProvider: { SpotifyCatalogSupport.accountItem().map { [$0] } ?? [] },
     searchHandler: { query in
-      let resources = try await SpotifyAPIClient().search(query)
-      return resources.isEmpty
-        ? [SpotifyCatalogSupport.emptyItem("No Results", "Nothing on Spotify matched your search.")]
-        : resources.map { SpotifyItem.make($0, catalogIdentifier: "spotify.search") }
+      if let accountItem = SpotifyCatalogSupport.accountItem() { return [accountItem] }
+      do {
+        let resources = try await SpotifyAPIClient().search(query)
+        return resources.isEmpty
+          ? [
+            SpotifyCatalogSupport.emptyItem("No Results", "Nothing on Spotify matched your search.")
+          ]
+          : resources.map { SpotifyItem.make($0, catalogIdentifier: "spotify.search") }
+      } catch {
+        return [SpotifyCatalogSupport.messageItem(for: error)]
+      }
     }
   )
 
@@ -114,9 +128,13 @@ public final class SpotifySearchCatalog: NSObject, Catalog {
 }
 
 @MainActor
-public final class SpotifyLibraryCatalog: NSObject, Catalog, RetainedCatalogStateReleasing {
+public final class SpotifyLibraryCatalog: NSObject, Catalog, RescanSchedulingCatalog,
+  RetainedCatalogStateReleasing
+{
   public let identifier: String
   public let name: String
+  public var rescanHandler: (() -> Void)?
+  private var accountObserver: NSObjectProtocol?
 
   private lazy var rootItem = DeferredBrowseCatalogItem(
     title: "Your Library",
@@ -128,7 +146,10 @@ public final class SpotifyLibraryCatalog: NSObject, Catalog, RetainedCatalogStat
     didLoad: { [identifier] in
       NotificationCenter.default.post(name: CatalogDidFinishScan, object: identifier)
     },
-    loadChildren: { Self.sections(catalogIdentifier: "spotify.library") }
+    loadChildren: {
+      if let accountItem = SpotifyCatalogSupport.accountItem() { return [accountItem] }
+      return Self.sections(catalogIdentifier: "spotify.library")
+    }
   )
 
   public var objects: [CatalogItem] { [rootItem] }
@@ -137,6 +158,11 @@ public final class SpotifyLibraryCatalog: NSObject, Catalog, RetainedCatalogStat
     identifier = definition.identifier
     name = definition.name
     super.init()
+    accountObserver = SpotifyCatalogSupport.observeAccount { [weak self] in self?.rescanHandler?() }
+  }
+
+  deinit {
+    if let accountObserver { NotificationCenter.default.removeObserver(accountObserver) }
   }
 
   public func scan() async {
@@ -214,6 +240,7 @@ public final class SpotifyPlaylistsCatalog: NSObject, Catalog, RescanSchedulingC
   public let scansOnStartup = false
   public var rescanHandler: (() -> Void)?
   private var items: [CatalogItem] = []
+  private var accountObserver: NSObjectProtocol?
 
   public var objects: [CatalogItem] { items }
 
@@ -221,6 +248,11 @@ public final class SpotifyPlaylistsCatalog: NSObject, Catalog, RescanSchedulingC
     identifier = definition.identifier
     name = definition.name
     super.init()
+    accountObserver = SpotifyCatalogSupport.observeAccount { [weak self] in self?.rescanHandler?() }
+  }
+
+  deinit {
+    if let accountObserver { NotificationCenter.default.removeObserver(accountObserver) }
   }
 
   public func scan() async {
@@ -244,6 +276,7 @@ public final class SpotifyDevicesCatalog: NSObject, Catalog, RescanSchedulingCat
   public let scansOnStartup = false
   public var rescanHandler: (() -> Void)?
   private var items: [CatalogItem] = []
+  private var accountObserver: NSObjectProtocol?
 
   public var objects: [CatalogItem] { items }
 
@@ -251,6 +284,11 @@ public final class SpotifyDevicesCatalog: NSObject, Catalog, RescanSchedulingCat
     identifier = definition.identifier
     name = definition.name
     super.init()
+    accountObserver = SpotifyCatalogSupport.observeAccount { [weak self] in self?.rescanHandler?() }
+  }
+
+  deinit {
+    if let accountObserver { NotificationCenter.default.removeObserver(accountObserver) }
   }
 
   public func scan() async {
