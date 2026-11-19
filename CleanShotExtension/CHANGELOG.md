@@ -1,5 +1,9 @@
 # CleanShot Extension Changelog
 
+## 0.14
+
+- Requires Tuna 0.96 / TunaKit 1.22.0, which this build already needed.
+
 ## 0.13
 
 - Enrich the Setapp build of CleanShot X (`com.getcleanshot.app-setapp`) with the commands catalog too.
