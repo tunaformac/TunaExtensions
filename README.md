@@ -136,7 +136,9 @@ The store listing is built from files beside each extension's sources:
 - **What it adds** (catalog names, action titles, setting and connection kinds) and the apps it
   **works with** come from the built declaration via `Tuna --dump-extension-declaration`.
 - **Release notes** are the extension's `CHANGELOG.md` section headed with the packaged version
-  (`## 0.13`), or its `## Unreleased` section when there is none yet.
+  (`## 0.13`). A new version without one ships its `## Unreleased` section instead; a version
+  already in the store only ever takes its own section, so refreshing its listing never replaces
+  its notes with unreleased changes.
 - The **description**, categories, permissions, and links come from an optional `STORE.md`:
 
 ```markdown
@@ -154,8 +156,10 @@ of `browsers`, `developer`, `files`, `media`, `notes`, `productivity`, `security
 or `web`. Warnings are the permissions users are asked for, from the store's codes: `automation`,
 `accessibility`, `full_disk_access`, `screen_recording`, `microphone`, `camera`, `contacts`,
 `calendar`, `reminders`, `photos`, `location`, `network`. The body is the listing's Markdown
-description, written for people using Tuna rather than building it. Uploads send only the fields a
-package sets, so values curated in the store admin survive for anything left out.
+description, written for people using Tuna rather than building it. With a `STORE.md`, its fields
+are the listing: removing the description, a link, or every category or warning clears it in the
+store. Without one, values curated in the store admin are left alone. Text is trimmed and blank
+text counts as empty, as the store normalizes it.
 
 Listing copy is not part of the package. When the store already has the same version and bytes but
 its listing differs, `make ext-upload` and `make release` refresh the listing without re-uploading

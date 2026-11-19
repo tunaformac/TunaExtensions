@@ -52,10 +52,11 @@ cat >"$SANDBOX/declaration.json" <<'EOF'
                   "presentation": "source", "contents_catalog_id": null, "extra": "dropped"}],
     "action_catalogs": [{"id": "example.actions", "name": "Example Actions",
                          "actions": [{"id": "send", "title": "Send", "symbol": "paperplane"}]}],
-    "settings": [],
+    "settings": [{"key": "token", "label": "  Token  ", "kind": "secret", "description": "   ",
+                  "catalog_id": null}],
     "connections": []
   },
-  "works_with_bundle_ids": ["com.example.app", "com.example.app", "com.example.other"]
+  "works_with_bundle_ids": ["com.example.app", " com.example.app ", "com.example.other", "  "]
 }
 EOF
 
@@ -103,6 +104,11 @@ item = json.load(open(sys.argv[1]))
 assert item["summary"] == "Find examples fast.", item["summary"]
 assert item["description"] == "Browse **Examples** and send them anywhere.\n\nIt needs Example.app.", item["description"]
 assert item["release_notes"] == "- Shipped change.\n- Another one.", item["release_notes"]
+assert item["unreleased_release_notes"] == "- Upcoming change.", item["unreleased_release_notes"]
+assert set(item["managed_listing_fields"]) == {
+    "description", "developer_url", "support_url", "privacy_url", "categories", "tags", "warnings",
+    "works_with_bundle_ids",
+}, item["managed_listing_fields"]
 assert item["categories"] == ["productivity"], item["categories"]
 assert item["warnings"] == ["automation", "network"], item["warnings"]
 assert item["support_url"] == "https://example.com/support"
@@ -111,16 +117,21 @@ assert item["works_with_bundle_ids"] == ["com.example.app", "com.example.other"]
 catalog = item["contents"]["catalogs"][0]
 assert "extra" not in catalog and catalog["name"] == "Examples", catalog
 assert item["contents"]["action_catalogs"][0]["actions"][0]["title"] == "Send"
+# Text is trimmed and blank text becomes null, as the store normalizes it.
+setting = item["contents"]["settings"][0]
+assert setting["label"] == "Token" and setting["description"] is None, setting
 PY
 
-# A version without its own CHANGELOG section ships the Unreleased notes.
+# A version without its own CHANGELOG section has no notes of its own; the uploader decides
+# whether the Unreleased notes apply.
 sed -i '' 's/<string>1.2</<string>1.3</' "$BUNDLE/Contents/Info.plist"
-package | python3 -c 'import json,sys; n=json.load(sys.stdin)["release_notes"]; assert n == "- Upcoming change.", n'
+package | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["release_notes"] is None and d["unreleased_release_notes"] == "- Upcoming change.", d'
+sed -i '' 's/<string>1.3</<string>1.2</' "$BUNDLE/Contents/Info.plist"
 
 # Without STORE.md or CHANGELOG.md the listing copy is simply absent.
 "$ROOT/scripts/package-tunaextension.py" --bundle "$BUNDLE" --out "$SANDBOX/dist" --arch arm64 \
   --declaration-json "$SANDBOX/declaration.json" \
-  | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["description"] is None and d["release_notes"] is None and d["categories"] == [], d'
+  | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["description"] is None and d["release_notes"] is None and d["categories"] == [] and d["managed_listing_fields"] == ["works_with_bundle_ids"], d'
 
 # Unknown warnings, categories, or fields fail packaging.
 for bad in 'warnings: [telepathy]' 'categories: [games]' 'colour: blue'; do
@@ -136,7 +147,7 @@ done
 # --- Upload ----------------------------------------------------------------------------------
 
 REPO="$SANDBOX/repo"
-mkdir -p "$REPO/scripts" "$REPO/AExtension/A.xcodeproj" "$REPO/bin" "$REPO/dist/store"
+mkdir -p "$REPO/scripts" "$REPO/AExtension/A.xcodeproj" "$REPO/bin" "$REPO/dist/store" "$REPO/states"
 cp \
   "$ROOT/scripts/upload-extension.sh" \
   "$ROOT/scripts/extension-shared-package.sh" \
@@ -152,7 +163,50 @@ printf '%s/%s/%s.xcodeproj\t%s\n' "$root" "$1" "${1%Extension}" "$1"
 EOF
 chmod +x "$REPO/scripts/"*.sh
 
-# Package bytes, candidate metadata, and the store as it was before listing copy existed.
+# A fake store that keeps one item and applies each PUT the way the server does: blank text
+# becomes null, an empty list value clears the list, and a new version starts a release without
+# notes, contents, or works-with apps.
+cat >"$REPO/bin/fake_store.py" <<'EOF'
+import json
+import re
+
+TEXT = {"description", "developer_url", "support_url", "privacy_url", "release_notes",
+        "name", "summary", "developer_name"}
+LISTS = {"categories", "tags", "warnings", "works_with_bundle_ids"}
+
+
+def apply_put(item, form, download):
+    item = json.loads(json.dumps(item))
+    version = dict(form).get("version")
+    if version and version != item.get("version"):
+        item.update(version=version, release_notes=None, contents=None, works_with_bundle_ids=[])
+    lists = {}
+    for key, value in form:
+        name = key.removesuffix("[]")
+        if key == "asset":
+            item["download"] = download
+        elif name in LISTS:
+            lists.setdefault(name, [])
+            if value.strip():
+                lists[name].append(value.strip())
+        elif key in TEXT:
+            item[key] = value.strip() or None
+        elif key == "contents":
+            item[key] = json.loads(value)
+    item.update(lists)
+    return item
+
+
+def parse_form(args):
+    form = []
+    for flag, value in zip(args, args[1:]):
+        if flag in {"--form-string", "--form"}:
+            match = re.fullmatch(r"store_item\[(\w+)\](\[\])?=(.*)", value, re.S)
+            if match:
+                form.append((match[1] + (match[2] or ""), match[3]))
+    return form
+EOF
+
 python3 - "$REPO" "$SANDBOX/item.json" <<'PY'
 import hashlib
 import json
@@ -161,6 +215,9 @@ import sys
 import zipfile
 
 root = Path(sys.argv[1])
+sys.path.insert(0, str(root / "bin"))
+from fake_store import apply_put
+
 item = json.load(open(sys.argv[2]))
 signature = {"signature_base64": "test-signature"}
 package = root / "dist/store/com.example.listing-1.2.tunaextension"
@@ -174,17 +231,37 @@ item["download"] = {
     "signature": signature,
     "url": "https://store.invalid/public.zip",
 }
-(root / "metadata.json").write_text(json.dumps(item))
 
+
+def write(name, value):
+    (root / name).write_text(json.dumps(value))
+
+
+def state(name, value):
+    write(f"states/{name}.json", dict(value, screenshots=[]))
+
+
+write("download.json", item["download"])
+# The candidate as packaged, and two variants: a version whose CHANGELOG has no section of its
+# own (only Unreleased notes), and one whose STORE.md lost its description and lists.
+write("metadata.json", item)
+unreleased = dict(item, release_notes=None)
+write("metadata-unreleased.json", unreleased)
+write("metadata-cleared.json", dict(item, description=None, categories=[], warnings=[]))
+
+# The store before listing copy existed, after a full upload of the candidate, holding an older
+# version, and holding this version with notes published before Unreleased moved on.
 stale = dict(item, description=None, release_notes=None, support_url=None, categories=[],
-             warnings=[], contents=None, works_with_bundle_ids=[], screenshots=[])
-(root / "stale.json").write_text(json.dumps({"schema_version": "1", "data": {"item": stale}}))
-fresh = dict(item, screenshots=[])
-(root / "fresh.json").write_text(json.dumps({"schema_version": "1", "data": {"item": fresh}}))
+             warnings=[], contents=None, works_with_bundle_ids=[])
+state("stale", stale)
+state("fresh", item)
+state("older", dict(item, version="1.1", download=dict(item["download"], checksum_sha256="0" * 64)))
+state("published", dict(item, release_notes="- Notes as published."))
+state("published-stale", dict(stale, release_notes="- Notes as published."))
 PY
 
-# Fake curl: serves the store item (404, stale, or fresh after a PUT), the public artifact, and
-# records every PUT's arguments.
+# Fake curl: serves the store item (from STORE_STATE until a PUT changes it, or 404 for
+# "missing"), the public artifact, and records every PUT's arguments.
 cat >"$REPO/bin/curl" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -204,21 +281,36 @@ done
 if [[ "$artifact" == 1 ]]; then
   cp "$root/public.zip" "$output"
   printf '200'
-elif [[ "$put" == 1 ]]; then
+  exit 0
+fi
+current="$root/states/${STORE_STATE:-stale}.json"
+[[ -e "$root/store.json" ]] && current="$root/store.json"
+if [[ "$put" == 1 ]]; then
   printf '%s\n' "${args[@]}" >"$root/put.log"
-  touch "$root/put.done"
-  cp "$root/fresh.json" "$output"
-  printf '200'
-elif [[ -e "$root/put.done" || "${STORE_STATE:-}" == fresh ]]; then
-  cp "$root/fresh.json" "$output"
-  printf '200'
-elif [[ "${STORE_STATE:-}" == missing ]]; then
+  python3 - "$root" "$current" "${args[@]}" <<'PY'
+import json
+import os
+import sys
+
+root, current, *args = sys.argv[1:]
+sys.path.insert(0, os.path.join(root, "bin"))
+from fake_store import apply_put, parse_form
+
+# A first release builds the item from the upload; the stale state holds those same fields.
+item = json.load(open(current if os.path.exists(current) else os.path.join(root, "states/stale.json")))
+download = json.load(open(os.path.join(root, "download.json")))
+item = apply_put(item, parse_form(args), download)
+json.dump(item, open(os.path.join(root, "store.json"), "w"))
+PY
+  current="$root/store.json"
+elif [[ ! -e "$current" ]]; then
   printf '{}' >"$output"
   printf '404'
-else
-  cp "$root/stale.json" "$output"
-  printf '200'
+  exit 0
 fi
+python3 -c 'import json,sys; print(json.dumps({"schema_version": "1", "data": {"item": json.load(open(sys.argv[1]))}}))' \
+  "$current" >"$output"
+printf '200'
 EOF
 chmod +x "$REPO/bin/curl"
 
@@ -228,24 +320,42 @@ git -C "$REPO" config user.email test@example.com
 git -C "$REPO" add .
 git -C "$REPO" commit -qm initial
 
-upload() {
-  rm -f "$REPO/put.log" "$REPO/put.done"
+run_upload() {
+  rm -f "$REPO/put.log" "$REPO/store.json"
   PATH="$REPO/bin:$PATH" RELEASE_UPLOAD_TOKEN=test-token RELEASE_UPLOAD_TOKEN_OP= \
     STORE_API_URL=https://store.invalid/api/v1/items \
-    TUNA_RELEASE_PACKAGE_METADATA="$REPO/metadata.json" \
-    "$REPO/scripts/upload-extension.sh" AExtension >"$SANDBOX/stdout" 2>"$SANDBOX/stderr" \
-    || { cat "$SANDBOX/stdout" "$SANDBOX/stderr" >&2; fail "upload failed ($*)"; }
+    TUNA_RELEASE_PACKAGE_METADATA="$REPO/${METADATA:-metadata.json}" \
+    "$REPO/scripts/upload-extension.sh" AExtension >"$SANDBOX/stdout" 2>"$SANDBOX/stderr"
+}
+
+upload() {
+  run_upload || { cat "$SANDBOX/stdout" "$SANDBOX/stderr" >&2; fail "upload failed ($*)"; }
+}
+
+sent() {
+  grep -qxF -- "$1" "$REPO/put.log" || fail "not sent: $1"
+}
+
+not_sent() {
+  ! grep -qF -- "$1" "$REPO/put.log" || fail "sent unexpectedly: $1"
+}
+
+stored() {
+  python3 -c "import json,sys; d=json.load(open(sys.argv[1])); assert $1, d" "$REPO/store.json" \
+    || fail "store does not hold: $1"
 }
 
 assert_listing_sent() {
   grep -q '^store_item\[description\]=Browse \*\*Examples\*\*' "$REPO/put.log" || fail "description not sent"
   grep -q '^store_item\[release_notes\]=- Shipped change.' "$REPO/put.log" || fail "release notes not sent"
-  grep -qx 'store_item\[support_url\]=https://example.com/support' "$REPO/put.log" || fail "support URL not sent"
-  grep -qx 'store_item\[categories\]\[\]=productivity' "$REPO/put.log" || fail "category not sent"
-  grep -qx 'store_item\[warnings\]\[\]=network' "$REPO/put.log" || fail "warning not sent"
-  grep -qx 'store_item\[works_with_bundle_ids\]\[\]=com.example.other' "$REPO/put.log" || fail "works-with not sent"
+  sent 'store_item[support_url]=https://example.com/support'
+  sent 'store_item[categories][]=productivity'
+  sent 'store_item[warnings][]=network'
+  sent 'store_item[works_with_bundle_ids][]=com.example.other'
   grep -q '^store_item\[contents\]={"action_catalogs"' "$REPO/put.log" || fail "contents not sent"
-  ! grep -q 'store_item\[developer_url\]' "$REPO/put.log" || fail "an empty developer URL was sent"
+  # STORE.md manages its links, so an unset one is sent empty and clears the store's value.
+  sent 'store_item[developer_url]='
+  sent 'store_item[tags]='
 }
 
 # Same version, same bytes, stale listing: refresh the listing without re-uploading the package.
@@ -253,7 +363,7 @@ upload refresh
 grep -q 'will be refreshed: description differs' "$SANDBOX/stdout" || fail "refresh not announced"
 grep -q 'Verified refreshed store listing' "$SANDBOX/stdout" || fail "refresh not verified"
 assert_listing_sent
-! grep -q 'store_item\[asset\]' "$REPO/put.log" || fail "a listing refresh re-uploaded the package"
+not_sent 'store_item[asset]'
 
 # Same version with a current listing: no write at all.
 STORE_STATE=fresh upload current
@@ -266,5 +376,61 @@ STORE_STATE=missing upload first
 grep -q 'Verified public store release' "$SANDBOX/stdout" || fail "first release not verified"
 assert_listing_sent
 grep -q '^store_item\[asset\]=@' "$REPO/put.log" || fail "first release did not upload the package"
+
+# --- Unreleased notes apply only to a new version ---------------------------------------------
+
+# A published version without its own CHANGELOG section keeps its published notes: they aren't
+# drift, and a refresh for other copy leaves them alone.
+STORE_STATE=published METADATA=metadata-unreleased.json upload published-current
+grep -q 'is current; skipping PUT' "$SANDBOX/stdout" || fail "published notes counted as drift"
+STORE_STATE=published-stale METADATA=metadata-unreleased.json upload published-refresh
+grep -q 'will be refreshed: description differs' "$SANDBOX/stdout" || fail "refresh not announced"
+not_sent 'store_item[release_notes]'
+stored 'd["release_notes"] == "- Notes as published."'
+
+# A new version without its own section ships the Unreleased notes, first release or not.
+for state in older missing; do
+  STORE_STATE=$state METADATA=metadata-unreleased.json upload "unreleased over $state"
+  grep -q 'Verified public store release' "$SANDBOX/stdout" || fail "new version not verified"
+  sent 'store_item[release_notes]=- Upcoming change.'
+  stored 'd["release_notes"] == "- Upcoming change." and d["version"] == "1.2"'
+done
+
+# --- Removing copy from STORE.md clears it in the store ---------------------------------------
+
+STORE_STATE=fresh METADATA=metadata-cleared.json upload cleared
+grep -q 'will be refreshed: description differs; categories differs; warnings differs' "$SANDBOX/stdout" \
+  || fail "removed copy was not noticed"
+sent 'store_item[description]='
+sent 'store_item[categories]='
+sent 'store_item[warnings]='
+stored 'd["description"] is None and d["categories"] == [] and d["warnings"] == []'
+grep -q 'Verified refreshed store listing' "$SANDBOX/stdout" || fail "cleared listing not verified"
+
+# --- Preflight checks the release tag the real run will use -----------------------------------
+
+TAG_NAME=extensions/com.example.listing/v1.2
+preflight() {
+  CREATE_GIT_TAG=1 TUNA_RELEASE_PREFLIGHT_ONLY=1 run_upload
+}
+
+# An unchanged release creates its missing tag, or reuses an annotated one wherever it points.
+STORE_STATE=fresh preflight || fail "preflight refused an unchanged release without a tag"
+git -C "$REPO" tag -a "$TAG_NAME" -m 'Example 1.2'
+git -C "$REPO" commit -q --allow-empty -m later
+STORE_STATE=fresh preflight || fail "preflight refused an unchanged release's earlier tag"
+STORE_STATE=stale preflight || fail "preflight refused a listing refresh's earlier tag"
+# A new upload can't reuse a tag at another commit.
+if STORE_STATE=older preflight; then
+  fail "preflight accepted a new release whose tag points elsewhere"
+fi
+grep -q 'points to' "$SANDBOX/stderr" || fail "moved tag not reported"
+# The real run refuses a lightweight tag, so preflight does too.
+git -C "$REPO" tag -d "$TAG_NAME" >/dev/null
+git -C "$REPO" tag "$TAG_NAME"
+if STORE_STATE=fresh preflight; then
+  fail "preflight accepted an unchanged release with a lightweight tag"
+fi
+grep -q 'must be annotated' "$SANDBOX/stderr" || fail "lightweight tag not reported"
 
 echo "Store listing tests pass."

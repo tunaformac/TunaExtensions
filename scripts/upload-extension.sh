@@ -400,19 +400,23 @@ LISTING_TEXT_FIELDS = (
 LISTING_LIST_FIELDS = ("categories", "tags", "warnings", "works_with_bundle_ids")
 
 
+def clean_text(value):
+    return (value.strip() or None) if isinstance(value, str) else None
+
+
 def listing_mismatches(candidate_item, remote_item):
-    """Listing fields the candidate sets that the store does not match. Fields the
-    candidate leaves empty are not sent, so the store keeps (and may differ in) them."""
+    """Listing fields the candidate sends that the store does not match. A field is sent when
+    the candidate sets it or manages it (an empty managed field clears the store's value);
+    anything else keeps the store's value, which may differ."""
+    managed = set(candidate_item.get("managed_listing_fields") or [])
     mismatches = []
     for key in LISTING_TEXT_FIELDS:
-        value = candidate_item.get(key)
-        if isinstance(value, str) and value.strip():
-            remote_value = remote_item.get(key)
-            if not isinstance(remote_value, str) or remote_value.strip() != value.strip():
-                mismatches.append(f"{key} differs")
+        value = clean_text(candidate_item.get(key))
+        if (value or key in managed) and clean_text(remote_item.get(key)) != value:
+            mismatches.append(f"{key} differs")
     for key in LISTING_LIST_FIELDS:
-        value = candidate_item.get(key)
-        if isinstance(value, list) and value and remote_item.get(key) != value:
+        value = candidate_item.get(key) or []
+        if (value or key in managed) and (remote_item.get(key) or []) != value:
             mismatches.append(f"{key} differs")
     contents = candidate_item.get("contents")
     if isinstance(contents, dict) and remote_item.get("contents") != contents:
@@ -676,17 +680,22 @@ if [[ "$CREATE_GIT_TAG" == "1" ]]; then
   esac
 fi
 
-# Listing copy from STORE.md, CHANGELOG.md, and the declaration's contents. Only fields the
-# package sets are sent; the store keeps its current value for any field left out.
+# Listing copy from STORE.md, CHANGELOG.md, and the declaration's contents. Fields the package
+# sets or manages are sent, an empty managed field as an empty value so the store clears it; the
+# store keeps its current value for any other field left out.
 add_listing_form_fields() {
   local FIELD VALUE
   for FIELD in description developer_url support_url privacy_url release_notes; do
-    VALUE="$(read_field "d.get('$FIELD') or ''")"
-    if [[ -n "$VALUE" ]]; then
+    if [[ "$(read_field "int(bool(d.get('$FIELD')) or '$FIELD' in (d.get('managed_listing_fields') or []))")" == 1 ]]; then
+      VALUE="$(read_field "d.get('$FIELD') or ''")"
       CURL_ARGS+=(--form-string "store_item[$FIELD]=$VALUE")
     fi
   done
   for FIELD in categories tags warnings works_with_bundle_ids; do
+    if [[ "$(read_field "int(not d.get('$FIELD') and '$FIELD' in (d.get('managed_listing_fields') or []))")" == 1 ]]; then
+      CURL_ARGS+=(--form-string "store_item[$FIELD]=")
+      continue
+    fi
     while IFS= read -r VALUE; do
       [[ -n "$VALUE" ]] && CURL_ARGS+=(--form-string "store_item[$FIELD][]=$VALUE")
     done < <(read_field "'\\n'.join(d.get('$FIELD') or [])")
@@ -964,19 +973,43 @@ case "$PREFLIGHT_HTTP_CODE" in
     ;;
 esac
 
-if [[ "$PREFLIGHT_ONLY" == "1" ]]; then
-  # An equal or refreshed release reuses its existing tag, wherever it points.
-  if [[ -n "$TAG" && "$RELEASE_ACTION" != "equal" && "$RELEASE_ACTION" != "refresh" ]]; then
-    ensure_tag_available_at_commit "$ROOT" "$TAG" "$RELEASE_COMMIT"
+# Only a new version takes its notes from `## Unreleased`. A published version keeps the notes
+# of its own section (or none), so a listing refresh never rewrites them with unreleased changes.
+if [[ "$RELEASE_ACTION" == "upload" ]]; then
+  ITEM_JSON="$(printf '%s\n' "$ITEM_JSON" | python3 -c "
+import json, sys
+item = json.load(sys.stdin)
+item['release_notes'] = item.get('release_notes') or item.get('unreleased_release_notes')
+print(json.dumps(item))
+")"
+  /bin/chmod 600 "$ITEM_JSON_PATH"
+  printf '%s\n' "$ITEM_JSON" >"$ITEM_JSON_PATH"
+  /bin/chmod 400 "$ITEM_JSON_PATH"
+fi
+
+# An equal or refreshed release reuses its existing annotated tag, wherever it points; any other
+# release (or one whose tag doesn't exist yet) creates the tag at the release commit.
+ensure_release_tag_usable() {
+  [[ -n "$TAG" ]] || return 0
+  if [[ "$RELEASE_ACTION" == "equal" || "$RELEASE_ACTION" == "refresh" ]] \
+    && git -C "$ROOT" show-ref --verify --quiet "refs/tags/$TAG"; then
+    if [[ "$(git -C "$ROOT" cat-file -t "$TAG")" != "tag" ]]; then
+      echo "Existing release tag must be annotated: $TAG" >&2
+      return 1
+    fi
+    return 0
   fi
+  ensure_tag_available_at_commit "$ROOT" "$TAG" "$RELEASE_COMMIT"
+}
+
+if [[ "$PREFLIGHT_ONLY" == "1" ]]; then
+  ensure_release_tag_usable
   echo "Preflight passed: $NAME $VERSION"
   exit 0
 fi
 
 if [[ "$RELEASE_ACTION" == "upload" || "$RELEASE_ACTION" == "recover" || "$RELEASE_ACTION" == "refresh" ]]; then
-  if [[ -n "$TAG" && "$RELEASE_ACTION" != "refresh" ]]; then
-    ensure_tag_available_at_commit "$ROOT" "$TAG" "$RELEASE_COMMIT"
-  fi
+  ensure_release_tag_usable
   write_upload_auth_config
 
   CURL_ARGS=(
@@ -1026,9 +1059,7 @@ if [[ "$RELEASE_ACTION" == "upload" || "$RELEASE_ACTION" == "recover" || "$RELEA
 
   ensure_paths_committed "$ROOT" "${RELEASE_INPUTS[@]}"
   ensure_head_unchanged "$ROOT" "$RELEASE_COMMIT"
-  if [[ -n "$TAG" && "$RELEASE_ACTION" != "refresh" ]]; then
-    ensure_tag_available_at_commit "$ROOT" "$TAG" "$RELEASE_COMMIT"
-  fi
+  ensure_release_tag_usable
 
   : >"$RESPONSE_BODY"
   if ! HTTP_CODE="$(curl "${CURL_ARGS[@]}" -o "$RESPONSE_BODY" -w "%{http_code}")"; then
@@ -1074,12 +1105,9 @@ if [[ "$RELEASE_ACTION" == "upload" || "$RELEASE_ACTION" == "recover" || "$RELEA
 fi
 
 if [[ -n "$TAG" ]]; then
+  ensure_release_tag_usable
   if [[ "$RELEASE_ACTION" == "equal" || "$RELEASE_ACTION" == "refresh" ]] \
     && git -C "$ROOT" show-ref --verify --quiet "refs/tags/$TAG"; then
-    [[ "$(git -C "$ROOT" cat-file -t "$TAG")" == "tag" ]] || {
-      echo "Existing release tag must be annotated: $TAG" >&2
-      exit 1
-    }
     echo "Reusing existing release tag: $TAG"
   else
     create_annotated_tag "$ROOT" "$TAG" "$NAME $VERSION" "$RELEASE_COMMIT"

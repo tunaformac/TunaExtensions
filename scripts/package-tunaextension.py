@@ -172,6 +172,9 @@ CATEGORIES = {
 }
 STORE_LIST_KEYS = {"categories", "tags", "warnings"}
 STORE_URL_KEYS = {"developer_url", "support_url", "privacy_url"}
+STORE_MANAGED_FIELDS = (
+    "description", "developer_url", "support_url", "privacy_url", "categories", "tags", "warnings",
+)
 # Mirrors the server's StoreItemRelease::CONTENTS_KEYS so a listing compares equal after upload.
 CONTENTS_KEYS = {
     "catalogs": ["id", "name", "description", "presentation", "contents_catalog_id"],
@@ -226,10 +229,12 @@ def parse_store_metadata(path: str) -> dict:
     return fields
 
 
-def changelog_release_notes(path: str, version: str) -> "str | None":
-    """The CHANGELOG section for `version`, else its `## Unreleased` section."""
+def changelog_release_notes(path: str, version: str) -> "tuple[str | None, str | None]":
+    """The CHANGELOG sections for `version` and `## Unreleased`. The uploader falls back to the
+    Unreleased notes only for a new version, so a published version's notes never change under
+    it."""
     if not path:
-        return None
+        return None, None
     with open(path, encoding="utf-8") as fh:
         lines = fh.read().splitlines()
 
@@ -243,11 +248,10 @@ def changelog_release_notes(path: str, version: str) -> "str | None":
         if current is not None:
             sections[current].append(line)
 
-    for heading in (version, "Unreleased"):
-        notes = "\n".join(sections.get(heading, [])).strip()
-        if notes:
-            return notes
-    return None
+    def notes(heading: str) -> "str | None":
+        return "\n".join(sections.get(heading, [])).strip() or None
+
+    return notes(version), notes("Unreleased")
 
 
 def sanitize_contents(value) -> "dict | None":
@@ -261,7 +265,7 @@ def sanitize_contents(value) -> "dict | None":
             if key == "actions":
                 result[key] = [entry(a, ACTION_KEYS) for a in item or [] if isinstance(a, dict)]
             else:
-                result[key] = item if isinstance(item, str) and item else None
+                result[key] = clean_text(item)
         return result
 
     return {
@@ -270,9 +274,15 @@ def sanitize_contents(value) -> "dict | None":
     }
 
 
-def unique(values: list[str]) -> list[str]:
+def clean_text(value) -> "str | None":
+    """Trimmed text, or None when blank; the store normalizes the same way."""
+    return (value.strip() or None) if isinstance(value, str) else None
+
+
+def unique(values: list) -> list[str]:
     seen = set()
-    return [v for v in values if v and not (v in seen or seen.add(v))]
+    cleaned = [clean_text(v) for v in values]
+    return [v for v in cleaned if v and not (v in seen or seen.add(v))]
 
 
 def normalize_arches(raw_values: list[str]) -> list[str]:
@@ -471,8 +481,8 @@ def main() -> int:
     description = args.description or metadata.get("Description") or metadata.get("description") or ""
     if args.summary:
         summary = args.summary
-    elif description:
-        summary = description.splitlines()[0]
+    elif description.strip():
+        summary = description.strip().splitlines()[0].strip()
     else:
         summary = ""
     try:
@@ -485,6 +495,15 @@ def main() -> int:
     categories = unique(args.category + store.get("categories", []))
     tags = unique(args.tag + store.get("tags", []))
     warnings = unique(args.warning + store.get("warnings", []))
+
+    release_notes, unreleased_release_notes = changelog_release_notes(args.changelog, version)
+    # Fields this package is the source of truth for: the uploader sends them even when empty,
+    # so removing copy from STORE.md clears it in the store too.
+    managed_listing_fields = []
+    if args.store_metadata:
+        managed_listing_fields += list(STORE_MANAGED_FIELDS)
+    if "works_with_bundle_ids" in declaration:
+        managed_listing_fields.append("works_with_bundle_ids")
 
     declaration_compatibility = declaration.get("compatibility") or {}
     min_tuna = str(args.min_tuna or declaration_compatibility.get("min_tuna") or "").strip()
@@ -594,12 +613,14 @@ def main() -> int:
             "developer_url": store.get("developer_url"),
             "support_url": store.get("support_url"),
             "privacy_url": store.get("privacy_url"),
-            "release_notes": changelog_release_notes(args.changelog, version),
+            "release_notes": release_notes,
+            "unreleased_release_notes": unreleased_release_notes,
             "categories": categories,
             "tags": tags,
             "warnings": warnings,
             "contents": sanitize_contents(declaration.get("contents")),
             "works_with_bundle_ids": unique(declaration.get("works_with_bundle_ids") or []),
+            "managed_listing_fields": managed_listing_fields,
             "compatibility": compatibility,
             "download": {
                 "url": download_url,
