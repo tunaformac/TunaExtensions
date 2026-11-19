@@ -14,7 +14,7 @@ public final class CloudShareExtension: Extension {
         description: "Upload files to your S3 storage and copy a public link.",
         iconName: "icloud.and.arrow.up"
       ),
-      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.112", minTunaKit: "1.23.0"),
+      compatibility: ExtensionDeclarationCompatibility(minTuna: "0.113", minTunaKit: "1.23.0"),
       catalogs: [
         CatalogDeclaration(
           id: Self.catalogIdentifier,
