@@ -46,6 +46,7 @@ below rather than a generic template, and include the new project in `TunaExtens
 | MusicExtension | Control Music, browse your library, and search Apple Music |
 | MyMindExtension | Search, browse, resolve, and save mymind objects |
 | NotesExtension | Apple Notes search |
+| NotePlanExtension | Open NotePlan notes, folders, and calendar notes, and capture text |
 | NotionExtension | Notion pages and databases |
 | ObsidianExtension | Browse Obsidian vaults, folders, and notes |
 | PoofExtension | Find, paste, and manage Poof text snippets |

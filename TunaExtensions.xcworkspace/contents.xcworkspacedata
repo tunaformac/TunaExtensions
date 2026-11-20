@@ -41,6 +41,9 @@
       location = "group:NotionExtension/NotionExtension.xcodeproj">
    </FileRef>
    <FileRef
+      location = "group:NotePlanExtension/NotePlanExtension.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:ObsidianExtension/ObsidianExtension.xcodeproj">
    </FileRef>
    <FileRef
