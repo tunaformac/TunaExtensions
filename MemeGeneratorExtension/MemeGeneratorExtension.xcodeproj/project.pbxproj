@@ -1,0 +1,195 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		100000000000000000000001 /* MemeGeneratorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000001 /* MemeGeneratorExtension.swift */; };
+		100000000000000000000002 /* MemeTemplates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000002 /* MemeTemplates.swift */; };
+		100000000000000000000003 /* MemeActionsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000003 /* MemeActionsCatalog.swift */; };
+		100000000000000000000004 /* MemeGeneratorExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000004 /* MemeGeneratorExtensionTests.swift */; };
+		100000000000000000000005 /* TunaMemeGenerator.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 200000000000000000000006 /* TunaMemeGenerator.framework */; };
+		100000000000000000000006 /* MemeAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000008 /* MemeAPIClient.swift */; };
+		100000000000000000000007 /* MemeLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000009 /* MemeLibrary.swift */; };
+		100000000000000000000008 /* MemeCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000A /* MemeCatalog.swift */; };
+		100000000000000000000009 /* MemeThumbnailCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000B /* MemeThumbnailCache.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		300000000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AAAAAAAAAAAAAAAAAAAAAAAA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CCCCCCCCCCCCCCCCCCCCCCCC;
+			remoteInfo = MemeGeneratorExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		200000000000000000000001 /* MemeGeneratorExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemeGeneratorExtension.swift; sourceTree = "<group>"; };
+		200000000000000000000002 /* MemeTemplates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemeTemplates.swift; sourceTree = "<group>"; };
+		200000000000000000000003 /* MemeActionsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemeActionsCatalog.swift; sourceTree = "<group>"; };
+		200000000000000000000004 /* MemeGeneratorExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemeGeneratorExtensionTests.swift; sourceTree = "<group>"; };
+		200000000000000000000005 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		200000000000000000000006 /* TunaMemeGenerator.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TunaMemeGenerator.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		200000000000000000000007 /* MemeGeneratorExtensionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MemeGeneratorExtensionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		200000000000000000000008 /* MemeAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemeAPIClient.swift; sourceTree = "<group>"; };
+		200000000000000000000009 /* MemeLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemeLibrary.swift; sourceTree = "<group>"; };
+		20000000000000000000000A /* MemeCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemeCatalog.swift; sourceTree = "<group>"; };
+		20000000000000000000000B /* MemeThumbnailCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemeThumbnailCache.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		400000000000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		400000000000000000000002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (100000000000000000000005 /* TunaMemeGenerator.framework in Frameworks */,);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		500000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				500000000000000000000002 /* Sources */,
+				200000000000000000000004 /* MemeGeneratorExtensionTests.swift */,
+				500000000000000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		500000000000000000000002 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				200000000000000000000001 /* MemeGeneratorExtension.swift */,
+				200000000000000000000002 /* MemeTemplates.swift */,
+				200000000000000000000008 /* MemeAPIClient.swift */,
+				200000000000000000000009 /* MemeLibrary.swift */,
+				20000000000000000000000A /* MemeCatalog.swift */,
+				20000000000000000000000B /* MemeThumbnailCache.swift */,
+				200000000000000000000003 /* MemeActionsCatalog.swift */,
+				200000000000000000000005 /* Info.plist */,
+			);
+			path = .;
+			sourceTree = "<group>";
+		};
+		500000000000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				200000000000000000000006 /* TunaMemeGenerator.framework */,
+				200000000000000000000007 /* MemeGeneratorExtensionTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		CCCCCCCCCCCCCCCCCCCCCCCC /* MemeGeneratorExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 600000000000000000000002 /* Build configuration list for PBXNativeTarget "MemeGeneratorExtension" */;
+			buildPhases = (700000000000000000000001 /* Sources */, 400000000000000000000001 /* Frameworks */, 800000000000000000000001 /* Resources */,);
+			buildRules = ();
+			dependencies = ();
+			name = MemeGeneratorExtension;
+			packageProductDependencies = (900000000000000000000001 /* TunaKit */,);
+			productName = TunaMemeGenerator;
+			productReference = 200000000000000000000006 /* TunaMemeGenerator.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		DDDDDDDDDDDDDDDDDDDDDDDD /* MemeGeneratorExtensionTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 600000000000000000000003 /* Build configuration list for PBXNativeTarget "MemeGeneratorExtensionTests" */;
+			buildPhases = (700000000000000000000002 /* Sources */, 400000000000000000000002 /* Frameworks */, 800000000000000000000002 /* Resources */,);
+			buildRules = ();
+			dependencies = (300000000000000000000002 /* PBXTargetDependency */,);
+			name = MemeGeneratorExtensionTests;
+			packageProductDependencies = (900000000000000000000002 /* TunaKit */,);
+			productName = MemeGeneratorExtensionTests;
+			productReference = 200000000000000000000007 /* MemeGeneratorExtensionTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AAAAAAAAAAAAAAAAAAAAAAAA /* Project object */ = {
+			isa = PBXProject;
+			attributes = {BuildIndependentTargetsInParallel = YES; LastUpgradeCheck = 2700;};
+			buildConfigurationList = 600000000000000000000001 /* Build configuration list for PBXProject "MemeGeneratorExtension" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (en, Base,);
+			mainGroup = 500000000000000000000001;
+			packageReferences = (A00000000000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */,);
+			productRefGroup = 500000000000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (CCCCCCCCCCCCCCCCCCCCCCCC /* MemeGeneratorExtension */, DDDDDDDDDDDDDDDDDDDDDDDD /* MemeGeneratorExtensionTests */,);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		800000000000000000000001 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		800000000000000000000002 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		700000000000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				100000000000000000000001 /* MemeGeneratorExtension.swift in Sources */,
+				100000000000000000000002 /* MemeTemplates.swift in Sources */,
+				100000000000000000000006 /* MemeAPIClient.swift in Sources */,
+				100000000000000000000007 /* MemeLibrary.swift in Sources */,
+				100000000000000000000008 /* MemeCatalog.swift in Sources */,
+				100000000000000000000009 /* MemeThumbnailCache.swift in Sources */,
+				100000000000000000000003 /* MemeActionsCatalog.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		700000000000000000000002 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000004 /* MemeGeneratorExtensionTests.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		300000000000000000000002 /* PBXTargetDependency */ = {isa = PBXTargetDependency; name = MemeGeneratorExtension; target = CCCCCCCCCCCCCCCCCCCCCCCC /* MemeGeneratorExtension */; targetProxy = 300000000000000000000001 /* PBXContainerItemProxy */; };
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		B00000000000000000000001 /* Project Debug */ = {isa = XCBuildConfiguration; buildSettings = {PRODUCT_NAME = TunaMemeGenerator;}; name = Debug;};
+		B00000000000000000000002 /* Project Release */ = {isa = XCBuildConfiguration; buildSettings = {PRODUCT_NAME = TunaMemeGenerator;}; name = Release;};
+		B00000000000000000000003 /* Target Debug */ = {isa = XCBuildConfiguration; buildSettings = {
+			ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; CODE_SIGN_IDENTITY = "Apple Development"; CODE_SIGN_STYLE = Automatic; DEVELOPMENT_TEAM = DDB8SQMXS9; ENABLE_TESTABILITY = YES; INFOPLIST_FILE = Info.plist;
+			LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks", "@loader_path/Frameworks",); MACOSX_DEPLOYMENT_TARGET = 15.0; ONLY_ACTIVE_ARCH = YES;
+			PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.memegenerator; PRODUCT_MODULE_NAME = TunaMemeGenerator; PRODUCT_NAME = TunaMemeGenerator; SKIP_INSTALL = NO; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 6;
+		}; name = Debug;};
+		B00000000000000000000004 /* Target Release */ = {isa = XCBuildConfiguration; buildSettings = {
+			ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; CODE_SIGN_IDENTITY = "Apple Development"; CODE_SIGN_STYLE = Automatic; DEVELOPMENT_TEAM = DDB8SQMXS9; INFOPLIST_FILE = Info.plist;
+			LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks", "@loader_path/Frameworks",); MACOSX_DEPLOYMENT_TARGET = 15.0;
+			PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.memegenerator; PRODUCT_MODULE_NAME = TunaMemeGenerator; PRODUCT_NAME = TunaMemeGenerator; SKIP_INSTALL = NO; SWIFT_COMPILATION_MODE = wholemodule; SWIFT_OPTIMIZATION_LEVEL = "-O"; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 6;
+		}; name = Release;};
+		B00000000000000000000005 /* Tests Debug */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; MACOSX_DEPLOYMENT_TARGET = 15.0; PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.MemeGeneratorExtensionTests; PRODUCT_MODULE_NAME = MemeGeneratorExtensionTests; PRODUCT_NAME = MemeGeneratorExtensionTests; SDKROOT = macosx; SWIFT_VERSION = 5.0;}; name = Debug;};
+		B00000000000000000000006 /* Tests Release */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; MACOSX_DEPLOYMENT_TARGET = 15.0; PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.MemeGeneratorExtensionTests; PRODUCT_MODULE_NAME = MemeGeneratorExtensionTests; PRODUCT_NAME = MemeGeneratorExtensionTests; SDKROOT = macosx; SWIFT_VERSION = 5.0;}; name = Release;};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		600000000000000000000001 /* Build configuration list for PBXProject "MemeGeneratorExtension" */ = {isa = XCConfigurationList; buildConfigurations = (B00000000000000000000001 /* Project Debug */, B00000000000000000000002 /* Project Release */,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
+		600000000000000000000002 /* Build configuration list for PBXNativeTarget "MemeGeneratorExtension" */ = {isa = XCConfigurationList; buildConfigurations = (B00000000000000000000003 /* Target Debug */, B00000000000000000000004 /* Target Release */,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
+		600000000000000000000003 /* Build configuration list for PBXNativeTarget "MemeGeneratorExtensionTests" */ = {isa = XCConfigurationList; buildConfigurations = (B00000000000000000000005 /* Tests Debug */, B00000000000000000000006 /* Tests Release */,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A00000000000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */ = {isa = XCRemoteSwiftPackageReference; repositoryURL = "https://github.com/tunaformac/TunaKit"; requirement = {kind = upToNextMinorVersion; minimumVersion = 1.22.0;};};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		900000000000000000000001 /* TunaKit */ = {isa = XCSwiftPackageProductDependency; package = A00000000000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */; productName = TunaKit;};
+		900000000000000000000002 /* TunaKit */ = {isa = XCSwiftPackageProductDependency; package = A00000000000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */; productName = TunaKit;};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = AAAAAAAAAAAAAAAAAAAAAAAA /* Project object */;
+}
