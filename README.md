@@ -59,6 +59,7 @@ below rather than a generic template, and register it as policy rule P1 describe
 | SpotifyExtension | Control Spotify, browse your library, and search Spotify |
 | StrongboxExtension | Copy Strongbox passwords, usernames, and one-time codes through its local MCP interface |
 | ThingsExtension | Things to-dos and projects |
+| TranslateExtension | Translate text with Apple's on-device translation |
 
 ## Building
 

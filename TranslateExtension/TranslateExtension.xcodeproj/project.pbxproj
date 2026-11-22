@@ -1,0 +1,265 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7A0000010000000000000001 /* TranslateExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A0000020000000000000001 /* TranslateExtension.swift */; };
+		7A0000030000000000000001 /* TranslateActionsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A0000040000000000000001 /* TranslateActionsCatalog.swift */; };
+		7A0000050000000000000001 /* TranslateItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A0000060000000000000001 /* TranslateItems.swift */; };
+		7A0000070000000000000001 /* TranslateCatalogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A0000080000000000000001 /* TranslateCatalogs.swift */; };
+		7A0000090000000000000001 /* Translator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A0000100000000000000001 /* Translator.swift */; };
+		7A0000110000000000000001 /* TranslateExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A0000120000000000000001 /* TranslateExtensionTests.swift */; };
+		7A0000130000000000000001 /* TranslateExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A0000140000000000000001 /* TranslateExtension.framework */; };
+		7A0000440000000000000001 /* TranslateLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A0000430000000000000001 /* TranslateLanguage.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		7A0000150000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7A0000160000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7A0000170000000000000001;
+			remoteInfo = TranslateExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		7A0000020000000000000001 /* TranslateExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslateExtension.swift; sourceTree = "<group>"; };
+		7A0000040000000000000001 /* TranslateActionsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslateActionsCatalog.swift; sourceTree = "<group>"; };
+		7A0000060000000000000001 /* TranslateItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslateItems.swift; sourceTree = "<group>"; };
+		7A0000080000000000000001 /* TranslateCatalogs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslateCatalogs.swift; sourceTree = "<group>"; };
+		7A0000100000000000000001 /* Translator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Translator.swift; sourceTree = "<group>"; };
+		7A0000430000000000000001 /* TranslateLanguage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslateLanguage.swift; sourceTree = "<group>"; };
+		7A0000120000000000000001 /* TranslateExtensionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TranslateExtensionTests.swift; sourceTree = "<group>"; };
+		7A0000140000000000000001 /* TranslateExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TranslateExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7A0000180000000000000001 /* TranslateExtensionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TranslateExtensionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7A0000190000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7A0000200000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		7A0000210000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (7A0000130000000000000001 /* TranslateExtension.framework in Frameworks */); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7A0000220000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				7A0000230000000000000001 /* TranslateExtension */,
+				7A0000120000000000000001 /* TranslateExtensionTests.swift */,
+				7A0000240000000000000001 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		7A0000230000000000000001 /* TranslateExtension */ = {
+			isa = PBXGroup;
+			children = (
+				7A0000020000000000000001 /* TranslateExtension.swift */,
+				7A0000040000000000000001 /* TranslateActionsCatalog.swift */,
+				7A0000060000000000000001 /* TranslateItems.swift */,
+				7A0000080000000000000001 /* TranslateCatalogs.swift */,
+				7A0000100000000000000001 /* Translator.swift */,
+				7A0000430000000000000001 /* TranslateLanguage.swift */,
+				7A0000190000000000000001 /* Info.plist */,
+			);
+			sourceTree = "<group>";
+		};
+		7A0000240000000000000001 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7A0000140000000000000001 /* TranslateExtension.framework */,
+				7A0000180000000000000001 /* TranslateExtensionTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7A0000170000000000000001 /* TranslateExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7A0000250000000000000001 /* Build configuration list for PBXNativeTarget "TranslateExtension" */;
+			buildPhases = (
+				7A0000260000000000000001 /* Sources */,
+				7A0000200000000000000001 /* Frameworks */,
+				7A0000270000000000000001 /* Resources */,
+			);
+			buildRules = ();
+			dependencies = ();
+			name = TranslateExtension;
+			packageProductDependencies = (7A0000280000000000000001 /* TunaKit */);
+			productName = TranslateExtension;
+			productReference = 7A0000140000000000000001 /* TranslateExtension.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		7A0000290000000000000001 /* TranslateExtensionTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7A0000300000000000000001 /* Build configuration list for PBXNativeTarget "TranslateExtensionTests" */;
+			buildPhases = (
+				7A0000310000000000000001 /* Sources */,
+				7A0000210000000000000001 /* Frameworks */,
+				7A0000320000000000000001 /* Resources */,
+			);
+			buildRules = ();
+			dependencies = (7A0000330000000000000001 /* PBXTargetDependency */);
+			name = TranslateExtensionTests;
+			packageProductDependencies = (7A0000340000000000000001 /* TunaKit */);
+			productName = TranslateExtensionTests;
+			productReference = 7A0000180000000000000001 /* TranslateExtensionTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		7A0000160000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = { 7A0000170000000000000001 = { CreatedOnToolsVersion = 15.0; }; };
+			};
+			buildConfigurationList = 7A0000350000000000000001 /* Build configuration list for PBXProject "TranslateExtension" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (en);
+			mainGroup = 7A0000220000000000000001;
+			packageReferences = (7A0000360000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */);
+			productRefGroup = 7A0000240000000000000001 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				7A0000170000000000000001 /* TranslateExtension */,
+				7A0000290000000000000001 /* TranslateExtensionTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7A0000270000000000000001 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		7A0000320000000000000001 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7A0000260000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7A0000010000000000000001 /* TranslateExtension.swift in Sources */,
+				7A0000030000000000000001 /* TranslateActionsCatalog.swift in Sources */,
+				7A0000050000000000000001 /* TranslateItems.swift in Sources */,
+				7A0000070000000000000001 /* TranslateCatalogs.swift in Sources */,
+				7A0000090000000000000001 /* Translator.swift in Sources */,
+				7A0000440000000000000001 /* TranslateLanguage.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7A0000310000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (7A0000110000000000000001 /* TranslateExtensionTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		7A0000330000000000000001 /* PBXTargetDependency */ = {isa = PBXTargetDependency; name = TranslateExtension; target = 7A0000170000000000000001 /* TranslateExtension */; targetProxy = 7A0000150000000000000001 /* PBXContainerItemProxy */; };
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		7A0000370000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				ENABLE_TESTABILITY = YES;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@loader_path/Frameworks");
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.translate;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		7A0000380000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@loader_path/Frameworks");
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.translate;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		7A0000390000000000000001 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = { PRODUCT_NAME = TranslateExtension; }; name = Debug; };
+		7A0000400000000000000001 /* Release */ = {isa = XCBuildConfiguration; buildSettings = { PRODUCT_NAME = TranslateExtension; }; name = Release; };
+		7A0000410000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.TranslateExtensionTests;
+				PRODUCT_MODULE_NAME = TranslateExtensionTests;
+				PRODUCT_NAME = TranslateExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		7A0000420000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.TranslateExtensionTests;
+				PRODUCT_MODULE_NAME = TranslateExtensionTests;
+				PRODUCT_NAME = TranslateExtensionTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7A0000250000000000000001 /* Build configuration list for PBXNativeTarget "TranslateExtension" */ = {isa = XCConfigurationList; buildConfigurations = (7A0000370000000000000001 /* Debug */, 7A0000380000000000000001 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		7A0000300000000000000001 /* Build configuration list for PBXNativeTarget "TranslateExtensionTests" */ = {isa = XCConfigurationList; buildConfigurations = (7A0000410000000000000001 /* Debug */, 7A0000420000000000000001 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		7A0000350000000000000001 /* Build configuration list for PBXProject "TranslateExtension" */ = {isa = XCConfigurationList; buildConfigurations = (7A0000390000000000000001 /* Debug */, 7A0000400000000000000001 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		7A0000360000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tunaformac/TunaKit";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 1.22.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		7A0000280000000000000001 /* TunaKit */ = {isa = XCSwiftPackageProductDependency; package = 7A0000360000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */; productName = TunaKit; };
+		7A0000340000000000000001 /* TunaKit */ = {isa = XCSwiftPackageProductDependency; package = 7A0000360000000000000001 /* XCRemoteSwiftPackageReference "TunaKit" */; productName = TunaKit; };
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 7A0000160000000000000001 /* Project object */;
+}
