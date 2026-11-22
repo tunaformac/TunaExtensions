@@ -52,6 +52,7 @@ below rather than a generic template, and include the new project in `TunaExtens
 | PoofExtension | Find, paste, and manage Poof text snippets |
 | RemindersExtension | Search reminders and create them in specific lists |
 | SafariExtension | Safari bookmarks, reading list, tabs, and Last Download (Resolve by default, with file actions available) |
+| SpeedtestExtension | Test your internet speed with macOS networkQuality |
 | SpotifyExtension | Control Spotify, browse your library, and search Spotify |
 | StrongboxExtension | Copy Strongbox passwords, usernames, and one-time codes through its local MCP interface |
 | ThingsExtension | Things to-dos and projects |

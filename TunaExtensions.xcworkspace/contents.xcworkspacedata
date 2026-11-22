@@ -56,6 +56,9 @@
       location = "group:SafariExtension/SafariExtension.xcodeproj">
    </FileRef>
    <FileRef
+      location = "group:SpeedtestExtension/SpeedtestExtension.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:SpotifyExtension/SpotifyExtension.xcodeproj">
    </FileRef>
    <FileRef
