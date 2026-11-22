@@ -2,7 +2,9 @@
 categories: [security]
 support_url: https://github.com/tunaformac/TunaExtensions/tree/main/StrongboxExtension
 ---
-Type `pass` to find **Search Strongbox Passwords**, or `otp` for **OTP from Strongbox**. Enter it, type an entry name, and press Enter. If one entry clearly matches, it's copied, and a notice tells you which one. If several match, you choose. Each search can copy the password, the username, or the one-time code.
+Select the Strongbox app in Tuna and press Tab for **Copy Password…**, **Copy Username…**, or **Copy OTP…**. Type an entry name in the third pane and press Enter. You can also start with an entry name in Text Mode and choose **Search Password in Strongbox**, **Search Username in Strongbox**, or **Search OTP in Strongbox**. If one entry clearly matches, it's copied, and a notice tells you which one. If several match, you choose. Press Right Arrow on the Strongbox app to choose a vault.
+
+To start with `pass`, `user`, or `otp` in the first pane, include **Strongbox Commands** in global search under **Tuna Settings → Sources**.
 
 Nothing is looked up while you type, and entries never appear in Tuna's search. Copied values are cleared from the clipboard after 30 seconds, and Tuna's Clipboard History skips them. Strongbox stays in charge of approvals, unlocking, and locking. Nothing is ever written to your vault.
 

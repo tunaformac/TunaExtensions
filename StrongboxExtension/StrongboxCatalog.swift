@@ -2,7 +2,8 @@ import AppKit
 import Foundation
 import TunaKit
 
-/// Two search roots, `pass` and `otp`. Typing contacts nothing; Strongbox is asked only on Enter.
+/// Password, Username and OTP from Strongbox. Each is a subject whose only action asks for the
+/// entry name in the third pane, so typing contacts nothing and Strongbox is asked only on Enter.
 @MainActor
 public final class StrongboxCatalog: Catalog {
   public let identifier: String
@@ -12,24 +13,32 @@ public final class StrongboxCatalog: Catalog {
   public init(definition: CatalogDefinition) {
     identifier = definition.identifier
     name = definition.name
-    objects = [
-      Self.root(
-        title: "Search Strongbox Passwords", id: "strongbox.search.root",
-        detail: "Type an entry name · copy its password, username, or one-time code",
-        first: .password),
-      Self.root(
-        title: "OTP from Strongbox", id: "strongbox.otp.root",
-        detail: "Type an entry name · copy its one-time code", first: .totp),
-    ]
+    objects = StrongboxField.allCases.map(StrongboxFieldCommandItem.init)
   }
 
   public func scan() async { reportScanFinished() }
+}
 
-  private static func root(title: String, id: String, detail: String, first: StrongboxField)
-    -> ScopedSearchBrowseCatalogItem
-  {
-    ScopedSearchBrowseCatalogItem(
-      title: title, id: id, detail: detail,
+/// Strongbox → Right Arrow: the MCP vaults, for choosing the one searched. Vault names are read
+/// only when this is entered; no vault is unlocked and no entry is read.
+@MainActor
+public final class StrongboxVaultsCatalog: Catalog {
+  public let identifier: String
+  public let name: String
+  private let browseItem: DeferredBrowseCatalogItem
+
+  public var objects: [CatalogItem] { [browseItem] }
+
+  public init(definition: CatalogDefinition) {
+    identifier = definition.identifier
+    name = definition.name
+    let identifier = definition.identifier
+    // Choosing a vault reloads the list on the next visit, so the vault in use moves to the top.
+    let reloader = Reloader()
+    browseItem = DeferredBrowseCatalogItem(
+      title: "Strongbox Vaults",
+      id: "strongbox.vaults.browse",
+      detail: "Choose the vault Strongbox searches",
       catalogIcon: .init(symbolName: "lock.shield", color: .teal),
       loadingItemProvider: {
         CatalogLoadingItem(message: "Reading opted-in Strongbox vault names…")
@@ -42,9 +51,70 @@ public final class StrongboxCatalog: Catalog {
           tintColor: .systemOrange
         )
       },
-      loadChildren: { await StrongboxRuntime.vaultRows() },
-      searchHandler: { await StrongboxRuntime.queryItems($0, first: first) }
+      didLoad: {
+        NotificationCenter.default.post(name: CatalogDidFinishScan, object: identifier)
+      },
+      loadChildren: {
+        try await StrongboxRuntime.vaultRows(onChoose: { await reloader.reset() })
+      }
     )
+    reloader.item = browseItem
+  }
+
+  @MainActor
+  private final class Reloader {
+    weak var item: DeferredBrowseCatalogItem?
+    func reset() { item?.reset() }
+  }
+
+  /// Refresh reads the vault names again.
+  public func scan() async {
+    browseItem.reset()
+    reportScanFinished()
+  }
+}
+
+/// "Password from Strongbox" and its siblings: the subject when you start with the command and
+/// type the entry name second. The IDs are those of 0.1's search roots, so Tuna's learned
+/// abbreviations (`pass`, `otp`) keep finding them.
+final class StrongboxFieldCommandItem: CatalogEntity, ActionFilteringProviding, @unchecked Sendable {
+  let field: StrongboxField
+
+  init(_ field: StrongboxField) {
+    self.field = field
+    super.init(id: Self.id(for: field), title: "\(field.name) from Strongbox", path: nil)
+    typeID = .searchCatalogEntry
+  }
+
+  static func id(for field: StrongboxField) -> String {
+    switch field {
+    case .password: return "strongbox.search.root"
+    case .username: return "strongbox.username.root"
+    case .totp: return "strongbox.otp.root"
+    }
+  }
+
+  override var detail: String? { "Type an entry name · copy its \(field.label)" }
+
+  override var searchKeys: [String] {
+    switch field {
+    case .password: return [title, "pass", "Strongbox Password"]
+    case .username: return [title, "user", "email", "Strongbox Username"]
+    case .totp: return [title, "otp", "one-time code", "2FA", "Strongbox OTP"]
+    }
+  }
+
+  override func preview(maxDimension: CGFloat) -> CatalogItemPreview {
+    .catalogIcon(symbolName: field.symbolName, color: .teal, maxDimension: maxDimension)
+  }
+
+  override func placeholderPreview(maxDimension: CGFloat) -> CatalogItemPreview {
+    preview(maxDimension: maxDimension)
+  }
+
+  func allowsAction(_ action: CatalogAction, catalogIdentifier: String?) -> Bool {
+    catalogIdentifier == StrongboxExtension.actionsCatalogIdentifier
+      && action.id == StrongboxActionsCatalog.copyFieldID(field)
   }
 }
 
@@ -76,34 +146,6 @@ final class StrongboxEntryItem: CatalogEntity, ActionFilteringProviding, @unchec
 
   func allowsAction(_ action: CatalogAction, catalogIdentifier: String?) -> Bool {
     action.id == StrongboxActionsCatalog.copy
-      && catalogIdentifier == StrongboxExtension.actionsCatalogIdentifier
-  }
-}
-
-final class StrongboxQueryItem: CatalogEntity, ActionFilteringProviding, @unchecked Sendable {
-  let query: String
-  let field: StrongboxField
-
-  init(_ query: String, field: StrongboxField) {
-    self.query = query
-    self.field = field
-    super.init(
-      id: "strongbox.find.\(field.rawValue)", title: "Copy \(field.label) for “\(query)”", path: nil)
-    typeID = .strongboxQuery
-  }
-
-  override var detail: String? { "Enter asks Strongbox to unlock if needed, then finds and copies" }
-
-  override func preview(maxDimension: CGFloat) -> CatalogItemPreview {
-    .systemSymbol(field.symbolName, tintColor: .systemTeal)
-  }
-
-  override func placeholderPreview(maxDimension: CGFloat) -> CatalogItemPreview {
-    preview(maxDimension: maxDimension)
-  }
-
-  func allowsAction(_ action: CatalogAction, catalogIdentifier: String?) -> Bool {
-    action.id == StrongboxActionsCatalog.find
       && catalogIdentifier == StrongboxExtension.actionsCatalogIdentifier
   }
 }
