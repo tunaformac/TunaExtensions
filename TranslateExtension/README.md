@@ -24,6 +24,9 @@ The source language is detected automatically, using your languages as hints so 
 work. Each translation is a normal text result: copy it, paste it, show it in Large Type, or
 translate it again.
 
+If you only need a hotkey for one language or want to add translation to an existing shortcut,
+use Apple's **Translate Text** action. You can pass text from Tuna using **Send to Shortcut…**.
+
 ## Settings
 
 **Translate into** takes language codes such as `de, en, zh-Hant`. Leave it empty to use your

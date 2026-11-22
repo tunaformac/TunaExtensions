@@ -12,7 +12,13 @@ public final class TranslateExtension: Extension {
       metadata: ExtensionMetadata(
         displayName: "Translate",
         author: "Denis Maier",
-        description: "Translate text with Apple's on-device translation.",
+        description: """
+          Translate text with Apple's on-device translation.
+
+          If you only need a hotkey for one language or want to add translation to an existing \
+          shortcut, use Apple's Translate Text action. In Tuna, choose Send to Shortcut… \
+          to pass selected text.
+          """,
         iconName: "translate"
       ),
       compatibility: ExtensionDeclarationCompatibility(minTuna: "0.96", minTunaKit: "1.22.0"),
