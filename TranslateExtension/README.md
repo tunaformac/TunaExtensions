@@ -15,8 +15,10 @@ Start with the text or with the command, whichever comes first to mind:
 | **Translate to German** | **Translate…** | the text | one translation |
 
 Global search lists **Translate** and one **Translate to …** for each language you translate
-into. Browse into **Translate** to find every other language. When you start with the command,
-the text box starts with the clipboard, unless a password manager marked it concealed.
+into. If the commands are missing, open Tuna Settings → Sources, select the **Translate** source,
+and set **In global search** to **All**. Browse into **Translate** to find every other language.
+When you start with the command, the text box starts with the clipboard, unless a password
+manager marked it concealed.
 
 The source language is detected automatically, using your languages as hints so single words
 work. Each translation is a normal text result: copy it, paste it, show it in Large Type, or
