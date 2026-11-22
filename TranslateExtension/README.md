@@ -1,7 +1,7 @@
 # Translate
 
-Translate text in Tuna with Apple's on-device translation. Requires macOS 26 or later and
-Tuna 0.96 or later.
+Translate text in Tuna with Apple's on-device translation. Installation requires macOS 26 or later
+and Tuna 0.96 or later.
 
 ## Use it
 
@@ -43,4 +43,3 @@ over the network, stores nothing, and writes nothing.
 ## Limits
 
 - No language override for the source: if detection guesses wrong, there's no way to correct it.
-- macOS 15 can load the extension, but translating needs macOS 26.

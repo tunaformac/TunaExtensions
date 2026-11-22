@@ -51,11 +51,13 @@ final class TranslateExtensionTests: XCTestCase {
   }
 
   func testDeclarationIsValid() throws {
+    let bundle = Bundle(for: TranslateExtension.self)
     let declaration = try XCTUnwrap(
-      try TranslateExtension(bundle: Bundle(for: TranslateExtension.self)).declaration)
+      try TranslateExtension(bundle: bundle).declaration)
     try declaration.validate()
     XCTAssertEqual(declaration.compatibility?.minTuna, "0.96")
     XCTAssertEqual(declaration.compatibility?.minTunaKit, "1.22.0")
+    XCTAssertEqual(bundle.object(forInfoDictionaryKey: "LSMinimumSystemVersion") as? String, "26.0")
   }
 
   func testLanguageListsDropRegionsKeepMeaningfulScriptsAndSkipJunk() {

@@ -107,7 +107,6 @@ public final class TranslateActionsCatalog: ActionCatalog {
     guard let text = text?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else {
       return .failure("Type or select some text first")
     }
-    guard #available(macOS 26.0, *) else { return .failure("Translate needs macOS 26 or later") }
     guard let source = TranslateLanguage.detect(in: text, hints: hints + TranslateLanguage.preferred)
     else {
       return .results([TranslateMessages.item("Unknown language", "Couldn't tell which language this is.")])

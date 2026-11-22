@@ -40,15 +40,8 @@ struct AppleTranslator: Translating {
   func translate(_ text: String, from source: TranslateLanguage, to target: TranslateLanguage)
     async throws -> String
   {
-    guard #available(macOS 26.0, *) else { throw TranslateError.needsNewerMacOS }
     let session = TranslationSession(
       installedSource: source.localeLanguage, target: target.localeLanguage)
     return try await session.translate(text).targetText
   }
-}
-
-enum TranslateError: LocalizedError {
-  case needsNewerMacOS
-
-  var errorDescription: String? { "Translate needs macOS 26 or later." }
 }

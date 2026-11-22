@@ -176,7 +176,7 @@
 				ENABLE_TESTABILITY = YES;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@loader_path/Frameworks");
-				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.translate;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -197,7 +197,7 @@
 				DEVELOPMENT_TEAM = DDB8SQMXS9;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@loader_path/Frameworks");
-				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.translate;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = NO;
@@ -214,7 +214,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				GENERATE_INFOPLIST_FILE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.TranslateExtensionTests;
 				PRODUCT_MODULE_NAME = TranslateExtensionTests;
 				PRODUCT_NAME = TranslateExtensionTests;
@@ -228,7 +228,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				GENERATE_INFOPLIST_FILE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.TranslateExtensionTests;
 				PRODUCT_MODULE_NAME = TranslateExtensionTests;
 				PRODUCT_NAME = TranslateExtensionTests;
