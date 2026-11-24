@@ -28,6 +28,34 @@ final class HuePowerTests: XCTestCase {
     XCTAssertEqual(recordedStates, [true, false])
   }
 
+  func testPowerUpdateRejectsMissingOrWrongGroupedLightAcknowledgement() async throws {
+    let lightID = try XCTUnwrap(UUID(uuidString: "00000000-0000-4000-8000-000000000011"))
+    let responses = [
+      (
+        description: "empty acknowledgement",
+        body: #"{"errors":[],"data":[]}"#
+      ),
+      (
+        description: "acknowledgement for a different grouped light",
+        body: #"""
+          {"errors":[],"data":[{"rid":"00000000-0000-4000-8000-000000000021","rtype":"grouped_light"}]}
+          """#
+      ),
+    ]
+
+    for response in responses {
+      let bridge = try makeHueTestBridge { _ in (200, response.body) }
+      do {
+        try await bridge.setPower(true, lightID: lightID)
+        XCTFail("Accepted \(response.description)")
+      } catch HueError.response {
+        continue
+      } catch {
+        XCTFail("Expected HueError.response for \(response.description), got \(error)")
+      }
+    }
+  }
+
   func testPowerUpdatePropagatesBridgeRejection() async throws {
     let lightID = try XCTUnwrap(UUID(uuidString: "00000000-0000-4000-8000-000000000011"))
     let bridge = try makeHueTestBridge { _ in

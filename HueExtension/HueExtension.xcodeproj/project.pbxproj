@@ -19,6 +19,8 @@
 		BBBBBBBBBBBBBBBBBBBB0002 /* HueGroupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBBBB0006; };
 		BBBBBBBBBBBBBBBBBBBB0003 /* HuePowerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBBBB0007; };
 		BBBBBBBBBBBBBBBBBBBB0004 /* HueTestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBBBB0008; };
+		BBBBBBBBBBBBBBBBBBBB0013 /* HueActionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBBBB0014; };
+		BBBBBBBBBBBBBBBBBBBB0015 /* HueRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBBBB0016; };
 		BBBBBBBBBBBBBBBBBBBB000A /* TunaHue.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAAA6; };
 /* End PBXBuildFile section */
 
@@ -37,6 +39,8 @@
 		BBBBBBBBBBBBBBBBBBBB0006 /* HueGroupTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HueGroupTests.swift; sourceTree = "<group>"; };
 		BBBBBBBBBBBBBBBBBBBB0007 /* HuePowerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HuePowerTests.swift; sourceTree = "<group>"; };
 		BBBBBBBBBBBBBBBBBBBB0008 /* HueTestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HueTestSupport.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBBBB0014 /* HueActionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HueActionTests.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBBBB0016 /* HueRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HueRecoveryTests.swift; sourceTree = "<group>"; };
 		BBBBBBBBBBBBBBBBBBBB0009 /* HueExtensionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = HueExtensionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -57,6 +61,8 @@
 				BBBBBBBBBBBBBBBBBBBB0006 /* HueGroupTests.swift */,
 				BBBBBBBBBBBBBBBBBBBB0007 /* HuePowerTests.swift */,
 				BBBBBBBBBBBBBBBBBBBB0008 /* HueTestSupport.swift */,
+				BBBBBBBBBBBBBBBBBBBB0014 /* HueActionTests.swift */,
+				BBBBBBBBBBBBBBBBBBBB0016 /* HueRecoveryTests.swift */,
 				AAAAAAAAAAAAAAAAAAAAAAA4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -102,7 +108,7 @@
 		BBBBBBBBBBBBBBBBBBBB000C /* Test Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
-			files = (BBBBBBBBBBBBBBBBBBBB0001, BBBBBBBBBBBBBBBBBBBB0002, BBBBBBBBBBBBBBBBBBBB0003, BBBBBBBBBBBBBBBBBBBB0004);
+			files = (BBBBBBBBBBBBBBBBBBBB0001, BBBBBBBBBBBBBBBBBBBB0002, BBBBBBBBBBBBBBBBBBBB0003, BBBBBBBBBBBBBBBBBBBB0004, BBBBBBBBBBBBBBBBBBBB0013, BBBBBBBBBBBBBBBBBBBB0015);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */

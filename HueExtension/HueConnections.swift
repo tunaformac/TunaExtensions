@@ -44,6 +44,23 @@ enum HueConnections {
   private static let recordsKey = legacy.key(for: "Bridges")
   private static let service = "\(legacy.catalogIdentifier).bridges"
 
+  @MainActor
+  struct Access {
+    let record: @MainActor (String) throws -> HueConnection?
+    let key: @MainActor (String) -> String?
+    let discover: @MainActor () async throws -> [DiscoveredHueBridge]
+    let client: @MainActor (HueConnection, String) throws -> HueBridge
+    let saveChanges: @MainActor (HueConnection, HueConnection) throws -> Void
+  }
+
+  private static let liveAccess = Access(
+    record: { try records()[$0] },
+    key: { KeychainStore.stringValue(service: service, account: $0) },
+    discover: DiscoveredHueBridge.discover,
+    client: { try $0.client(key: $1) },
+    saveChanges: saveChanges
+  )
+
   static func records() throws -> [String: HueConnection] {
     if let data = legacy.defaults.data(forKey: recordsKey) {
       return try JSONDecoder().decode([String: HueConnection].self, from: data)
@@ -116,38 +133,38 @@ enum HueConnections {
   }
 
   static func use<T: Sendable>(
-    _ id: String, operation: (HueBridge) async throws -> T
+    _ id: String, access: Access = liveAccess, operation: (HueBridge) async throws -> T
   ) async throws -> T {
-    guard let record = try records()[id] else { throw HueError.disconnected }
-    guard let key = KeychainStore.stringValue(service: service, account: id) else {
+    guard let record = try access.record(id) else { throw HueError.disconnected }
+    guard let key = access.key(id) else {
       throw HueError.configuration("Could not read the Hue key for \(record.name) from Keychain.")
     }
-    let client = try record.client(key: key)
+    let client = try access.client(record, key)
     do {
       return try await operation(client)
     } catch let error as URLError {
       try Task.checkCancellation()
-      guard let discovered = try? await DiscoveredHueBridge.discover(),
+      guard let discovered = try? await access.discover(),
             let match = discovered.first(where: {
               $0.id.lowercased() == id && $0.internalipaddress != record.address
             }) else { throw error }
       try Task.checkCancellation()
-      guard let current = try records()[id], current.generation == record.generation else {
+      guard let current = try access.record(id), current.generation == record.generation else {
         throw HueError.disconnected
       }
       // A concurrent request may already have found a new address.
       var updated = current
       if current.address == record.address { updated.address = match.internalipaddress }
-      guard let currentKey = KeychainStore.stringValue(service: service, account: id) else {
+      guard let currentKey = access.key(id) else {
         throw HueError.disconnected
       }
-      let result = try await operation(updated.client(key: currentKey))
+      let result = try await operation(access.client(updated, currentKey))
       try Task.checkCancellation()
-      if updated.address != current.address, var latest = try records()[id],
+      if updated.address != current.address, var latest = try access.record(id),
          latest.generation == current.generation, latest.address == current.address {
         let previous = latest
         latest.address = updated.address
-        try saveChanges(from: previous, to: latest)
+        try access.saveChanges(previous, latest)
       }
       return result
     }
