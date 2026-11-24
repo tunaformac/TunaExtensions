@@ -1,0 +1,184 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AAAAAAAAAAAAAAAAAAAAAAAA /* HueExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAAA8; };
+		AAAAAAAAAAAAAAAAAAAAAAAB /* HueBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAAA9; };
+		AAAAAAAAAAAAAAAAAAAAAAAE /* TunaKit in Frameworks */ = {isa = PBXBuildFile; productRef = AAAAAAAAAAAAAAAAAAAAAA10; };
+		AAAAAAAAAAAAAAAAAAAAAAB1 /* HueConnections.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAAB0; };
+		AAAAAAAAAAAAAAAAAAAAAAB3 /* HueAlertIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAAB2; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		AAAAAAAAAAAAAAAAAAAAAAA8 /* HueExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HueExtension.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAAA9 /* HueBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HueBridge.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAAA7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAAA6 /* TunaHue.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = TunaHue.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AAAAAAAAAAAAAAAAAAAAAAB0 /* HueConnections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HueConnections.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAAB2 /* HueAlertIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "HueAlertIcon.png"; path = "Resources/HueAlertIcon.png"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		AAAAAAAAAAAAAAAAAAAAAAA2 = {
+			isa = PBXGroup;
+			children = (AAAAAAAAAAAAAAAAAAAAAAA3, AAAAAAAAAAAAAAAAAAAAAAA7, AAAAAAAAAAAAAAAAAAAAAAB2, AAAAAAAAAAAAAAAAAAAAAAA4);
+			sourceTree = "<group>";
+		};
+		AAAAAAAAAAAAAAAAAAAAAAA3 /* Sources */ = {
+			isa = PBXGroup;
+			children = (AAAAAAAAAAAAAAAAAAAAAAA8, AAAAAAAAAAAAAAAAAAAAAAA9, AAAAAAAAAAAAAAAAAAAAAAB0);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		AAAAAAAAAAAAAAAAAAAAAAA4 /* Products */ = {
+			isa = PBXGroup;
+			children = (AAAAAAAAAAAAAAAAAAAAAAA6);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AAAAAAAAAAAAAAAAAAAAAAAD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (AAAAAAAAAAAAAAAAAAAAAAAE);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AAAAAAAAAAAAAAAAAAAAAAAC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (AAAAAAAAAAAAAAAAAAAAAAAA, AAAAAAAAAAAAAAAAAAAAAAAB, AAAAAAAAAAAAAAAAAAAAAAB1);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AAAAAAAAAAAAAAAAAAAAAAB4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (AAAAAAAAAAAAAAAAAAAAAAB3);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		AAAAAAAAAAAAAAAAAAAAAAA5 /* TunaHue */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AAAAAAAAAAAAAAAAAAAAAA12;
+			buildPhases = (AAAAAAAAAAAAAAAAAAAAAAAC, AAAAAAAAAAAAAAAAAAAAAAAD, AAAAAAAAAAAAAAAAAAAAAAB4);
+			buildRules = ();
+			dependencies = ();
+			name = TunaHue;
+			packageProductDependencies = (AAAAAAAAAAAAAAAAAAAAAA10);
+			productName = TunaHue;
+			productReference = AAAAAAAAAAAAAAAAAAAAAAA6;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AAAAAAAAAAAAAAAAAAAAAAA1 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = AAAAAAAAAAAAAAAAAAAAAA11;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			knownRegions = (en, Base);
+			mainGroup = AAAAAAAAAAAAAAAAAAAAAAA2;
+			packageReferences = (AAAAAAAAAAAAAAAAAAAAAAAF);
+			productRefGroup = AAAAAAAAAAAAAAAAAAAAAAA4;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (AAAAAAAAAAAAAAAAAAAAAAA5);
+		};
+/* End PBXProject section */
+
+/* Begin XCBuildConfiguration section */
+		AAAAAAAAAAAAAAAAAAAAAA13 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		AAAAAAAAAAAAAAAAAAAAAA15 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				DEFINES_MODULE = YES;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks");
+				PRODUCT_BUNDLE_IDENTIFIER = de.bjesuiter.tuna.hue;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		AAAAAAAAAAAAAAAAAAAAAA14 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		AAAAAAAAAAAAAAAAAAAAAA16 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				DEFINES_MODULE = YES;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks");
+				PRODUCT_BUNDLE_IDENTIFIER = de.bjesuiter.tuna.hue;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AAAAAAAAAAAAAAAAAAAAAA11 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (AAAAAAAAAAAAAAAAAAAAAA13, AAAAAAAAAAAAAAAAAAAAAA14);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AAAAAAAAAAAAAAAAAAAAAA12 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (AAAAAAAAAAAAAAAAAAAAAA15, AAAAAAAAAAAAAAAAAAAAAA16);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AAAAAAAAAAAAAAAAAAAAAAAF /* TunaKit */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tunaformac/TunaKit";
+			requirement = {kind = exactVersion; version = 1.23.0; };
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AAAAAAAAAAAAAAAAAAAAAA10 /* TunaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AAAAAAAAAAAAAAAAAAAAAAAF;
+			productName = TunaKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = AAAAAAAAAAAAAAAAAAAAAAA1;
+}
