@@ -15,6 +15,11 @@
 		AAAAAAAAAAAAAAAAAAAAAAB8 /* HueCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAAB7; };
 		AAAAAAAAAAAAAAAAAAAAAABA /* HueItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAAB9; };
 		AAAAAAAAAAAAAAAAAAAAAABC /* HuePairing.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAABB; };
+		BBBBBBBBBBBBBBBBBBBB0001 /* HuePairingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBBBB0005; };
+		BBBBBBBBBBBBBBBBBBBB0002 /* HueGroupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBBBB0006; };
+		BBBBBBBBBBBBBBBBBBBB0003 /* HuePowerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBBBB0007; };
+		BBBBBBBBBBBBBBBBBBBB0004 /* HueTestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBBBB0008; };
+		BBBBBBBBBBBBBBBBBBBB000A /* TunaHue.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAAA6; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +33,11 @@
 		AAAAAAAAAAAAAAAAAAAAAAB7 /* HueCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HueCatalog.swift; sourceTree = "<group>"; };
 		AAAAAAAAAAAAAAAAAAAAAAB9 /* HueItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HueItems.swift; sourceTree = "<group>"; };
 		AAAAAAAAAAAAAAAAAAAAAABB /* HuePairing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HuePairing.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBBBB0005 /* HuePairingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HuePairingTests.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBBBB0006 /* HueGroupTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HueGroupTests.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBBBB0007 /* HuePowerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HuePowerTests.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBBBB0008 /* HueTestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HueTestSupport.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBBBB0009 /* HueExtensionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = HueExtensionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -43,13 +53,17 @@
 				AAAAAAAAAAAAAAAAAAAAAABB /* HuePairing.swift */,
 				AAAAAAAAAAAAAAAAAAAAAAA7 /* Info.plist */,
 				AAAAAAAAAAAAAAAAAAAAAAB2 /* HueAlertIcon.png */,
+				BBBBBBBBBBBBBBBBBBBB0005 /* HuePairingTests.swift */,
+				BBBBBBBBBBBBBBBBBBBB0006 /* HueGroupTests.swift */,
+				BBBBBBBBBBBBBBBBBBBB0007 /* HuePowerTests.swift */,
+				BBBBBBBBBBBBBBBBBBBB0008 /* HueTestSupport.swift */,
 				AAAAAAAAAAAAAAAAAAAAAAA4 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
 		AAAAAAAAAAAAAAAAAAAAAAA4 /* Products */ = {
 			isa = PBXGroup;
-			children = (AAAAAAAAAAAAAAAAAAAAAAA6);
+			children = (AAAAAAAAAAAAAAAAAAAAAAA6, BBBBBBBBBBBBBBBBBBBB0009);
 			name = Products;
 			sourceTree = "<group>";
 		};
@@ -60,6 +74,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (AAAAAAAAAAAAAAAAAAAAAAAE);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BBBBBBBBBBBBBBBBBBBB000B /* Test Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (BBBBBBBBBBBBBBBBBBBB000A);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -79,6 +99,12 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BBBBBBBBBBBBBBBBBBBB000C /* Test Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (BBBBBBBBBBBBBBBBBBBB0001, BBBBBBBBBBBBBBBBBBBB0002, BBBBBBBBBBBBBBBBBBBB0003, BBBBBBBBBBBBBBBBBBBB0004);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXResourcesBuildPhase section */
@@ -89,6 +115,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BBBBBBBBBBBBBBBBBBBB0011 /* HueExtension */ = {
+			isa = PBXTargetDependency;
+			target = AAAAAAAAAAAAAAAAAAAAAAA5;
+			targetProxy = BBBBBBBBBBBBBBBBBBBB0012;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXContainerItemProxy section */
+		BBBBBBBBBBBBBBBBBBBB0012 = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AAAAAAAAAAAAAAAAAAAAAAA1;
+			proxyType = 1;
+			remoteGlobalIDString = AAAAAAAAAAAAAAAAAAAAAAA5;
+			remoteInfo = HueExtension;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXNativeTarget section */
 		AAAAAAAAAAAAAAAAAAAAAAA5 /* HueExtension */ = {
@@ -102,6 +146,17 @@
 			productName = TunaHue;
 			productReference = AAAAAAAAAAAAAAAAAAAAAAA6;
 			productType = "com.apple.product-type.framework";
+		};
+		BBBBBBBBBBBBBBBBBBBB000D /* HueExtensionTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BBBBBBBBBBBBBBBBBBBB000E;
+			buildPhases = (BBBBBBBBBBBBBBBBBBBB000C, BBBBBBBBBBBBBBBBBBBB000B);
+			buildRules = ();
+			dependencies = (BBBBBBBBBBBBBBBBBBBB0011);
+			name = HueExtensionTests;
+			productName = HueExtensionTests;
+			productReference = BBBBBBBBBBBBBBBBBBBB0009;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -117,7 +172,7 @@
 			productRefGroup = AAAAAAAAAAAAAAAAAAAAAAA4;
 			projectDirPath = "";
 			projectRoot = "";
-			targets = (AAAAAAAAAAAAAAAAAAAAAAA5);
+			targets = (AAAAAAAAAAAAAAAAAAAAAAA5, BBBBBBBBBBBBBBBBBBBB000D);
 		};
 /* End PBXProject section */
 
@@ -143,6 +198,7 @@
 				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks");
 				PRODUCT_BUNDLE_IDENTIFIER = de.bjesuiter.tuna.hue;
 				PRODUCT_NAME = TunaHue;
+				ENABLE_TESTABILITY = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -172,6 +228,24 @@
 			};
 			name = Release;
 		};
+		BBBBBBBBBBBBBBBBBBBB000F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = de.bjesuiter.tuna.hue.tests;
+				PRODUCT_NAME = HueExtensionTests;
+			};
+			name = Debug;
+		};
+		BBBBBBBBBBBBBBBBBBBB0010 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = de.bjesuiter.tuna.hue.tests;
+				PRODUCT_NAME = HueExtensionTests;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -184,6 +258,12 @@
 		AAAAAAAAAAAAAAAAAAAAAA12 = {
 			isa = XCConfigurationList;
 			buildConfigurations = (AAAAAAAAAAAAAAAAAAAAAA15, AAAAAAAAAAAAAAAAAAAAAA16);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BBBBBBBBBBBBBBBBBBBB000E /* HueExtensionTests configurations */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (BBBBBBBBBBBBBBBBBBBB000F, BBBBBBBBBBBBBBBBBBBB0010);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};

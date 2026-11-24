@@ -42,9 +42,12 @@ struct HueBridge: Sendable {
   let id: String
   private let baseURL: URL
   private let key: String?
-  private let trust: HueTrust
+  private let load: @Sendable (URLRequest) async throws -> (Data, URLResponse)
 
-  init(address: String, id: String, key: String? = nil, caPEM: String) throws {
+  init(
+    address: String, id: String, key: String? = nil, caPEM: String,
+    load: (@Sendable (URLRequest) async throws -> (Data, URLResponse))? = nil
+  ) throws {
     guard id.utf8.count == 16, id.utf8.allSatisfy({
       (48...57).contains($0) || (97...102).contains($0)
     }) else {
@@ -67,7 +70,16 @@ struct HueBridge: Sendable {
     self.id = id
     self.baseURL = baseURL
     self.key = key
-    self.trust = try HueTrust(bridgeID: id, caPEM: caPEM)
+    let trust = try HueTrust(bridgeID: id, caPEM: caPEM)
+    self.load = load ?? { request in
+      let config = URLSessionConfiguration.ephemeral
+      config.timeoutIntervalForRequest = 5
+      config.timeoutIntervalForResource = 10
+      config.tlsMinimumSupportedProtocolVersion = .TLSv12
+      let session = URLSession(configuration: config, delegate: trust, delegateQueue: nil)
+      defer { session.finishTasksAndInvalidate() }
+      return try await session.data(for: request)
+    }
   }
 
   func groups() async throws -> [HueGroup] {
@@ -158,13 +170,7 @@ struct HueBridge: Sendable {
   }
 
   private func send(_ request: URLRequest) async throws -> Data {
-    let config = URLSessionConfiguration.ephemeral
-    config.timeoutIntervalForRequest = 5
-    config.timeoutIntervalForResource = 10
-    config.tlsMinimumSupportedProtocolVersion = .TLSv12
-    let session = URLSession(configuration: config, delegate: trust, delegateQueue: nil)
-    defer { session.finishTasksAndInvalidate() }
-    let (data, response) = try await session.data(for: request)
+    let (data, response) = try await load(request)
     guard let http = response as? HTTPURLResponse else { throw HueError.response }
     if http.statusCode == 401 || http.statusCode == 403 { throw HueError.authorization }
     guard (200..<300).contains(http.statusCode) else { throw HueError.http(http.statusCode) }
