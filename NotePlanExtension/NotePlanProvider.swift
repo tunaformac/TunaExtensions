@@ -231,6 +231,11 @@ enum NotePlanURLBuilder {
     return url(action: "addNote", items: items)
   }
 
+  static func runPluginURL(pluginID: String, command: String) -> URL? {
+    guard let pluginID = normalize(pluginID), let command = normalize(command) else { return nil }
+    return url(action: "runPlugin", items: [item("pluginID", pluginID), item("command", command)])
+  }
+
   static func searchURL(query: String) -> URL? {
     guard let query = normalize(query) else { return nil }
     return url(action: "search", items: [item("text", query)])

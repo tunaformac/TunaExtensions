@@ -10,6 +10,7 @@
 		BD3AFC586C828A23E2EF7448 /* NotePlanCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C16E9EC2141C6DE4AF1CE363 /* NotePlanCatalog.swift */; };
 		B181346D5CC625D2AE32AE54 /* NotePlanItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = 302580A1464B54DF3A552791 /* NotePlanItems.swift */; };
 		5E48CC32B24186F0E3471C7B /* NotePlanProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FC512ED537EA3380C424616 /* NotePlanProvider.swift */; };
+		934C8C4EAAA90F23FF15BBF2 /* NotePlanPlugins.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBD64763BE09606641AFE74E /* NotePlanPlugins.swift */; };
 		B345B4897C93781FF030FF23 /* NotePlanExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E3715815B500C8231F0E3E9 /* NotePlanExtension.swift */; };
 		712E4DCE2337151C1A031365 /* NotePlanActionsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10AC2C698F7B58AAF9EE902F /* NotePlanActionsCatalog.swift */; };
 /* End PBXBuildFile section */
@@ -18,6 +19,7 @@
 		A70019A0BB8F09A6339F94A1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		302580A1464B54DF3A552791 /* NotePlanItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotePlanItems.swift; sourceTree = "<group>"; };
 		6FC512ED537EA3380C424616 /* NotePlanProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotePlanProvider.swift; sourceTree = "<group>"; };
+		CBD64763BE09606641AFE74E /* NotePlanPlugins.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotePlanPlugins.swift; sourceTree = "<group>"; };
 		7E3715815B500C8231F0E3E9 /* NotePlanExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotePlanExtension.swift; sourceTree = "<group>"; };
 		C16E9EC2141C6DE4AF1CE363 /* NotePlanCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotePlanCatalog.swift; sourceTree = "<group>"; };
 		10AC2C698F7B58AAF9EE902F /* NotePlanActionsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotePlanActionsCatalog.swift; sourceTree = "<group>"; };
@@ -43,6 +45,7 @@
 				10AC2C698F7B58AAF9EE902F /* NotePlanActionsCatalog.swift */,
 				302580A1464B54DF3A552791 /* NotePlanItems.swift */,
 				6FC512ED537EA3380C424616 /* NotePlanProvider.swift */,
+				CBD64763BE09606641AFE74E /* NotePlanPlugins.swift */,
 				A70019A0BB8F09A6339F94A1 /* Info.plist */,
 			);
 			path = .;
@@ -141,6 +144,7 @@
 				712E4DCE2337151C1A031365 /* NotePlanActionsCatalog.swift in Sources */,
 				B181346D5CC625D2AE32AE54 /* NotePlanItems.swift in Sources */,
 				5E48CC32B24186F0E3471C7B /* NotePlanProvider.swift in Sources */,
+				934C8C4EAAA90F23FF15BBF2 /* NotePlanPlugins.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -20,6 +20,10 @@ public final class NotePlanExtension: Extension {
           id: "noteplan.destinations", type: NotePlanDestinationsCatalog.self,
           name: "NotePlan Calendar Notes", presentation: .source, enabledByDefault: true,
           initialGlobalScope: .all),
+        CatalogDeclaration(
+          id: "noteplan.plugins", type: NotePlanPluginsCatalog.self,
+          name: "NotePlan Plugin Commands", presentation: .source, enabledByDefault: true,
+          initialGlobalScope: .all),
       ],
       actionCatalogs: [
         ActionCatalogDeclaration(
@@ -31,6 +35,9 @@ public final class NotePlanExtension: Extension {
           inheritsFrom: [TypeID("com.tuna.type.entity")]),
         TypeRegistrationDefinition(
           typeID: .notePlanFolder, displayName: "NotePlan Folders",
+          inheritsFrom: [TypeID("com.tuna.type.entity")]),
+        TypeRegistrationDefinition(
+          typeID: .notePlanPluginCommand, displayName: "NotePlan Plugin Commands",
           inheritsFrom: [TypeID("com.tuna.type.entity")]),
       ],
       defaultActionRankings: [
@@ -46,6 +53,12 @@ public final class NotePlanExtension: Extension {
             ActionReference(catalogIdentifier: "noteplan.actions", actionID: "open-in-noteplan")
           ]
         ),
+        DefaultActionRankingDefinition(
+          typeID: .notePlanPluginCommand,
+          actions: [
+            ActionReference(catalogIdentifier: "noteplan.actions", actionID: "run-plugin-command")
+          ]
+        ),
       ],
       appBrowseEnrichments: [
         AppBrowseEnrichmentDefinition(
@@ -53,6 +66,7 @@ public final class NotePlanExtension: Extension {
           entries: [
             AppBrowseEnrichmentEntryDefinition(catalogIdentifier: "noteplan.destinations"),
             AppBrowseEnrichmentEntryDefinition(catalogIdentifier: "noteplan"),
+            AppBrowseEnrichmentEntryDefinition(catalogIdentifier: "noteplan.plugins"),
           ]
         )
       ],

@@ -7,7 +7,7 @@ public final class NotePlanActionsCatalog: NSObject, ActionCatalog {
   public let name: String
 
   public private(set) lazy var actions: [CatalogAction] =
-    Self.openActions() + Self.textActions() + Self.appActions()
+    Self.openActions() + Self.pluginActions() + Self.textActions() + Self.appActions()
 
   public required init(definition: ActionCatalogDefinition) {
     self.identifier = definition.identifier
@@ -85,6 +85,24 @@ extension NotePlanActionsCatalog {
     items.append(appendText)
 
     return items
+  }
+
+  /// Verbs on a NotePlan plugin command.
+  static func pluginActions() -> [CatalogAction] {
+    let run = PredicateAwareAction(id: "run-plugin-command", title: "Run in NotePlan") {
+      subject, _ in
+      guard let item = subject as? NotePlanPluginCommandItem else {
+        return .failure("No NotePlan plugin command selected")
+      }
+      return NotePlanActions.open(
+        url: NotePlanURLBuilder.runPluginURL(
+          pluginID: item.record.pluginID, command: item.record.name),
+        failure: "Invalid NotePlan plugin command")
+    }
+    run.systemSymbolName = "play.circle"
+    run.supportedSubjectTypes = [.notePlanPluginCommand]
+    run.subjectPredicate = { $0 is NotePlanPluginCommandItem }
+    return [run]
   }
 
   /// Verbs on typed or selected text.

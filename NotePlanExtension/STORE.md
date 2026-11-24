@@ -8,6 +8,8 @@ Find any NotePlan note or folder by title and open it with **Open in NotePlan**,
 
 Select or type some text and run **Add to Today in NotePlan**, **Add Task to Today in NotePlan**, **Append to NotePlan Note...**, **Create NotePlan Note**, or **Search NotePlan**. Select a note and run **Append Text...** to add a line to it.
 
-Select NotePlan in Tuna and browse it to see your notes, or to search, create a note, or add to today.
+Search the commands of your NotePlan plugins and run them with **Run in NotePlan**.
+
+Select NotePlan in Tuna and browse it to see your notes and plugin commands, or to search, create a note, or add to today.
 
 You need NotePlan installed. Tuna asks NotePlan for the list of notes, so macOS asks you once to let Tuna control NotePlan. NotePlan has to be running for the list to refresh; the last list stays searchable while it is not.
