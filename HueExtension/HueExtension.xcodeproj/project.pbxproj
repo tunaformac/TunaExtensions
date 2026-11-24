@@ -11,6 +11,10 @@
 		AAAAAAAAAAAAAAAAAAAAAAAE /* TunaKit in Frameworks */ = {isa = PBXBuildFile; productRef = AAAAAAAAAAAAAAAAAAAAAA10; };
 		AAAAAAAAAAAAAAAAAAAAAAB1 /* HueConnections.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAAB0; };
 		AAAAAAAAAAAAAAAAAAAAAAB3 /* HueAlertIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAAB2; };
+		AAAAAAAAAAAAAAAAAAAAAAB6 /* HueActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAAB5; };
+		AAAAAAAAAAAAAAAAAAAAAAB8 /* HueCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAAB7; };
+		AAAAAAAAAAAAAAAAAAAAAABA /* HueItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAAB9; };
+		AAAAAAAAAAAAAAAAAAAAAABC /* HuePairing.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAABB; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,18 +24,27 @@
 		AAAAAAAAAAAAAAAAAAAAAAA6 /* TunaHue.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = TunaHue.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AAAAAAAAAAAAAAAAAAAAAAB0 /* HueConnections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HueConnections.swift; sourceTree = "<group>"; };
 		AAAAAAAAAAAAAAAAAAAAAAB2 /* HueAlertIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "HueAlertIcon.png"; path = "Resources/HueAlertIcon.png"; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAAB5 /* HueActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HueActions.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAAB7 /* HueCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HueCatalog.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAAB9 /* HueItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HueItems.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAABB /* HuePairing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HuePairing.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		AAAAAAAAAAAAAAAAAAAAAAA2 = {
 			isa = PBXGroup;
-			children = (AAAAAAAAAAAAAAAAAAAAAAA3, AAAAAAAAAAAAAAAAAAAAAAA7, AAAAAAAAAAAAAAAAAAAAAAB2, AAAAAAAAAAAAAAAAAAAAAAA4);
-			sourceTree = "<group>";
-		};
-		AAAAAAAAAAAAAAAAAAAAAAA3 /* Sources */ = {
-			isa = PBXGroup;
-			children = (AAAAAAAAAAAAAAAAAAAAAAA8, AAAAAAAAAAAAAAAAAAAAAAA9, AAAAAAAAAAAAAAAAAAAAAAB0);
-			path = Sources;
+			children = (
+				AAAAAAAAAAAAAAAAAAAAAAB5 /* HueActions.swift */,
+				AAAAAAAAAAAAAAAAAAAAAAA9 /* HueBridge.swift */,
+				AAAAAAAAAAAAAAAAAAAAAAB7 /* HueCatalog.swift */,
+				AAAAAAAAAAAAAAAAAAAAAAB0 /* HueConnections.swift */,
+				AAAAAAAAAAAAAAAAAAAAAAA8 /* HueExtension.swift */,
+				AAAAAAAAAAAAAAAAAAAAAAB9 /* HueItems.swift */,
+				AAAAAAAAAAAAAAAAAAAAAABB /* HuePairing.swift */,
+				AAAAAAAAAAAAAAAAAAAAAAA7 /* Info.plist */,
+				AAAAAAAAAAAAAAAAAAAAAAB2 /* HueAlertIcon.png */,
+				AAAAAAAAAAAAAAAAAAAAAAA4 /* Products */,
+			);
 			sourceTree = "<group>";
 		};
 		AAAAAAAAAAAAAAAAAAAAAAA4 /* Products */ = {
@@ -55,7 +68,15 @@
 		AAAAAAAAAAAAAAAAAAAAAAAC /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
-			files = (AAAAAAAAAAAAAAAAAAAAAAAA, AAAAAAAAAAAAAAAAAAAAAAAB, AAAAAAAAAAAAAAAAAAAAAAB1);
+			files = (
+				AAAAAAAAAAAAAAAAAAAAAAB6 /* HueActions.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAAAB /* HueBridge.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAAB8 /* HueCatalog.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAAB1 /* HueConnections.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAAAA /* HueExtension.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAABA /* HueItems.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAABC /* HuePairing.swift in Sources */,
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
@@ -70,13 +91,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		AAAAAAAAAAAAAAAAAAAAAAA5 /* TunaHue */ = {
+		AAAAAAAAAAAAAAAAAAAAAAA5 /* HueExtension */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = AAAAAAAAAAAAAAAAAAAAAA12;
 			buildPhases = (AAAAAAAAAAAAAAAAAAAAAAAC, AAAAAAAAAAAAAAAAAAAAAAAD, AAAAAAAAAAAAAAAAAAAAAAB4);
 			buildRules = ();
 			dependencies = ();
-			name = TunaHue;
+			name = HueExtension;
 			packageProductDependencies = (AAAAAAAAAAAAAAAAAAAAAA10);
 			productName = TunaHue;
 			productReference = AAAAAAAAAAAAAAAAAAAAAAA6;
@@ -114,12 +135,14 @@
 		AAAAAAAAAAAAAAAAAAAAAA15 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
 				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks");
 				PRODUCT_BUNDLE_IDENTIFIER = de.bjesuiter.tuna.hue;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = TunaHue;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -137,12 +160,14 @@
 		AAAAAAAAAAAAAAAAAAAAAA16 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DDB8SQMXS9;
 				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks");
 				PRODUCT_BUNDLE_IDENTIFIER = de.bjesuiter.tuna.hue;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = TunaHue;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 			};
 			name = Release;
@@ -168,7 +193,10 @@
 		AAAAAAAAAAAAAAAAAAAAAAAF /* TunaKit */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tunaformac/TunaKit";
-			requirement = {kind = exactVersion; version = 1.23.0; };
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 1.23.0;
+			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 

@@ -4,7 +4,7 @@ Control Philips Hue rooms and zones from the [Tuna launcher](https://tunaformac.
 
 ## Connect your first Hue Bridge
 
-You’ll need macOS 15 or later, Tuna 0.113 or later, and a Philips Hue Bridge on the same network as your Mac. The extension is currently installed from source. From the TunaExtensions root, run `./scripts/tuna-extension install --scheme TunaHue --restart`.
+You’ll need macOS 15 or later, Tuna 0.113 or later, and a Philips Hue Bridge on the same network as your Mac. The extension is currently installed from source. From the TunaExtensions root, run `./scripts/tuna-extension install --scheme HueExtension --restart`.
 
 1. In Tuna, search for **Hue** and choose **Connect First Hue Bridge**. If the command is missing, open Tuna’s **Sources** settings and set **Hue Groups → In global search** to **All**.
 

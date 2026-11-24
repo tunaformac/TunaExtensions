@@ -26,7 +26,7 @@
       location = "group:GiphyExtension/GiphyExtension.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:HueExtension/TunaHue.xcodeproj">
+      location = "group:HueExtension/HueExtension.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:Messages2FAExtension/Messages2FAExtension.xcodeproj">
