@@ -528,6 +528,10 @@ for KEY in "$SAFE_ID" "$ID" "${ID##*.}" "$RESOLVED_TARGET" "$(slugify "$RESOLVED
   add_media_key "$KEY"
 done
 
+if [[ "$ID" == de.bjesuiter.tuna.hue ]]; then
+  add_media_key tuna-hue
+fi
+
 if [[ "$RESOLVED_TARGET" == Tuna* ]]; then
   TARGET_SUFFIX="${RESOLVED_TARGET#Tuna}"
   add_media_key "$TARGET_SUFFIX"
