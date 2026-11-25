@@ -3,3 +3,4 @@ dist/
 *.xcuserdatad/
 xcuserdata/
 .DS_Store
+!tests/fixtures/tunakit-floor/cache/
