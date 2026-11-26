@@ -42,6 +42,8 @@ test-release-scripts:
 	@./tests/lint-extensions-test.sh
 	@./tests/review-queue-test.sh
 	@./tests/macos-test-skip-test.sh
+	@./tests/extension-risk-test.sh
+	@./tests/auto-release-test.sh
 
 test-local-tunakit-rewrite:
 	@./tests/local-tunakit-rewrite-test.sh
