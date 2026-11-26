@@ -14,7 +14,8 @@ public final class MemeGeneratorExtension: Extension {
       compatibility: ExtensionDeclarationCompatibility(minTuna: "0.113", minTunaKit: "1.22.0"),
       settings: MemeSettings.definitions,
       catalogs: [
-        // Templates are only reached through "Make Meme"; they stay out of global search.
+        // Templates are only reached through "Make Meme"; they stay out of global search. Browse
+        // roots take no scope: Make Meme is always searchable while enabled.
         CatalogDeclaration(
           id: "memes.templates", type: MemeTemplatesCatalog.self, name: "Meme Templates",
           presentation: .source,
@@ -23,7 +24,7 @@ public final class MemeGeneratorExtension: Extension {
         CatalogDeclaration(
           id: "memes.templates.browse", type: MemeTemplatesBrowseCatalog.self,
           name: "Make Meme", presentation: .browseRoot(contents: "memes.templates"),
-          enabledByDefault: true, initialGlobalScope: .all),
+          enabledByDefault: true),
       ],
       actionCatalogs: [
         ActionCatalogDeclaration(

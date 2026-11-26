@@ -232,7 +232,7 @@ enum MemeError: LocalizedError, Equatable {
     case .notAnImage:
       "The meme service did not return an image."
     case .emptyText:
-      "Type the meme text, separating boxes with |"
+      "This template has no example text. Type the meme text, separating boxes with |"
     }
   }
 }

@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import Network
 import TunaKit
 import XCTest
 
@@ -31,7 +32,6 @@ final class MemeGeneratorExtensionTests: XCTestCase {
     XCTAssertEqual(declaration.catalogs[0].presentation, .source)
     XCTAssertEqual(declaration.catalogs[1].presentation, .browseRoot(contents: "memes.templates"))
     XCTAssertEqual(declaration.catalogs[0].initialGlobalScope, .none, "Templates stay out of search")
-    XCTAssertEqual(declaration.catalogs[1].initialGlobalScope, .all)
     XCTAssertEqual(declaration.catalogs[1].name, "Make Meme")
     XCTAssertTrue(declaration.catalogs.allSatisfy(\.enabledByDefault))
     XCTAssertEqual(declaration.actionCatalogs.map(\.id), ["memes.actions"])
@@ -173,19 +173,36 @@ final class MemeGeneratorExtensionTests: XCTestCase {
   }
 
   func testImgflipPasswordIsNeverForwardedByRedirects() async throws {
-    // The caption request (which carries the password) refuses every redirect, so a 307 that would
-    // replay the body elsewhere surfaces as an HTTP error instead.
-    let session = URLSession(configuration: .ephemeral)
-    let original = URLRequest(url: URL(string: "https://api.imgflip.com/caption_image")!)
-    let task = session.dataTask(with: original)
-    let redirect = try XCTUnwrap(
-      HTTPURLResponse(
-        url: original.url!, statusCode: 307, httpVersion: nil,
-        headerFields: ["Location": "https://attacker.example/caption_image"]))
-    let next = await NoRedirectDelegate.shared.urlSession(
-      session, task: task, willPerformHTTPRedirection: redirect,
-      newRequest: URLRequest(url: URL(string: "https://attacker.example/caption_image")!))
-    XCTAssertNil(next)
+    // Two real loopback origins, through the real request path (`MemeAPIClient.generate` with the
+    // live session): A answers the caption POST with a 307 to B, which would replay the body.
+    let origin = try await LoopbackServer.start()
+    let elsewhere = try await LoopbackServer.start()
+    defer {
+      origin.stop()
+      elsewhere.stop()
+    }
+    elsewhere.respond = { _ in LoopbackServer.reply(status: 200, body: #"{"success":true}"#) }
+    origin.respond = { _ in
+      LoopbackServer.reply(
+        status: 307, headers: ["Location": elsewhere.url.appending(path: "caption_image").absoluteString])
+    }
+
+    let client = MemeAPIClient(imgflipBaseURL: origin.url)
+    do {
+      _ = try await client.generate(
+        template: Self.imgflipDrake, lines: ["a", "b"],
+        imgflipCredentials: ImgflipCredentials(username: "me", password: "synthetic-secret"))
+      XCTFail("Expected the redirect to be refused")
+    } catch {
+      XCTAssertEqual(error as? MemeError, .httpStatus(.imgflip, 307))
+    }
+    XCTAssertEqual(origin.requests.count, 1)
+    XCTAssertTrue(origin.requests[0].contains("synthetic-secret"), "The password went to A only")
+    XCTAssertTrue(elsewhere.requests.isEmpty, "B must never see the request")
+
+    // Control: B is reachable, so the empty log above means the redirect was refused.
+    _ = try await URLSession(configuration: .ephemeral).data(from: elsewhere.url)
+    XCTAssertEqual(elsewhere.requests.count, 1)
   }
 
   func testImgflipRequiresCredentials() async {
@@ -241,6 +258,88 @@ final class MemeGeneratorExtensionTests: XCTestCase {
     XCTAssertEqual(library.cached(.memegen)?.templates.count, 2)
   }
 
+  func testCachesLiveInCachesDirectoryUnderTheBundleID() {
+    let root = RuntimeEnvironment.cachesDirectory().standardizedFileURL.path
+    let directory = MemeTemplateLibrary.dataDirectory.standardizedFileURL
+    XCTAssertTrue(directory.path.hasPrefix(root + "/"), directory.path)
+    XCTAssertEqual(directory.lastPathComponent, "com.brnbw.tuna.plugins.memegenerator")
+    XCTAssertEqual(
+      Bundle(for: MemeGeneratorExtension.self).bundleIdentifier,
+      MemeTemplateLibrary.bundleIdentifier)
+    XCTAssertTrue(
+      MemeThumbnailCache.live.directory.standardizedFileURL.path.hasPrefix(directory.path + "/"))
+  }
+
+  @MainActor
+  func testLaunchScanMakesNoRequestsUntilMakeMemeIsBrowsed() async throws {
+    let log = RequestLog()
+    MockURLProtocol.requestHandler = { request in
+      log.append(request.url?.absoluteString ?? "")
+      if request.url?.path() == "/templates/" { return Self.response(request, body: Self.memegenJSON) }
+      return Self.response(request, body: Self.pngData, mimeType: "image/png")
+    }
+    var templateRequests: Int { log.urls.filter { $0.hasSuffix("/templates/") }.count }
+    let dependencies = stubDependencies()
+    let source = MemeTemplatesCatalog(
+      definition: CatalogDefinition(
+        identifier: "memes.templates", name: "Meme Templates", enabledByDefault: true,
+        initialGlobalScope: .none, settings: []),
+      dependencies: dependencies)
+
+    // Empty cache: the launch scan touches nothing.
+    await source.scan()
+    XCTAssertTrue(source.objects.isEmpty)
+    XCTAssertEqual(log.urls, [])
+    XCTAssertFalse(dependencies.thumbnails.isPrefetching)
+
+    // First browse fetches the template list (and starts the thumbnail prefetch).
+    let children = await MemeTemplatesCatalogBase.loadBrowseChildren(dependencies)
+    XCTAssertEqual(children.map(\.title), ["Drake Hotline Bling", "Futurama Fry"])
+    XCTAssertEqual(log.urls.first, "https://api.memegen.link/templates/")
+    XCTAssertEqual(templateRequests, 1)
+    await dependencies.thumbnails.waitForPrefetch()
+
+    // With the cache filled, the scan lists templates and still fetches nothing.
+    await source.scan()
+    XCTAssertEqual(source.objects.count, 2)
+    XCTAssertEqual(templateRequests, 1)
+    XCTAssertFalse(dependencies.thumbnails.isPrefetching)
+  }
+
+  func testBrowseShowsWhichProviderFailedAlongsidePartialResults() async throws {
+    MockURLProtocol.requestHandler = { request in
+      if request.url?.host() == "api.imgflip.com" { return Self.response(request, status: 503, body: "") }
+      if request.url?.path() == "/templates/" { return Self.response(request, body: Self.memegenJSON) }
+      throw URLError(.notConnectedToInternet)
+    }
+    let base = stubDependencies()
+    let dependencies = MemeCatalogDependencies(
+      library: base.library, thumbnails: base.thumbnails, favorites: base.favorites,
+      providers: { [.memegen, .imgflip] })
+    let children = await MemeTemplatesCatalogBase.loadBrowseChildren(dependencies)
+    await dependencies.thumbnails.waitForPrefetch()
+    XCTAssertEqual(children.first?.title, "Imgflip templates unavailable")
+    XCTAssertEqual(children.count, 3)
+  }
+
+  func testPruneDeletesThumbnailsOfRemovedOrChangedTemplates() throws {
+    let cache = MemeThumbnailCache(directory: temporaryDirectory, session: mockSession())
+    let kept = Self.drake
+    let removed = Self.template("gone", "Gone")
+    let changed = MemeTemplate(
+      provider: .memegen, id: "drake", name: kept.name, lineCount: 2,
+      blankURL: URL(string: "https://api.memegen.link/images/drake-v2.png")!,
+      exampleLines: [], keywords: [])
+    XCTAssertNotEqual(cache.fileURL(for: kept), cache.fileURL(for: changed), "New image, new file")
+    for template in [kept, removed, changed] {
+      try Data([0xFF]).write(to: cache.fileURL(for: template))
+    }
+
+    cache.prune(keeping: [kept])
+    let left = try FileManager.default.contentsOfDirectory(atPath: temporaryDirectory.path)
+    XCTAssertEqual(left, [cache.fileURL(for: kept).lastPathComponent])
+  }
+
   func testMissingCacheAndNetworkFailureIsReported() async {
     MockURLProtocol.requestHandler = { request in Self.response(request, status: 503, body: "") }
     let library = MemeTemplateLibrary(
@@ -253,7 +352,7 @@ final class MemeGeneratorExtensionTests: XCTestCase {
   // MARK: Favorites
 
   func testFavoritesSortFirstAlphabeticallyAndPersist() throws {
-    let defaults = try XCTUnwrap(UserDefaults(suiteName: "MemeFavoritesTests-\(UUID().uuidString)"))
+    let defaults = InMemoryFavoritesStore()
     let favorites = MemeFavorites(defaults: defaults)
     let templates = [Self.template("a", "Alpha"), Self.template("b", "Bravo"), Self.template("c", "Charlie")]
 
@@ -317,6 +416,21 @@ final class MemeGeneratorExtensionTests: XCTestCase {
     XCTAssertEqual(htmlMessage, MemeError.notAnImage.localizedDescription)
   }
 
+  @MainActor
+  func testMakeMemeRefusesAllBlankBoxesWithoutARequest() async {
+    MockURLProtocol.requestHandler = { _ in
+      XCTFail("No request for an all-blank meme")
+      throw URLError(.badURL)
+    }
+    // Imgflip templates have no example text, so Enter on the untouched seed would be all blank.
+    let result = await MemeMaker.make(
+      template: Self.imgflipDrake, text: Self.imgflipDrake.textSeed,
+      client: MemeAPIClient(session: mockSession()),
+      credentials: ImgflipCredentials(username: "u", password: "p"), directory: temporaryDirectory)
+    guard case .failure(let message) = result else { return XCTFail("Expected failure") }
+    XCTAssertEqual(message, MemeError.emptyText.localizedDescription)
+  }
+
   func testThumbnailsAreDownscaledCachedAndServedFromDisk() async throws {
     let png = try XCTUnwrap(Self.pngImage(width: 1200, height: 800))
     var requests = 0
@@ -330,7 +444,10 @@ final class MemeGeneratorExtensionTests: XCTestCase {
     XCTAssertNotNil(first)
     let stored = try XCTUnwrap(NSImage(contentsOf: cache.fileURL(for: Self.drake)))
     XCTAssertEqual(stored.representations.first?.pixelsWide, MemeThumbnailCache.maxPixelSize)
-    XCTAssertEqual(cache.fileURL(for: Self.drake).lastPathComponent, "memegen_drake.jpg")
+    XCTAssertEqual(
+      cache.fileURL(for: Self.drake).lastPathComponent,
+      "memegen_drake-\(MemeThumbnailCache.stableHash(Self.drake.thumbnailURL.absoluteString)).jpg")
+    XCTAssertEqual(MemeThumbnailCache.stableHash("a"), "af63dc4c8601ec8c", "Stable across launches")
 
     MockURLProtocol.requestHandler = { _ in throw URLError(.notConnectedToInternet) }
     let offline = await cache.image(for: Self.drake)
@@ -374,7 +491,7 @@ final class MemeGeneratorExtensionTests: XCTestCase {
   }
 
   func testFavoritesTieBreakIsDeterministic() throws {
-    let defaults = try XCTUnwrap(UserDefaults(suiteName: "MemeTieTests-\(UUID().uuidString)"))
+    let defaults = InMemoryFavoritesStore()
     let favorites = MemeFavorites(defaults: defaults)
     let a = Self.drake
     let b = Self.imgflipDrake
@@ -441,10 +558,123 @@ final class MemeGeneratorExtensionTests: XCTestCase {
     return (response, body)
   }
 
+  private func stubDependencies() -> MemeCatalogDependencies {
+    let session = mockSession()
+    return MemeCatalogDependencies(
+      library: MemeTemplateLibrary(
+        client: MemeAPIClient(session: session),
+        directory: temporaryDirectory.appending(path: "templates", directoryHint: .isDirectory)),
+      thumbnails: MemeThumbnailCache(
+        directory: temporaryDirectory.appending(path: "thumbnails", directoryHint: .isDirectory),
+        session: session),
+      favorites: MemeFavorites(defaults: InMemoryFavoritesStore()),
+      providers: { [.memegen] })
+  }
+
   private func mockSession() -> URLSession {
     let configuration = URLSessionConfiguration.ephemeral
     configuration.protocolClasses = [MockURLProtocol.self]
     return URLSession(configuration: configuration)
+  }
+}
+
+/// Favorites storage that never touches `~/Library/Preferences`.
+private final class InMemoryFavoritesStore: MemeFavoritesStore {
+  private var values: [String: Any] = [:]
+  func stringArray(forKey key: String) -> [String]? { values[key] as? [String] }
+  func set(_ value: Any?, forKey key: String) { values[key] = value }
+}
+
+private final class RequestLog: @unchecked Sendable {
+  private let lock = NSLock()
+  private var stored: [String] = []
+  var urls: [String] { lock.withLock { stored } }
+  func append(_ url: String) { lock.withLock { stored.append(url) } }
+}
+
+/// A tiny HTTP/1.1 server on 127.0.0.1 that records each raw request and answers via `respond`.
+private final class LoopbackServer: @unchecked Sendable {
+  private let listener: NWListener
+  private let queue = DispatchQueue(label: "MemeGeneratorTests.LoopbackServer")
+  private let lock = NSLock()
+  private var received: [String] = []
+  private var handler: (String) -> Data = { _ in LoopbackServer.reply(status: 404) }
+  private(set) var url: URL!
+
+  var requests: [String] { lock.withLock { received } }
+  var respond: (String) -> Data {
+    get { lock.withLock { handler } }
+    set { lock.withLock { handler = newValue } }
+  }
+
+  private init() throws {
+    let parameters = NWParameters.tcp
+    parameters.requiredLocalEndpoint = .hostPort(host: .ipv4(.loopback), port: .any)
+    listener = try NWListener(using: parameters)
+  }
+
+  static func start() async throws -> LoopbackServer {
+    let server = try LoopbackServer()
+    try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+      // Resume once: the handler removes itself on the first terminal state.
+      server.listener.stateUpdateHandler = { state in
+        switch state {
+        case .ready:
+          server.listener.stateUpdateHandler = nil
+          server.url = URL(string: "http://127.0.0.1:\(server.listener.port!.rawValue)")!
+          continuation.resume()
+        case .failed(let error):
+          server.listener.stateUpdateHandler = nil
+          continuation.resume(throwing: error)
+        default: break
+        }
+      }
+      server.listener.newConnectionHandler = { server.serve($0) }
+      server.listener.start(queue: server.queue)
+    }
+    return server
+  }
+
+  func stop() { listener.cancel() }
+
+  static func reply(status: Int, headers: [String: String] = [:], body: String = "") -> Data {
+    var head = "HTTP/1.1 \(status) Status\r\nContent-Length: \(body.utf8.count)\r\nConnection: close\r\n"
+    for (name, value) in headers { head += "\(name): \(value)\r\n" }
+    return Data((head + "\r\n" + body).utf8)
+  }
+
+  private func serve(_ connection: NWConnection) {
+    connection.start(queue: queue)
+    receive(on: connection, buffer: Data())
+  }
+
+  private func receive(on connection: NWConnection, buffer: Data) {
+    connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [self] data, _, done, error in
+      var buffer = buffer
+      if let data { buffer.append(data) }
+      if let request = Self.completeRequest(buffer) {
+        let response = lock.withLock { () -> (String) -> Data in
+          received.append(request)
+          return handler
+        }(request)
+        connection.send(content: response, completion: .contentProcessed { _ in connection.cancel() })
+      } else if done || error != nil {
+        connection.cancel()
+      } else {
+        receive(on: connection, buffer: buffer)
+      }
+    }
+  }
+
+  /// The whole request once the headers and `Content-Length` bytes of body have arrived.
+  private static func completeRequest(_ data: Data) -> String? {
+    guard let end = data.range(of: Data("\r\n\r\n".utf8)) else { return nil }
+    let head = String(decoding: data[..<end.lowerBound], as: UTF8.self)
+    let length = head.split(separator: "\r\n")
+      .first { $0.lowercased().hasPrefix("content-length:") }
+      .flatMap { Int($0.split(separator: ":")[1].trimmingCharacters(in: .whitespaces)) } ?? 0
+    guard data.count - end.upperBound >= length else { return nil }
+    return String(decoding: data, as: UTF8.self)
   }
 }
 

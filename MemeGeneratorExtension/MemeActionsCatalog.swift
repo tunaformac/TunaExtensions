@@ -115,6 +115,8 @@ enum MemeMaker {
   ) async -> ActionResult {
     let lines = MemeText.resolvedLines(from: text, template: template)
     do {
+      // Templates without example text (all of Imgflip's) would otherwise render blank boxes.
+      guard MemeText.hasText(lines.joined()) else { throw MemeError.emptyText }
       let meme = try await client.generate(
         template: template, lines: lines, imgflipCredentials: credentials)
       let fileURL = try MemeFileStore.write(meme, in: directory)

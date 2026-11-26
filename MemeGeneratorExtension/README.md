@@ -1,7 +1,9 @@
 # Meme Generator for Tuna
 
 Pick a meme template, type the text for each box separated by `|`, and get the finished image as
-a file you can paste, copy, share, or Quick Look. Based on the Raycast Meme Generator extension.
+a file you can paste, copy, share, or Quick Look. Based on the Raycast
+[Meme Generator](https://github.com/raycast/extensions/tree/5bcd41ff46cf8ad355e98f11bb7e716c6fdafc4b/extensions/meme-generator)
+extension by timoransky (MIT); this is a Swift rewrite of its API calls, not copied code.
 
 ## Use
 
@@ -10,7 +12,8 @@ a file you can paste, copy, share, or Quick Look. Based on the Raycast Meme Gene
 2. Pick a template and choose **Make Meme**. The text pane is pre-filled with one numbered
    placeholder per box, e.g. `[Text 1] | [Text 2]`. Replace the ones you want; any placeholder
    left as-is uses the template's example text (or stays blank). Press Enter without typing to
-   use the example text for every box.
+   use the example text for every box. Templates with no example text (all Imgflip templates)
+   need text in at least one box; otherwise Make Meme fails instead of making a blank meme.
 3. The meme replaces the template as the subject. **Copy Image** (default) or **Copy URL**, or use
    Tuna's file actions to paste, share, or reveal it.
 
@@ -28,16 +31,27 @@ boxes. **Add to Favorites** pins a template to the top of the grid and the templ
 
 ## Caching
 
-Template lists and downscaled thumbnails are cached indefinitely in
-`~/Library/Application Support/Tuna/ExtensionData/MemeGenerator`, so the grid loads instantly and
-works offline. All thumbnails are prefetched in the background after the first load. A template list
-older than a day is still used and refreshed once in the background. Favorites are stored in Tuna's
+Nothing is downloaded when Tuna launches. The first time you open **Make Meme**, it fetches the
+template lists and starts downloading every template's thumbnail in the background (about 209
+Memegen thumbnails, plus Imgflip's 100 when an account is set up). Disabling Make Meme stops that
+download. Template lists and downscaled thumbnails are cached in
+`~/Library/Caches/com.brnbw.tuna.plugins.memegenerator`, so the grid then loads instantly and works
+offline. A template list older than a day is still used and refreshed once in the background, and
+thumbnails of templates that are no longer listed are deleted. Favorites are stored in Tuna's
 preferences.
 
 ## Privacy
 
-Meme text goes directly from your Mac to the chosen provider. Generated images are written to
-Tuna's temporary folder. Nothing is uploaded anywhere else.
+Meme text goes directly from your Mac to the chosen provider, and the finished meme is public to
+anyone with its link:
+
+- **Memegen** images are public URLs that contain your text. **Copy URL** copies that link.
+- **Imgflip** memes are created on your Imgflip account, and anyone with the link can see them.
+  Imgflip has no private option, and it may delete them later, so a copied Imgflip URL can stop
+  working.
+
+Generated images are also written to Tuna's temporary folder. Nothing is sent anywhere other than
+the provider you picked.
 
 ## Limitations
 

@@ -4,6 +4,9 @@ import TunaKit
 extension Notification.Name {
   /// Posted after favorites change or a background refresh replaces cached templates.
   static let memeTemplatesDidChange = Notification.Name("com.tuna.meme-generator.templates-did-change")
+  /// Posted after a fetch writes a template list, so the template source picks it up from the cache.
+  static let memeTemplateCacheDidUpdate = Notification.Name(
+    "com.tuna.meme-generator.template-cache-did-update")
 }
 
 /// Template lists are cached on disk indefinitely so the catalog works offline and starts instantly.
@@ -19,9 +22,11 @@ final class MemeTemplateLibrary: @unchecked Sendable {
     var failures: [MemeProvider: String] = [:]
   }
 
-  static let dataDirectory = RuntimeEnvironment.appSupportDirectory()
-    .appending(path: "Tuna/ExtensionData", directoryHint: .isDirectory)
-    .appending(path: "MemeGenerator", directoryHint: .isDirectory)
+  static let bundleIdentifier = "com.brnbw.tuna.plugins.memegenerator"
+
+  /// Everything here is regenerable, so it lives in Caches (not backed up), in a bundle-ID folder.
+  static let dataDirectory = RuntimeEnvironment.cachesDirectory()
+    .appending(path: bundleIdentifier, directoryHint: .isDirectory)
 
   static let live = MemeTemplateLibrary(client: .live, directory: dataDirectory)
 
@@ -43,7 +48,13 @@ final class MemeTemplateLibrary: @unchecked Sendable {
     directory.appending(path: "templates-\(provider.rawValue).json")
   }
 
+  /// Cached templates only: no network, no background refresh. Safe to call from a launch scan.
+  func cachedTemplates(providers: [MemeProvider]) -> LoadResult {
+    LoadResult(templates: providers.flatMap { cached($0)?.templates ?? [] })
+  }
+
   /// Returns cached templates immediately; fetches only providers with no cache at all.
+  /// Call this only on first use (browsing Make Meme), never from a launch scan.
   /// Stale caches trigger one background refresh that posts `.memeTemplatesDidChange`.
   func load(providers: [MemeProvider]) async -> LoadResult {
     var result = LoadResult()
@@ -71,6 +82,9 @@ final class MemeTemplateLibrary: @unchecked Sendable {
     let cache = CacheFile(fetchedAt: now(), templates: templates)
     memory.withValue { $0[provider] = cache }
     save(cache, for: provider)
+    await MainActor.run {
+      NotificationCenter.default.post(name: .memeTemplateCacheDidUpdate, object: nil)
+    }
     return templates
   }
 
@@ -124,12 +138,21 @@ final class MemeTemplateLibrary: @unchecked Sendable {
   }()
 }
 
+/// Where favorites are kept: Tuna's defaults in the app, an in-memory store in tests (so tests never
+/// write to `~/Library/Preferences`).
+protocol MemeFavoritesStore: AnyObject {
+  func stringArray(forKey key: String) -> [String]?
+  func set(_ value: Any?, forKey key: String)
+}
+
+extension UserDefaults: MemeFavoritesStore {}
+
 /// Favorite template keys, stored in Tuna's defaults. Favorites always sort first.
 struct MemeFavorites: @unchecked Sendable {
-  static let live = MemeFavorites(defaults: .standard)
+  static let live = MemeFavorites(defaults: UserDefaults.standard)
   static let defaultsKey = "com.tuna.meme-generator.favorites"
 
-  let defaults: UserDefaults
+  let defaults: MemeFavoritesStore
 
   var keys: [String] { defaults.stringArray(forKey: Self.defaultsKey) ?? [] }
 

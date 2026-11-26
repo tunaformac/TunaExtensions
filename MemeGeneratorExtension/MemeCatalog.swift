@@ -7,10 +7,26 @@ private enum MemeCatalogMode {
   case browse
 }
 
-/// Every template, indexed for global search. Favorites are listed first.
+/// What the catalogs read and write. Tests inject stubs; Tuna uses `.live`.
+struct MemeCatalogDependencies: Sendable {
+  let library: MemeTemplateLibrary
+  let thumbnails: MemeThumbnailCache
+  let favorites: MemeFavorites
+  let providers: @Sendable () -> [MemeProvider]
+
+  static let live = MemeCatalogDependencies(
+    library: .live, thumbnails: .live, favorites: .live,
+    providers: { MemeSettings.enabledProviders })
+}
+
+/// Every template, from the cache only. Not in global search by default; favorites are listed first.
 public final class MemeTemplatesCatalog: MemeTemplatesCatalogBase {
   public required init(definition: CatalogDefinition) {
     super.init(definition: definition, mode: .source)
+  }
+
+  init(definition: CatalogDefinition, dependencies: MemeCatalogDependencies) {
+    super.init(definition: definition, mode: .source, dependencies: dependencies)
   }
 }
 
@@ -18,6 +34,10 @@ public final class MemeTemplatesCatalog: MemeTemplatesCatalogBase {
 public final class MemeTemplatesBrowseCatalog: MemeTemplatesCatalogBase {
   public required init(definition: CatalogDefinition) {
     super.init(definition: definition, mode: .browse)
+  }
+
+  init(definition: CatalogDefinition, dependencies: MemeCatalogDependencies) {
+    super.init(definition: definition, mode: .browse, dependencies: dependencies)
   }
 }
 
@@ -29,8 +49,9 @@ public class MemeTemplatesCatalogBase: NSObject, Catalog, RescanSchedulingCatalo
   public var rescanHandler: (() -> Void)?
 
   private let mode: MemeCatalogMode
+  private let dependencies: MemeCatalogDependencies
   private let itemsStore = LockedValue<[CatalogItem]>([])
-  private var observer: NSObjectProtocol?
+  nonisolated(unsafe) private var observers: [NSObjectProtocol] = []
   private lazy var browseItem = DeferredBrowseCatalogItem(
     title: "Make Meme",
     id: "memes.templates",
@@ -42,11 +63,22 @@ public class MemeTemplatesCatalogBase: NSObject, Catalog, RescanSchedulingCatalo
     didLoad: { [identifier] in
       NotificationCenter.default.post(name: CatalogDidFinishScan, object: identifier)
     },
-    loadChildren: {
-      let result = await MemeTemplateLibrary.live.load(providers: MemeSettings.enabledProviders)
-      return MemeCatalogSupport.items(for: result, favorites: .live)
+    loadChildren: { [dependencies] in
+      await Self.loadBrowseChildren(dependencies)
     }
   )
+
+  /// First use: the only place templates are fetched and thumbnails prefetched (never at launch).
+  nonisolated static func loadBrowseChildren(_ dependencies: MemeCatalogDependencies) async
+    -> [CatalogItem]
+  {
+    let result = await dependencies.library.load(providers: dependencies.providers())
+    if result.failures.isEmpty {
+      dependencies.thumbnails.prune(keeping: result.templates)
+    }
+    dependencies.thumbnails.prefetch(result.templates)
+    return MemeCatalogSupport.items(for: result, favorites: dependencies.favorites)
+  }
 
   public var objects: [CatalogItem] {
     switch mode {
@@ -55,20 +87,39 @@ public class MemeTemplatesCatalogBase: NSObject, Catalog, RescanSchedulingCatalo
     }
   }
 
-  fileprivate init(definition: CatalogDefinition, mode: MemeCatalogMode) {
+  fileprivate init(
+    definition: CatalogDefinition, mode: MemeCatalogMode,
+    dependencies: MemeCatalogDependencies = .live
+  ) {
     identifier = definition.identifier
     name = definition.name
     self.mode = mode
+    self.dependencies = dependencies
     super.init()
-    observer = NotificationCenter.default.addObserver(
-      forName: .memeTemplatesDidChange, object: nil, queue: .main
-    ) { [weak self] _ in
-      MainActor.assumeIsolated {
-        guard let self else { return }
-        if self.mode == .browse { self.browseItem.reset() }
-        self.rescanHandler?()
-      }
+    let center = NotificationCenter.default
+    observers.append(
+      center.addObserver(forName: .memeTemplatesDidChange, object: nil, queue: .main) {
+        [weak self] _ in
+        MainActor.assumeIsolated {
+          guard let self else { return }
+          if self.mode == .browse { self.browseItem.reset() }
+          self.rescanHandler?()
+        }
+      })
+    if mode == .source {
+      // A first browse filled the cache: pick it up (the scan itself never fetches).
+      observers.append(
+        center.addObserver(forName: .memeTemplateCacheDidUpdate, object: nil, queue: .main) {
+          [weak self] _ in
+          MainActor.assumeIsolated { self?.rescanHandler?() }
+        })
     }
+  }
+
+  deinit {
+    for observer in observers { NotificationCenter.default.removeObserver(observer) }
+    // Disabling Make Meme drops this catalog; stop any thumbnail downloads it started.
+    if mode == .browse { dependencies.thumbnails.cancelPrefetch() }
   }
 
   public required init(definition: CatalogDefinition) {
@@ -81,10 +132,10 @@ public class MemeTemplatesCatalogBase: NSObject, Catalog, RescanSchedulingCatalo
       browseItem.reset()
       availabilityStatus = .normal
     case .source:
-      let result = await MemeTemplateLibrary.live.load(providers: MemeSettings.enabledProviders)
-      itemsStore.value = MemeFavorites.live.ordered(result.templates).map(MemeTemplateItem.init)
-      availabilityStatus = MemeCatalogSupport.status(for: result)
-      MemeThumbnailCache.live.prefetch(result.templates)
+      // Launch scan: cached templates only. No network, no refresh, no thumbnail prefetch (P4).
+      let result = dependencies.library.cachedTemplates(providers: dependencies.providers())
+      itemsStore.value = dependencies.favorites.ordered(result.templates).map(MemeTemplateItem.init)
+      availabilityStatus = .normal
     }
     reportScanFinished()
   }
@@ -100,18 +151,16 @@ enum MemeCatalogSupport {
     if result.templates.isEmpty {
       return [errorItem(result.failures.values.first ?? "No meme templates are available.")]
     }
-    return favorites.ordered(result.templates).map(MemeTemplateItem.init)
-  }
-
-  static func status(for result: MemeTemplateLibrary.LoadResult) -> CatalogAvailabilityStatus {
-    if result.templates.isEmpty, !result.failures.isEmpty {
-      return .disabled("Meme templates could not be loaded")
-    }
-    if !result.failures.isEmpty {
-      let names = result.failures.keys.map(\.displayName).sorted().joined(separator: ", ")
-      return .degraded("\(names) templates could not be loaded")
-    }
-    return .normal
+    let templates: [CatalogItem] = favorites.ordered(result.templates).map(MemeTemplateItem.init)
+    guard !result.failures.isEmpty else { return templates }
+    // Partial results stay visible: say which provider is missing (P10).
+    let names = result.failures.keys.map(\.displayName).sorted().joined(separator: ", ")
+    let messages = result.failures.sorted { $0.key.rawValue < $1.key.rawValue }.map(\.value)
+    return [
+      CatalogMessageItem(
+        title: "\(names) templates unavailable", message: messages.joined(separator: " "),
+        symbolName: "exclamationmark.triangle", tintColor: .systemOrange)
+    ] + templates
   }
 
   static func errorItem(_ message: String) -> CatalogMessageItem {
