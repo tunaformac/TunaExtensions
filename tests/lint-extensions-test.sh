@@ -203,7 +203,7 @@ for finding in \
   "BadExtension: P1: the extension is registered in the README's extension table (no \`| BadExtension |\` row) [P1-readme]" \
   "BadExtension/LICENSE: P2: the repository LICENSE covers every extension" \
   "BadExtension/PRIVACY.md: P2: no per-extension \`PRIVACY.md\`" \
-  "BadExtension/BadExtension.swift:2: P3: catalogs whose items do something when run declare \`initialGlobalScope: .none\`" \
+  "BadExtension/BadExtension.swift:2: P3: catalogs whose items have side effects when run declare \`initialGlobalScope: .none\`" \
   "BadExtension/BadStorage.swift:2: P5: regenerable caches go in TunaKit's" \
   "BadExtension/BadExtensionTests.swift:1: P5: tests don't write to the real user defaults" \
   "error: BadExtension/BadNetwork.swift:2: P6: HTTPS only, except literal loopback addresses and \`localhost\` (\`http://api.example.com\`)" \

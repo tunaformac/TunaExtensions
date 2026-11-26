@@ -64,8 +64,10 @@ The repository [LICENSE](../LICENSE) covers every extension: no per-extension `L
 
 ### P3 Global search defaults
 
-Catalogs whose items *do* something when run (commands, plugin commands, actions with side effects)
-declare `initialGlobalScope: .none`. Read-only content catalogs may use `.all`.
+Catalogs whose items have side effects when run (they write, send, delete, control another app or
+run third-party code, such as plugin commands) declare `initialGlobalScope: .none`. Read-only
+catalogs may use `.all`, including commands that only produce a result in Tuna (Translate's
+"Translate to German" returns text and changes nothing).
 
 *Why:* a command in global search can fire by accident from an unrelated query; users opt in.
 

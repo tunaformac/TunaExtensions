@@ -372,9 +372,10 @@ class Linter:
                 if (re.search(r"Command|Plugin", type_name + (name_match.group(1) if name_match
                                                              else ""))
                         or re.search(r"\b\w*(Command|Plugin)\w*Item\b", body)):
-                    self.warn("P3-global-scope", "catalogs whose items do something when run"
+                    self.warn("P3-global-scope", "catalogs whose items have side effects when run"
                               " declare `initialGlobalScope: .none` (`"
-                              f"{type_name or 'catalog'}` is `.all` and seems to list commands)",
+                              f"{type_name or 'catalog'}` is `.all` and seems to list commands;"
+                              " fine if they only produce a result in Tuna)",
                               folder, self.rel(path), text.count("\n", 0, offset) + 1)
 
     def check_tests(self, folder: str) -> None:
