@@ -40,6 +40,7 @@ test-release-scripts:
 	@./tests/local-tunakit-rewrite-test.sh
 	@./tests/local-extension-tooling-test.sh
 	@./tests/lint-extensions-test.sh
+	@./tests/macos-test-skip-test.sh
 
 test-local-tunakit-rewrite:
 	@./tests/local-tunakit-rewrite-test.sh
@@ -48,12 +49,17 @@ test-chromium-support:
 	@swift test --package-path ChromiumExtensionSupport
 
 test-extensions:
-	@set -e; found_tests=""; \
+	@set -e; found_tests=""; skipped=""; \
 	for PBXPROJ in */*.xcodeproj/project.pbxproj; do \
 		grep -q 'com.apple.product-type.bundle.unit-test' "$$PBXPROJ" || continue; \
 		found_tests=1; \
 		PROJECT="$${PBXPROJ%/project.pbxproj}"; \
 		PROJECT_NAME="$$(basename "$$PROJECT" .xcodeproj)"; \
+		if REQUIRED="$$(./scripts/needs-newer-macos.sh "$$PBXPROJ")"; then \
+			echo "=== $$PROJECT_NAME tests skipped: needs macOS $$REQUIRED (host $${TUNA_HOST_MACOS_VERSION:-$$(sw_vers -productVersion)}) ==="; \
+			skipped="$$skipped $$PROJECT_NAME"; \
+			continue; \
+		fi; \
 		RESOLVED="$$(./scripts/resolve-extension-scheme.sh "$$PROJECT_NAME")"; \
 		SCHEME="$$(printf '%s\n' "$$RESOLVED" | cut -f2)"; \
 		./scripts/verify-test-scheme.sh "$$PBXPROJ" "$$PROJECT/xcshareddata/xcschemes/$$SCHEME.xcscheme"; \
@@ -61,7 +67,8 @@ test-extensions:
 		./scripts/run-xcodebuild test -project "$$PROJECT" -scheme "$$SCHEME" -configuration Debug -destination "$(DEV_DESTINATION)" -derivedDataPath "$(DERIVED_DATA)/tests/$$SCHEME" CODE_SIGNING_ALLOWED=NO; \
 	done; \
 	test -n "$$found_tests" || { echo "No extension unit-test targets found." >&2; exit 1; }; \
-	echo "All extension tests pass."
+	if [ -n "$$skipped" ]; then echo "All extension tests pass (skipped, needs newer macOS:$$skipped)."; \
+	else echo "All extension tests pass."; fi
 
 # Build one extension and install it into Tuna's ExtensionsDev for local development.
 ext:
