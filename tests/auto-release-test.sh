@@ -112,6 +112,14 @@ g merge -q --no-ff topic -m "Merge topic"
 bump_acme 0.2
 plan "" "also changed README.md"
 
+# An extension without an XCTest target always needs the maintainer.
+g checkout -q -b untested "$BASE"
+sed -i.bak "s#<string>1.0</string>#<string>1.1</string>#" "$REPO/OtherExtension/Info.plist"
+rm "$REPO/OtherExtension/Info.plist.bak"
+g commit -qam "Bump Other to 1.1"
+store '{"com.brnbw.tuna.plugins.acme": "0.1", "com.brnbw.tuna.plugins.other": "1.0"}'
+plan "" "no XCTest target (P11)"
+
 # Without the published version's tag there is nothing to diff from.
 g checkout -q -b untagged "$BASE"
 bump_acme 0.2

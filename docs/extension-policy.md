@@ -43,16 +43,18 @@ author's lines there.
 touched extension as an admission or an update, every risk-list hit with the diff lines behind it
 (new hosts and URL origins, Apple Events targets, URL schemes, Keychain, connection and secret
 use, permission APIs and plist keys, destructive actions, paths into other apps' storage, process
-launches, build scripts and new dependencies), and every changed path outside the extensions as a
-shared change. Its content rules are best effort and err towards flagging: a flag means "look
+launches, build scripts and new dependencies), and every changed path outside the extensions and
+their own media as `ci` (something CI executes) or `shared`, the same flags `scripts/review-queue`
+shows. An admission's own registration (its Makefile scheme, workspace entry and README row) is
+`reg`: expected, and not a risk. Its content rules are best effort and err towards flagging: a flag means "look
 here", not "rejected".
 
-After a merge to main, the release workflow publishes an update on its own when the extension is
-already in the store, its version is newer than the store's, and nothing since its last release
-tag needed the maintainer: `extension-risk` finds no hit from that tag to main, no merged change
+After a merge to main, the release workflow publishes an update on its own when CI (tests and
+`make lint-extensions`) has passed on that commit, the extension is already in the store and has
+an XCTest target, its version is newer than the store's, and nothing since its last release tag
+needed the maintainer: `extension-risk` finds no hit from that tag to main, no merged change
 touched the extension together with anything outside it, and the push changed no shared files.
-The tests and `make lint-extensions` pass first. Everything else (admissions, risk-list hits,
-shared changes) is listed in the workflow summary as needing a manual release, which the
+Everything else (admissions, risk-list hits, shared changes, extensions without tests) is listed in the workflow summary as needing a manual release, which the
 maintainer reviews and runs with `make release`. A merged risky change keeps an extension on the
 manual path until the maintainer has released it, however small the updates after it.
 

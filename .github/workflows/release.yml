@@ -2,8 +2,10 @@
 #
 # plan     (no secrets) decides what may ship: scripts/auto-release plan. Anything else is listed
 #          in the job summary as needing a manual `make release`.
-# build    (no secrets) runs the tests, builds each candidate ad-hoc signed, and dumps its
-#          declaration with the published Tuna. All extension code runs here.
+# ci       waits for ci.yml (tests, build, lint) to pass on the same commit; nothing ships
+#          without it, and nothing here repeats it.
+# build    (no secrets) builds each candidate ad-hoc signed and dumps its declaration with the
+#          published Tuna. All extension code runs here.
 # publish  (store-release environment) signs, uploads, verifies and tags the staged bundles with
 #          the existing release path. It never builds or loads extension code.
 #
@@ -68,10 +70,38 @@ jobs:
             --summary-out "$GITHUB_STEP_SUMMARY" \
             --github-output "$GITHUB_OUTPUT"
 
-  build:
-    name: Test and build
+  ci:
+    name: Wait for CI
     needs: plan
     if: needs.plan.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      actions: read
+    steps:
+      - name: Wait for ci.yml on this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          while :; do
+            run="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$GITHUB_SHA&event=push&per_page=1" \
+              --jq '.workflow_runs[0] | select(.) | "\(.status) \(.conclusion) \(.html_url)"')"
+            read -r status conclusion url <<<"$run"
+            if [[ "$status" == completed ]]; then
+              echo "CI $conclusion: $url"
+              if [[ "$conclusion" != success ]]; then
+                echo "### CI didn't pass on this commit; nothing was released." >>"$GITHUB_STEP_SUMMARY"
+                exit 1
+              fi
+              exit 0
+            fi
+            echo "Waiting for CI (${status:-not started})..."
+            sleep 30
+          done
+
+  build:
+    name: Build
+    needs: [plan, ci]
     runs-on: macos-26
     timeout-minutes: 90
     permissions:
@@ -88,11 +118,6 @@ jobs:
 
       - name: Install build tools
         run: brew install openssl@3 ripgrep
-
-      - name: Run extension tests
-        run: |
-          make test-extensions
-          make lint-extensions
 
       - name: Download the published Tuna
         run: |
@@ -133,7 +158,7 @@ jobs:
 
   publish:
     name: Publish
-    needs: [plan, build]
+    needs: [plan, ci, build]
     runs-on: macos-26
     timeout-minutes: 30
     environment: store-release

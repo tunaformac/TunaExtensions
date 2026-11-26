@@ -14,7 +14,8 @@ only when all of these hold:
   not just this push, so an unreleased risky change can't ride along with a later clean one;
 * no change on main since that tag (a squash commit or a whole merged pull request) touched the
   extension together with anything outside it;
-* this push changed no shared files.
+* the project has an XCTest target, since CI is what vouches for an update (P11);
+* this push changed no shared files (registering a newly admitted extension doesn't count).
 
 Everything else is listed as needing a manual release. `plan` only reads git and the public store
 API; it never builds, signs or uploads.
@@ -186,6 +187,8 @@ def plan(repo: str, before: "str | None", head: str, store_overrides: "dict | No
             continue
 
         reasons = []
+        if not extension.has_tests:
+            reasons.append("no XCTest target (P11), so CI can't vouch for the update")
         tag = f"extensions/{extension.bundle_id}/v{published}"
         entry["tag"] = tag
         tag_ok = (

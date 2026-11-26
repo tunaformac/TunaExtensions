@@ -150,13 +150,16 @@ A merge to main runs [`.github/workflows/release.yml`](.github/workflows/release
 releases routine updates without the maintainer:
 
 1. **Plan** (no secrets). `scripts/auto-release plan` picks every extension whose source version is
-   newer than the store's. One is released only when it is already in the store, the push changed
-   no shared files, and since the annotated tag of the store's version there is no
-   `scripts/extension-risk` hit and no merged change that touched the extension together with
-   anything outside it. The rest are listed in the job summary as **needs manual release**:
+   newer than the store's. One is released only when it is already in the store, has an XCTest
+   target, the push changed no shared files, and since the annotated tag of the store's version
+   there is no `scripts/extension-risk` hit and no merged change that touched the extension
+   together with anything outside it. Arena, Brew, GitHub, Notes, Notion and Things have no test
+   target yet, so they always need a manual release. The rest are listed in the job summary as **needs manual release**:
    review them and run `make release TARGET=<Extension>` here as before.
-2. **Test and build** (no secrets). `make test-extensions` and `make lint-extensions`, then each
-   candidate is built ad-hoc signed and its declaration dumped with the published Tuna
+2. **Wait for CI**, then **build** (no secrets). Nothing ships until `ci.yml` (tests, the release
+   build and `make lint-extensions`) has passed on the same commit; the release doesn't run them
+   again. Each candidate is then built ad-hoc signed and its declaration dumped with the published
+   Tuna
    (`scripts/auto-release fetch-tuna` downloads it from the appcast and checks its SHA-256 and
    Developer ID signature). This is the only job that runs extension code.
 3. **Publish** (`store-release` environment). `scripts/release-all-extensions.sh` packages the staged
