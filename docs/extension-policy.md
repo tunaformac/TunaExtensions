@@ -71,7 +71,8 @@ for example from a browse root's `loadChildren`. Scans are bounded and time out.
 ### P5 Storage and logging
 
 Regenerable caches go in TunaKit's `RuntimeEnvironment.cachesDirectory()`, not Application
-Support. Secrets are stored only through Tuna connections or the Keychain. Never log secrets or user
+Support, inside a folder named after the extension's bundle ID (both directories are shared by
+every extension). Secrets are stored only through Tuna connections or the Keychain. Never log secrets or user
 content; use private log formatting. Tests don't write to the real user defaults or
 `~/Library/Preferences` (remove any test suite domain in teardown).
 
@@ -83,7 +84,9 @@ moment they were written.
 HTTPS only, except literal loopback addresses and `localhost`. Credentials go only to the
 configured origin: refuse cross-origin and HTTPS-to-HTTP redirects, and test that the refusal is
 actually wired into the request path, not just the delegate in isolation. Every request has a
-timeout. Use TunaKit's credentialed HTTP client once it is available.
+timeout. With TunaKit 1.24 or later, use `CredentialedHTTPClient` (see "Calling an authenticated
+HTTP API" in Tuna's extension docs): it enforces all of this. Hand-rolled clients remain
+acceptable for extensions on older TunaKit floors, but must meet the same rule and test it.
 
 *Why:* a default `URLSession` replays a request body, password included, to wherever a redirect
 points.
