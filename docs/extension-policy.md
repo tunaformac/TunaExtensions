@@ -16,7 +16,8 @@ written for contributors and for their coding agents. The rule IDs (P1–P14) ar
    review: design, provider access, credentials, permissions, and every rule below. Admission is
    where identity, scope and the risk surface are agreed.
 2. **Updates (routine).** After admission, an update can ship without detailed review when it:
-   - changes only files inside the extension's own folder,
+   - changes only files inside the extension's own folder and its own store media
+     (`media/screenshots/<slug>/`, `media/icons/<slug>.*`),
    - passes CI, and
    - touches nothing on the [risk list](#risk-list).
 3. **Escalation.** An update that touches anything on the risk list always goes to the maintainer,
@@ -182,8 +183,8 @@ These changes always need the maintainer, even in an update to an admitted exten
 - new Keychain, secret or connection use, or a new permission (EventKit, Contacts,
   Accessibility…);
 - a new destructive action;
-- any change outside the extension's own folder (this includes `media/`, the workspace, the
-  `Makefile` and the README table);
+- any change outside the extension's own folder and its own store media (this includes other
+  extensions' media, the workspace, the `Makefile` and the README table);
 - reading another app's private storage.
 
 Name every item that applies in the pull request. When unsure, list it.

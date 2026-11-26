@@ -30,7 +30,7 @@ Any ticked item sends the PR to the maintainer. -->
 - [ ] New app scripted via Apple Events, or new URL scheme invoked with user data
 - [ ] New Keychain/secret/connection use, or new permission
 - [ ] New destructive action
-- [ ] Change outside the extension's own folder
+- [ ] Change outside the extension's own folder and its own store media
 - [ ] Reading another app's private storage
 
 ## Verified
