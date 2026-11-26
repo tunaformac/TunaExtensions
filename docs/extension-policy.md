@@ -32,7 +32,29 @@ maintainer merges. It brings the maintainer only the questions this policy doesn
 every risk-list item, holding that review as a draft until they answer. `scripts/review-queue`
 lists open pull requests with their kind (admission, update or tooling), whether they need a
 review or are waiting on the contributor, their CI state, and the paths that put them on the risk
-list. Ownership of extension folders is being set up separately.
+list.
+
+[`.github/CODEOWNERS`](../.github/CODEOWNERS) gives the maintainer everything and makes each
+contributed extension's original author a co-owner of its folder and its own store media, so either
+of them can approve an update confined to them. The pull request that admits an extension adds its
+author's lines there.
+
+`scripts/extension-risk BASE HEAD` is the automation that flags risky diffs. It reports each
+touched extension as an admission or an update, every risk-list hit with the diff lines behind it
+(new hosts and URL origins, Apple Events targets, URL schemes, Keychain, connection and secret
+use, permission APIs and plist keys, destructive actions, paths into other apps' storage, process
+launches, build scripts and new dependencies), and every changed path outside the extensions as a
+shared change. Its content rules are best effort and err towards flagging: a flag means "look
+here", not "rejected".
+
+After a merge to main, the release workflow publishes an update on its own when the extension is
+already in the store, its version is newer than the store's, and nothing since its last release
+tag needed the maintainer: `extension-risk` finds no hit from that tag to main, no merged change
+touched the extension together with anything outside it, and the push changed no shared files.
+The tests and `make lint-extensions` pass first. Everything else (admissions, risk-list hits,
+shared changes) is listed in the workflow summary as needing a manual release, which the
+maintainer reviews and runs with `make release`. A merged risky change keeps an extension on the
+manual path until the maintainer has released it, however small the updates after it.
 
 A pull request waiting on its contributor gets a friendly nudge after 30 days without activity
 and is closed after 60, with a note that it can be reopened any time.

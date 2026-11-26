@@ -30,6 +30,8 @@ caller's current directory.
 - All extension unit tests: `make -C "$EXTENSIONS_ROOT" test-extensions`
 - Full test gate: `make -C "$EXTENSIONS_ROOT" test`
 - Release build of every extension: `make -C "$EXTENSIONS_ROOT"`
+- Risk-list hits in a range: `"$EXTENSIONS_ROOT/scripts/extension-risk" BASE HEAD`; what the release
+  workflow would publish: `"$EXTENSIONS_ROOT/scripts/auto-release" plan --before HEAD~1 --dry-run`
 - Reviewing a contributed pull request: `skills/review-extension-pr/SKILL.md`; open PRs and their
   review state: `"$EXTENSIONS_ROOT/scripts/review-queue"`
 

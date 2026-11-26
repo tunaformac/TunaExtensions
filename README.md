@@ -144,6 +144,77 @@ also ship at least the minimum TunaKit, per `scripts/tuna-tunakit-versions.tsv`;
 when a Tuna release bumps TunaKit. Run the check alone with
 `scripts/check-tunakit-floor.py --bundle <built bundle> --min-tuna 0.96 --min-tunakit 1.22.0`.
 
+### Releasing from CI
+
+A merge to main runs [`.github/workflows/release.yml`](.github/workflows/release.yml), which
+releases routine updates without the maintainer:
+
+1. **Plan** (no secrets). `scripts/auto-release plan` picks every extension whose source version is
+   newer than the store's. One is released only when it is already in the store, the push changed
+   no shared files, and since the annotated tag of the store's version there is no
+   `scripts/extension-risk` hit and no merged change that touched the extension together with
+   anything outside it. The rest are listed in the job summary as **needs manual release**:
+   review them and run `make release TARGET=<Extension>` here as before.
+2. **Test and build** (no secrets). `make test-extensions` and `make lint-extensions`, then each
+   candidate is built ad-hoc signed and its declaration dumped with the published Tuna
+   (`scripts/auto-release fetch-tuna` downloads it from the appcast and checks its SHA-256 and
+   Developer ID signature). This is the only job that runs extension code.
+3. **Publish** (`store-release` environment). `scripts/release-all-extensions.sh` packages the staged
+   bundles, signs them with the key from the environment, preflights every candidate, uploads,
+   verifies the public artifact and pushes each tag, exactly as a local release does. It never
+   builds or loads extension code, so the signing key is never in reach of it.
+
+Run it by hand from the Actions tab (**Release extensions → Run workflow**). It defaults to a dry
+run that builds, signs and preflights without uploading or tagging. To see what a push would do
+without CI, run the planner locally; it only reads git and the public store API:
+
+```bash
+scripts/auto-release plan --before HEAD~1 --head HEAD --dry-run
+scripts/extension-risk origin/main HEAD          # JSON on stdout, summary on stderr
+```
+
+The switches behind the split are plain environment variables, usable locally too:
+`TUNA_PACKAGE_STAGE_OUT=<dir>` makes packaging stop after building and dumping the declaration into
+`<dir>/<Scheme>/`, `TUNA_PACKAGE_STAGE_IN=<dir>` packages that staged bundle instead of building,
+`TUNA_RELEASE_DRY_RUN=1` stops `release-all` after its preflights, and
+`TUNA_RELEASE_REQUIRE_UPLOAD=1` refuses anything but a new version (no same-version repair or
+listing refresh). CI builds are ad-hoc signed: Tuna checks a store bundle's signature integrity
+(`codesign --verify --deep --strict`) and the store's Ed25519 signature, not an Apple identity.
+
+#### One-time setup
+
+1. Create the `store-release` environment, deployable from `main` only and with no required
+   reviewers (a reviewer would make every release wait for approval):
+
+   ```bash
+   gh api -X PUT repos/tunaformac/TunaExtensions/environments/store-release --input - <<'JSON'
+   {"deployment_branch_policy": {"protected_branches": false, "custom_branch_policies": true}}
+   JSON
+   gh api -X POST repos/tunaformac/TunaExtensions/environments/store-release/deployment-branch-policies \
+     -f name=main -f type=branch
+   ```
+
+2. Give it the two secrets, straight from 1Password (nothing is echoed):
+
+   ```bash
+   op read op://Brainbow/Tuna/EXTENSIONS_STORE_SIGNING_PRIVATE_KEY \
+     | gh secret set EXTENSIONS_STORE_SIGNING_PRIVATE_KEY --env store-release --repo tunaformac/TunaExtensions
+   op read op://Brainbow/Tuna/RELEASE_UPLOAD_TOKEN \
+     | gh secret set RELEASE_UPLOAD_TOKEN --env store-release --repo tunaformac/TunaExtensions
+   ```
+
+   Keep them out of repository-level secrets: only the environment's branch rule keeps them away
+   from workflows run on other branches.
+
+3. Protect `main`: pull requests required, with code-owner review, and no direct pushes or bypass.
+   Co-owners need write access, and write access can push tags, so add a tag ruleset on
+   `refs/tags/extensions/**` that restricts creations, updates and deletions, with the admin role
+   and the GitHub Actions app as bypass actors (if the app isn't offered, restrict only updates and
+   deletions). The planner diffs from those tags, so it trusts them as "what was released".
+4. Every extension in the store needs the annotated tag of its current version. Strongbox 0.1 and
+   Cloud Share 0.1 were published without one: tag the commits they were released from, or release
+   their next versions by hand.
+
 ### Store listing copy
 
 The store listing is built from files beside each extension's sources:
