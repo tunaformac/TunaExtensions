@@ -1,0 +1,119 @@
+{
+  "repo": "example/TunaExtensions",
+  "base_dirs": [".github", "BarExtension", "BazExtension", "ChromiumExtensionSupport", "MemeGeneratorExtension", "docs", "media", "scripts", "tests"],
+  "pulls": [
+    {
+      "number": 21, "title": "Add Foo", "author": {"login": "alice"}, "baseRefName": "main",
+      "headRefOid": "a21a21a21a21a21a21a21a21a21a21a21a21a21a", "isDraft": false, "comments": []
+    },
+    {
+      "number": 22, "title": "Bar 0.3", "author": {"login": "bob"}, "baseRefName": "main",
+      "headRefOid": "b22b22b22b22b22b22b22b22b22b22b22b22b22b", "isDraft": false,
+      "comments": [
+        {"author": {"login": "maintainer"}, "authorAssociation": "MEMBER", "createdAt": "2026-01-02T00:00:00Z",
+         "body": "(Agent) Thanks.\n\nReviewed head: `b22b22b`. Ran the gates."}
+      ]
+    },
+    {
+      "number": 23, "title": "Bar: fix uploads", "author": {"login": "bob"}, "baseRefName": "main",
+      "headRefOid": "c23c23c23c23c23c23c23c23c23c23c23c23c23c", "isDraft": false,
+      "comments": [
+        {"author": {"login": "maintainer"}, "authorAssociation": "MEMBER", "createdAt": "2026-01-02T00:00:00Z",
+         "body": "From my agent: Thanks.\n\nReviewed head: `abcdef0`"}
+      ]
+    },
+    {
+      "number": 24, "title": "Speed up CI", "author": {"login": "carol"}, "baseRefName": "main",
+      "headRefOid": "d24d24d24d24d24d24d24d24d24d24d24d24d24d", "isDraft": true,
+      "comments": [
+        {"author": {"login": "carol"}, "authorAssociation": "NONE", "createdAt": "2026-01-03T00:00:00Z",
+         "body": "(Agent) Self-review done.\n\nReviewed head: `d24d24d`"}
+      ]
+    },
+    {
+      "number": 25, "title": "Baz screenshots", "author": {"login": "dave"}, "baseRefName": "main",
+      "headRefOid": "e25e25e25e25e25e25e25e25e25e25e25e25e25e", "isDraft": false,
+      "comments": [
+        {"author": {"login": "maintainer"}, "authorAssociation": "OWNER", "createdAt": "2026-01-02T00:00:00Z",
+         "body": "(Agent) Looks fine.\n\nReviewed head: `e25e25e`"},
+        {"author": {"login": "dave"}, "authorAssociation": "CONTRIBUTOR", "createdAt": "2026-01-04T00:00:00Z",
+         "body": "Question about item 2."}
+      ]
+    },
+    {
+      "number": 26, "title": "Meme 0.2", "author": {"login": "erin"}, "baseRefName": "main",
+      "headRefOid": "f26f26f26f26f26f26f26f26f26f26f26f26f26f", "isDraft": false,
+      "comments": [
+        {"author": {"login": "maintainer"}, "authorAssociation": "MEMBER", "createdAt": "2026-01-05T00:00:00Z",
+         "body": "From my agent: no head line here."}
+      ]
+    },
+    {
+      "number": 27, "title": "Add Qux", "author": {"login": "frank"}, "baseRefName": "main",
+      "headRefOid": "a27a27a27a27a27a27a27a27a27a27a27a27a27a", "isDraft": false, "comments": []
+    }
+  ],
+  "commit_dates": {"f26f26f26f26f26f26f26f26f26f26f26f26f26f": "2026-01-04T00:00:00Z"},
+  "files": {
+    "21": [
+      {"filename": "FooExtension/FooExtension.swift", "status": "added"},
+      {"filename": "media/screenshots/foo/1-search.png", "status": "added"},
+      {"filename": "Makefile", "status": "modified",
+       "patch": "@@ -1,3 +1,3 @@\n ARCH := x\n-EXTENSION_SCHEMES := BarExtension BazExtension\n+EXTENSION_SCHEMES := BarExtension BazExtension FooExtension\n DESTINATION := y"},
+      {"filename": "TunaExtensions.xcworkspace/contents.xcworkspacedata", "status": "modified",
+       "patch": "@@ -1,3 +1,6 @@\n    <FileRef\n+   <FileRef\n+      location = \"group:FooExtension/FooExtension.xcodeproj\">\n+   </FileRef>"},
+      {"filename": "README.md", "status": "modified",
+       "patch": "@@ -1,2 +1,3 @@\n | BarExtension | Bar |\n+| FooExtension | Foo things |"}
+    ],
+    "22": [
+      {"filename": "BarExtension/BarCatalog.swift", "status": "modified"},
+      {"filename": "media/screenshots/bar/2-browse.png", "status": "added"},
+      {"filename": "media/icons/bar.png", "status": "modified"}
+    ],
+    "23": [
+      {"filename": "BarExtension/BarCatalog.swift", "status": "modified"},
+      {"filename": "scripts/upload-extension.sh", "status": "modified", "patch": "@@ -1 +1 @@\n-a\n+b"},
+      {"filename": "Makefile", "status": "modified", "patch": "@@ -1,2 +1,2 @@\n-test: lint\n+test: lint evil"}
+    ],
+    "24": [
+      {"filename": ".github/workflows/ci.yml", "status": "modified"},
+      {"filename": "scripts/run-xcodebuild", "status": "modified"}
+    ],
+    "25": [
+      {"filename": "BazExtension/CHANGELOG.md", "status": "modified"},
+      {"filename": "media/screenshots/baz/1.png", "status": "added"},
+      {"filename": "media/screenshots/bar/1.png", "status": "removed"},
+      {"filename": "README.md", "status": "modified", "patch": "@@ -1 +1,2 @@\n+| BazExtension | Baz |"}
+    ],
+    "26": [
+      {"filename": "MemeGeneratorExtension/CHANGELOG.md", "status": "modified"},
+      {"filename": "media/screenshots/meme-generator/1.png", "status": "added"},
+      {"filename": "Makefile", "status": "modified",
+       "patch": "@@ -1 +1 @@\n-EXTENSION_SCHEMES := BarExtension\n+EXTENSION_SCHEMES := BarExtension MemeGeneratorExtension"}
+    ],
+    "27": [
+      {"filename": "QuxExtension/QuxExtension.swift", "status": "added"},
+      {"filename": "README.md", "status": "modified", "patch": "@@ -1 +1,2 @@\n+| BarExtension | renamed |"}
+    ]
+  },
+  "runs": {
+    "a21a21a21a21a21a21a21a21a21a21a21a21a21a": [
+      {"id": 1, "event": "pull_request", "status": "completed", "conclusion": "failure", "created_at": "2026-01-01T00:00:00Z"},
+      {"id": 2, "event": "pull_request", "status": "completed", "conclusion": "action_required", "created_at": "2026-01-02T00:00:00Z"}
+    ],
+    "b22b22b22b22b22b22b22b22b22b22b22b22b22b": [
+      {"id": 3, "event": "pull_request", "status": "completed", "conclusion": "success", "created_at": "2026-01-01T00:00:00Z"},
+      {"id": 4, "event": "push", "status": "completed", "conclusion": "failure", "created_at": "2026-01-02T00:00:00Z"}
+    ],
+    "c23c23c23c23c23c23c23c23c23c23c23c23c23c": [
+      {"id": 5, "event": "pull_request", "status": "completed", "conclusion": "failure", "created_at": "2026-01-01T00:00:00Z"}
+    ],
+    "d24d24d24d24d24d24d24d24d24d24d24d24d24d": [
+      {"id": 6, "event": "pull_request", "status": "completed", "conclusion": "failure", "created_at": "2026-01-01T00:00:00Z"}
+    ],
+    "e25e25e25e25e25e25e25e25e25e25e25e25e25e": [
+      {"id": 7, "event": "pull_request", "status": "in_progress", "conclusion": null, "created_at": "2026-01-01T00:00:00Z"}
+    ]
+  },
+  "jobs": {"5": 2, "6": 0}
+}

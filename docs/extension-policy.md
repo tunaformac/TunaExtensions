@@ -23,8 +23,14 @@ written for contributors and for their coding agents. The rule IDs (P1–P14) ar
 3. **Escalation.** An update that touches anything on the risk list always goes to the maintainer,
    however small it is. Say so in the pull request rather than leaving it to be found.
 
-Ownership of extension folders and the automation that flags risky diffs are being set up
-separately. Until they are in place, the maintainer applies the same test by hand.
+Each open pull request has a standing review agent that follows the
+[review skill](../skills/review-extension-pr/SKILL.md). It classifies the pull request,
+runs the gates, checks every rule and reproduces what it finds. It writes the review as a PR
+comment starting with "(Agent) ", and it doesn't approve or merge. It brings the maintainer
+only the questions this policy doesn't answer, and every risk-list item. `scripts/review-queue`
+lists open pull requests with their kind (admission, update or tooling), whether they need a
+review or are waiting on the contributor, their CI state, and the paths that put them on the risk
+list. Ownership of extension folders is being set up separately.
 
 Every pull request, admission or update, carries the self-review checklist from the
 [pull request template](../.github/pull_request_template.md): each rule ticked, or marked "n/a

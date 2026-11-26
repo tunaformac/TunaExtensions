@@ -1,0 +1,329 @@
+#!/usr/bin/env python3
+"""List open pull requests with one line of review state each. Read-only.
+
+    scripts/review-queue [--repo OWNER/NAME] [--drafts DIR] [--json] [--fixture FILE]
+
+Each line shows:
+  kind      admission (adds an extension folder), update (changes an existing one) or tooling
+            (no extension folder at all)
+  review    needs review / needs re-review / draft awaiting OK / contributor replied /
+            waiting on contributor. A review is a comment by a repository member that starts with
+            "(Agent) " or "From my agent"; its "Reviewed head: `sha`" line says which head it
+            covered (the comment's time is the fallback). A draft is DIR/pr-<N>.md with the same
+            line, written by skills/review-extension-pr and not posted yet.
+  CI        green / failed / running / pending approval / approval expired / none, for the head
+  flags     paths outside the extension's folder and its own store media:
+              ci:     things CI executes (.github/, scripts/, tests/, Makefile beyond registration)
+              shared: anything else (README.md, docs/, the workspace, other extensions or media)
+              reg     only the P1 registration of the PR's own new extension (Makefile scheme list,
+                      workspace FileRef, README table row): expected at admission
+            Any ci: or shared: flag on an update is on the risk list.
+
+--fixture reads canned data instead of calling gh (see tests/review-queue-test.sh).
+"""
+
+import argparse
+import json
+import os
+import re
+import subprocess
+import sys
+from concurrent.futures import ThreadPoolExecutor
+
+AGENT_PREFIXES = ("(Agent) ", "From my agent")
+MEMBER_ASSOCIATIONS = {"OWNER", "MEMBER", "COLLABORATOR"}
+REVIEWED_HEAD = re.compile(r"Reviewed head:\s*`?([0-9a-f]{7,40})`?")
+EXTENSION_DIR = re.compile(r"^[A-Za-z0-9]+Extension$")
+CI_PATHS = (".github/", "scripts/", "tests/")
+WORKSPACE = "TunaExtensions.xcworkspace/contents.xcworkspacedata"
+PR_FIELDS = (
+    "number,title,author,headRefOid,baseRefName,isDraft,comments,url"
+)
+
+
+class GitHub:
+    def __init__(self, repo):
+        self.repo = repo or self._gh("repo", "view", "--json", "nameWithOwner")["nameWithOwner"]
+
+    def _gh(self, *args):
+        out = subprocess.run(["gh", *args], check=True, capture_output=True, text=True).stdout
+        return json.loads(out) if out.strip() else None
+
+    def _api(self, path, paginate=False):
+        args = ["api", f"repos/{self.repo}/{path}"]
+        if paginate:
+            args += ["--paginate", "--slurp"]
+        data = self._gh(*args)
+        if paginate:
+            return [item for page in data for item in page]
+        return data
+
+    def pulls(self):
+        return self._gh("pr", "list", "--repo", self.repo, "--state", "open", "--limit", "100",
+                        "--json", PR_FIELDS)
+
+    def base_dirs(self, ref):
+        return [e["name"] for e in self._api(f"contents?ref={ref}") if e["type"] == "dir"]
+
+    def files(self, number):
+        return self._api(f"pulls/{number}/files?per_page=100", paginate=True)
+
+    def runs(self, sha):
+        return self._api(f"actions/runs?head_sha={sha}&per_page=20")["workflow_runs"]
+
+    def job_count(self, run_id):
+        return self._api(f"actions/runs/{run_id}/jobs")["total_count"]
+
+    def commit_date(self, sha):
+        return self._api(f"commits/{sha}")["commit"]["committer"]["date"]
+
+
+class Fixture:
+    def __init__(self, path):
+        with open(path) as fh:
+            self.data = json.load(fh)
+        self.repo = self.data.get("repo", "fixture/repo")
+
+    def pulls(self):
+        return self.data["pulls"]
+
+    def base_dirs(self, ref):
+        return self.data["base_dirs"]
+
+    def files(self, number):
+        return self.data["files"].get(str(number), [])
+
+    def runs(self, sha):
+        return self.data.get("runs", {}).get(sha, [])
+
+    def job_count(self, run_id):
+        return self.data.get("jobs", {}).get(str(run_id), 1)
+
+    def commit_date(self, sha):
+        return self.data.get("commit_dates", {}).get(sha)
+
+
+# --- Paths -------------------------------------------------------------------------------------
+
+def slug_key(text):
+    key = re.sub(r"[^a-z0-9]", "", text.lower())
+    if key.endswith("extension"):
+        key = key[: -len("extension")]
+    if key.startswith("tuna") and len(key) > 4:
+        key = key[4:]
+    return key
+
+
+def media_owner(path, extensions):
+    """The extension whose own store media `path` is, if any (media/screenshots/<slug>/…,
+    media/icons/<slug>.*)."""
+    parts = path.split("/")
+    if len(parts) < 3 or parts[0] != "media":
+        return None
+    if parts[1] == "screenshots" and len(parts) >= 4:
+        slug = parts[2]
+    elif parts[1] == "icons" and len(parts) == 3:
+        slug = parts[2].split(".")[0]
+    else:
+        return None
+    for ext in extensions:
+        if slug_key(slug) == slug_key(ext):
+            return ext
+    return None
+
+
+def changed_lines(patch):
+    return [line[1:] for line in (patch or "").splitlines()
+            if line[:1] in "+-" and not line.startswith(("+++", "---"))]
+
+
+def is_registration(path, patch, new_extensions):
+    """True when a Makefile/workspace/README change only registers the PR's new extensions."""
+    lines = changed_lines(patch)
+    if not lines or not new_extensions:
+        return False
+    if path == "Makefile":
+        before, after = set(), set()
+        for line in (l for l in (patch or "").splitlines() if l[:1] in "+-"):
+            if line.startswith(("+++", "---")):
+                continue
+            if not re.match(r"^[+-]EXTENSION_SCHEMES\s*:?=", line):
+                return False
+            words = set(line.split("=", 1)[1].split())
+            (after if line[0] == "+" else before).update(words)
+        return before <= after and after - before <= set(new_extensions)
+    if path == WORKSPACE:
+        removed = [l for l in (patch or "").splitlines() if l.startswith("-") and not l.startswith("---")]
+        if removed:
+            return False
+        refs = re.findall(r'location\s*=\s*"group:([^/"]+)/', "\n".join(lines))
+        shape = all(re.match(r'^\s*(<FileRef|</FileRef>|location\s*=)', l) for l in lines)
+        return shape and bool(refs) and set(refs) <= set(new_extensions)
+    if path == "README.md":
+        added = [l for l in (patch or "").splitlines() if l.startswith("+") and not l.startswith("+++")]
+        removed = [l for l in (patch or "").splitlines() if l.startswith("-") and not l.startswith("---")]
+        return not removed and all(
+            any(l.startswith(f"+| {ext} |") for ext in new_extensions) for l in added)
+    return False
+
+
+def classify_files(files, base_dirs):
+    """Kind, touched extensions and risk flags from a PR's changed files."""
+    base_extensions = {d for d in base_dirs if EXTENSION_DIR.match(d)}
+    touched, new = set(), set()
+    for f in files:
+        top = f["filename"].split("/", 1)[0]
+        if "/" in f["filename"] and EXTENSION_DIR.match(top):
+            touched.add(top)
+            if top not in base_extensions:
+                new.add(top)
+    if not touched:  # a media-only update belongs to the extension whose media it is
+        touched = {o for f in files if (o := media_owner(f["filename"], base_extensions))}
+
+    flags = {"ci": [], "shared": [], "reg": []}
+    for f in files:
+        path = f["filename"]
+        top = path.split("/", 1)[0]
+        if top in touched and "/" in path:
+            continue
+        if media_owner(path, touched):
+            continue
+        if is_registration(path, f.get("patch"), new):
+            flags["reg"].append(path)
+        elif path == "Makefile" or path.startswith(CI_PATHS):
+            flags["ci"].append(path)
+        else:
+            flags["shared"].append(path)
+
+    kind = "admission" if new else "update" if touched else "tooling"
+    return kind, sorted(touched), flags
+
+
+# --- Review state ------------------------------------------------------------------------------
+
+def is_agent_review(comment):
+    return (comment.get("authorAssociation") in MEMBER_ASSOCIATIONS
+            and comment.get("body", "").lstrip().startswith(AGENT_PREFIXES))
+
+
+def reviewed_head(text):
+    match = REVIEWED_HEAD.search(text or "")
+    return match.group(1) if match else None
+
+
+def covers(head, reviewed, reviewed_at, head_at):
+    if reviewed:
+        return head.startswith(reviewed)
+    head_at = head_at()
+    return bool(reviewed_at and head_at and reviewed_at >= head_at)
+
+
+def review_state(pr, commit_date, draft_text=None):
+    """commit_date(sha) is only asked when a review has no "Reviewed head:" line."""
+    head = pr["headRefOid"]
+    head_at = lambda: commit_date(head)
+    reviews = [c for c in pr.get("comments", []) if is_agent_review(c)]
+    if reviews:
+        last = reviews[-1]
+        sha = reviewed_head(last["body"])
+        if covers(head, sha, last["createdAt"], head_at):
+            author = pr["author"]["login"]
+            replied = any(c["author"]["login"] == author and c["createdAt"] > last["createdAt"]
+                          for c in pr.get("comments", []))
+            return "contributor replied" if replied else "waiting on contributor"
+    draft_sha = reviewed_head(draft_text)
+    if draft_sha and head.startswith(draft_sha):
+        return "draft awaiting OK"
+    if reviews:
+        sha = reviewed_head(reviews[-1]["body"])
+        return f"needs re-review (last {sha[:7]})" if sha else "needs re-review"
+    return "needs review"
+
+
+def ci_state(runs, job_count):
+    runs = [r for r in runs if r.get("event") in ("pull_request", "pull_request_target")]
+    if not runs:
+        return "CI none"
+    run = max(runs, key=lambda r: r["created_at"])
+    if run["status"] != "completed":
+        return "CI pending approval" if run["status"] == "waiting" else "CI running"
+    conclusion = run["conclusion"]
+    if conclusion == "action_required":
+        return f"CI pending approval (run {run['id']})"
+    if conclusion == "success":
+        return "CI green"
+    if conclusion == "failure" and job_count(run["id"]) == 0:
+        return f"CI approval expired (run {run['id']})"
+    if conclusion == "failure":
+        return "CI failed"
+    return f"CI {conclusion}"
+
+
+def flag_text(kind, flags):
+    parts = [f"{name}:{','.join(paths)}" for name in ("ci", "shared") if (paths := flags[name])]
+    if flags["reg"]:
+        parts.append("reg" if kind == "admission" else "shared:" + ",".join(flags["reg"]))
+    return " ".join(parts) or "-"
+
+
+def row(source, pr, base_dirs, drafts_dir):
+    kind, extensions, flags = classify_files(source.files(pr["number"]), base_dirs)
+    draft_text = None
+    if drafts_dir:
+        draft = os.path.join(drafts_dir, f"pr-{pr['number']}.md")
+        if os.path.isfile(draft):
+            with open(draft) as fh:
+                draft_text = fh.read()
+    review = review_state(pr, source.commit_date, draft_text)
+    if pr.get("isDraft"):
+        review = "draft PR; " + review
+    return {
+        "number": pr["number"],
+        "kind": kind,
+        "extensions": [e.removesuffix("Extension") for e in extensions],
+        "head": pr["headRefOid"][:7],
+        "review": review,
+        "ci": ci_state(source.runs(pr["headRefOid"]), source.job_count),
+        "flags": flag_text(kind, flags),
+        "title": pr["title"],
+        "author": pr["author"]["login"],
+    }
+
+
+def rows(source, drafts_dir):
+    pulls = sorted(source.pulls(), key=lambda p: p["number"])
+    bases = {base: source.base_dirs(base) for base in {p.get("baseRefName", "main") for p in pulls}}
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        return list(pool.map(
+            lambda pr: row(source, pr, bases[pr.get("baseRefName", "main")], drafts_dir), pulls))
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    parser.add_argument("--repo", help="OWNER/NAME (default: the current checkout's repository)")
+    parser.add_argument("--drafts", default=os.environ.get("TUNA_REVIEW_DRAFTS", "/tmp/tunaext-reviews"),
+                        help="folder of unposted review drafts, pr-<N>.md (default: %(default)s)")
+    parser.add_argument("--json", action="store_true", help="print JSON instead of lines")
+    parser.add_argument("--fixture", help=argparse.SUPPRESS)
+    args = parser.parse_args()
+
+    source = Fixture(args.fixture) if args.fixture else GitHub(args.repo)
+    try:
+        result = rows(source, args.drafts)
+    except subprocess.CalledProcessError as error:
+        sys.exit(f"review-queue: gh failed: {error.stderr.strip()}")
+
+    if args.json:
+        print(json.dumps(result, indent=2))
+        return
+    if not result:
+        print("No open pull requests.")
+        return
+    for r in result:
+        name = "+".join(r["extensions"]) or "-"
+        print(f"#{r['number']:<4} {r['kind']:<9}  {name:<16} {r['head']}  {r['review']:<31} "
+              f"{r['ci']:<38} {r['flags']}")
+
+
+if __name__ == "__main__":
+    main()
