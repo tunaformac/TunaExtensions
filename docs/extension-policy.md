@@ -92,7 +92,8 @@ The repository [LICENSE](../LICENSE) covers every extension: no per-extension `L
 Catalogs whose items have side effects when run (they write, send, delete, control another app or
 run third-party code, such as plugin commands) declare `initialGlobalScope: .none`. Read-only
 catalogs may use `.all`, including commands that only produce a result in Tuna (Translate's
-"Translate to German" returns text and changes nothing).
+"Translate to German" returns text and changes nothing). So may sources whose default action is a
+reversible control of the thing the item names, such as turning a Hue room's lights on or off.
 
 *Why:* a command in global search can fire by accident from an unrelated query; users opt in.
 
