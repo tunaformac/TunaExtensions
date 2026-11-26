@@ -213,11 +213,11 @@ listing refresh). CI builds are ad-hoc signed: Tuna checks a store bundle's sign
    Keep them out of repository-level secrets: only the environment's branch rule keeps them away
    from workflows run on other branches.
 
-3. Protect `main`: pull requests required, with code-owner review, and no direct pushes or bypass.
-   Co-owners need write access, and write access can push tags, so add a tag ruleset on
-   `refs/tags/extensions/**` that restricts creations, updates and deletions, with the admin role
-   and the GitHub Actions app as bypass actors (if the app isn't offered, restrict only updates and
-   deletions). The planner diffs from those tags, so it trusts them as "what was released".
+3. Keep write access to the maintainer: contributors work from forks and the maintainer merges.
+   The planner diffs from the `extensions/**` release tags and trusts them as "what was released",
+   so if anyone else is ever given write access, first add a tag ruleset on
+   `refs/tags/extensions/**` restricting creations, updates and deletions to admins and the
+   GitHub Actions app.
 4. Every extension in the store needs the annotated tag of its current version. Strongbox 0.1 and
    Cloud Share 0.1 were published without one: tag the commits they were released from, or release
    their next versions by hand.

@@ -34,10 +34,9 @@ lists open pull requests with their kind (admission, update or tooling), whether
 review or are waiting on the contributor, their CI state, and the paths that put them on the risk
 list.
 
-[`.github/CODEOWNERS`](../.github/CODEOWNERS) gives the maintainer everything and makes each
-contributed extension's original author a co-owner of its folder and its own store media, so either
-of them can approve an update confined to them. The pull request that admits an extension adds its
-author's lines there.
+[`.github/CODEOWNERS`](../.github/CODEOWNERS) makes the maintainer the owner of everything, and the
+maintainer merges every pull request after the review agent's review. Contributors don't get write
+access; an extension's author is pinged on updates to it through the review, not through ownership.
 
 `scripts/extension-risk BASE HEAD` is the automation that flags risky diffs. It reports each
 touched extension as an admission or an update, every risk-list hit with the diff lines behind it
