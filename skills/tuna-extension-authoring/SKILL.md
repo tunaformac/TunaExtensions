@@ -9,6 +9,10 @@ Use this skill for new Tuna extensions and material extension redesigns. Work in
 [TunaExtensions](https://github.com/tunaformac/TunaExtensions), which is the source of truth for
 current examples and the repository where completed extensions are submitted by pull request.
 
+Every extension must follow the contribution policy, `docs/extension-policy.md`: rules P1–P14 and
+the risk list. Read it before designing; the design packet and the self-review below cite its rule
+IDs.
+
 ## Hard gate: discover, map, then ask
 
 Do not scaffold or edit implementation files until all five steps are complete:
@@ -40,9 +44,9 @@ Keep the packet compact but complete:
 1. User jobs and explicit non-goals.
 2. Provider contract: local file/database, CLI, framework, URL scheme/Apple Events, or API; include
    permissions, privacy, quotas, writes, destructive operations, and refresh signals.
-3. Catalog matrix: stable ID, name, role, presentation, default enablement, global scope,
-   startup/deferred behavior, browse root, and contents. State exactly which concrete items appear
-   in global search.
+3. Catalog matrix: stable ID, name, role, presentation, default enablement, global scope (P3:
+   catalogs that do something when run start at `.none`), startup/deferred behavior (P4), browse
+   root, and contents. State exactly which concrete items appear in global search.
 4. Type/item model: stable IDs, inheritance, search fields, text/copy representation, timestamps,
    sorting, and hierarchy.
 5. Action grammar: title, subject, optional/required target, target source and preparation policy,
@@ -53,6 +57,8 @@ Keep the packet compact but complete:
 8. Loading, empty, auth, degraded, error, and partial-failure states; live refresh and caching.
 9. Presentation: extension accent, rounded catalog icons, list/grid, previews, and Quick Look.
 10. Compatibility floors, tests, README/privacy notes, dev install, packaging, and manual validation.
+11. Policy fit: any rule (P1–P14) the design can't meet, and every risk-list item it touches.
+    Flag these now; they are what admission review looks at hardest.
 
 ## Concept map
 
@@ -82,16 +88,21 @@ Keep the packet compact but complete:
 ## After approval
 
 1. Create a branch in TunaExtensions. Copy the closest existing extension project for project wiring,
-   rename it consistently, remove all example-specific behavior, and add it to
-   `TunaExtensions.xcworkspace`. Use the real extensions as recipes for browse, provider, framework,
-   action, and connection variants; do not inherit machinery absent from the approved design.
+   rename it consistently (P1: bundle ID `com.brnbw.tuna.plugins.<name>`, folder and scheme
+   `<Name>Extension`), remove all example-specific behavior, and register it in
+   `TunaExtensions.xcworkspace`, `EXTENSION_SCHEMES` in the `Makefile`, and the README table. Use
+   the real extensions as recipes for browse, provider, framework, action, and connection
+   variants; do not inherit machinery absent from the approved design.
 2. Keep stable catalog/item/action/type/provider/setting IDs. Separate content, browse companions,
    and target-only sources when their global-search semantics differ.
 3. Preserve source-native data and formatting for writes. Use Tuna-owned review/confirmation for
    destructive actions. Never launch unowned work and immediately return success.
-4. Add declaration and catalog-shape tests, action-grammar tests, and provider/parser fixtures at
-   the narrowest useful boundary. Include honest auth, loading, empty, degraded, and error items.
+4. Add an offline XCTest target (P11) with declaration and catalog-shape tests, action-grammar
+   tests, request-building tests, and provider/parser fixtures at the narrowest useful boundary.
+   Include honest auth, loading, empty, degraded, and error items.
 5. Update the extension README with setup, permissions, privacy, quotas, writes, and limitations.
+   Privacy goes in its "Privacy" section and `STORE.md`, never a separate `PRIVACY.md` or
+   `LICENSE` (P2).
 
 ## Validation
 
@@ -105,16 +116,49 @@ Swift package. Run the shared commands from the TunaExtensions repository root:
 make test
 ```
 
-Before opening a pull request, ensure the extension builds in Release, its focused tests pass, its
-README covers setup and privacy, and the workspace contains its project. Packaging, store upload,
-and release commands are maintainer responsibilities.
-
 Manually verify source defaults and global scope, browse behavior, catalog icon shape, app
 enrichment, action subject/target grammar, writes and confirmation, live refresh, empty/auth/error
-states, and extension logs. Test the oldest Tuna, TunaKit, and macOS versions claimed.
+states, and extension logs. Test the oldest Tuna, TunaKit, and macOS versions claimed. Packaging,
+store upload, and release commands are maintainer responsibilities.
+
+## Self-review before the pull request
+
+Do not open a pull request until this is done. It applies to new extensions and to updates.
+
+1. **Run the gates** from the repository root and fix every failure:
+
+   ```bash
+   make lint-extensions          # mechanical policy checks
+   ./scripts/tuna-extension build --scheme ExampleExtension --release
+   make test                     # repository checks and all extension tests
+   ```
+
+2. **Check every rule** in `docs/extension-policy.md` against the code, not against memory of the
+   design. For each of P1–P14, find the evidence (a file and line, a test, a command's output) or
+   decide it doesn't apply and say why. Fix what fails; if something can't be fixed, say so in the
+   pull request. The mistakes reviews find most often:
+   - P3: a command catalog left at the default `.all` global scope.
+   - P4: template lists or thumbnails downloaded during the launch scan.
+   - P5: caches in Application Support; test `UserDefaults` suites left in `~/Library/Preferences`.
+   - P6: a redirect test that calls the delegate directly instead of going through the session.
+   - P7: a pairing or sign-in dialog awaited inline instead of returned as a background task.
+   - P8: `preferredActions` on an app item; actions hidden because of state cached at scan time.
+   - P10: an empty success where an explanation belongs; README promises (privacy, live refresh)
+     the code doesn't keep.
+   - P11: tests that skip without the real app installed, or no test target at all.
+   - P12: two CHANGELOG sections for a first release; screenshots in a subfolder; links to a
+     personal repository.
+   - P14: a fix to shared scripts or test fixtures bundled into the extension's pull request.
+3. **Check the risk list.** Compare the branch with its base (`git diff --stat origin/main...HEAD`)
+   and name every risk-list item it touches. Any file outside the extension's folder counts.
+4. **Fill in `.github/pull_request_template.md`** as the pull request description: what and why,
+   the P1–P14 checklist (each ticked or "n/a because…"), the risk-list items, the gates you ran,
+   what you verified by hand, what you couldn't verify, and the Tuna and macOS versions you used.
+   Keep it short; the evidence is for the reviewer to spot-check, not a transcript.
 
 ## Public references
 
+- `docs/extension-policy.md` — contribution rules P1–P14, the risk list, and how review works
 - `docs/extension-authoring.md` — current shapes, examples, setup, and recipe index
 - `README.md` — repository build and validation commands
 - <https://tunaformac.com/docs/extension-development> — public API and distribution documentation

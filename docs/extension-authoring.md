@@ -4,6 +4,10 @@ This repository is the shared home for Tuna extensions. It contains the current 
 a reusable agent skill. Use the skill to protect the product design, then build alongside the real
 extensions and submit the result here as a pull request.
 
+Every extension follows the [contribution policy](extension-policy.md): rules P1–P14, the risk
+list, and how admission and update reviews work. This guide explains how to build; the policy says
+what a pull request must meet.
+
 ## Give this to your coding agent
 
 Copy [`skills/tuna-extension-authoring/SKILL.md`](../skills/tuna-extension-authoring/SKILL.md) into
@@ -48,9 +52,10 @@ EXTENSIONS_ROOT="$(dirname "$TUNA_ROOT")/TunaExtensions"
 
 Copy the closest existing extension project, rename its product, scheme, source folder, declaration,
 and bundle identifier, then remove behavior that is not part of the approved design. Keep the new
-extension as a top-level `<Name>Extension` directory and add its project to
-`TunaExtensions.xcworkspace`. Pin TunaKit consistently with the other projects and use the shared
-repository scripts for building, testing, installation, and packaging.
+extension as a top-level `<Name>Extension` directory with the bundle ID
+`com.brnbw.tuna.plugins.<name>`, and register it in `TunaExtensions.xcworkspace`, the `Makefile`'s
+`EXTENSION_SCHEMES` and the README table (policy P1). Pin TunaKit consistently with the other
+projects and use the shared repository scripts for building, testing, installation, and packaging.
 
 Local TunaKit builds copy an extension before changing it, leaving its checked-in project and
 `Package.resolved` untouched. The copy must contain exactly one standard TunaKit remote package
@@ -140,17 +145,21 @@ retained in `build/xcodebuild`; builds and tests use `xcsift` when available and
 compiler errors plus the log path on failure. Use `make test-release-scripts` when changing only
 repository tooling, and `make test-extensions` when validating extension test targets.
 
-Before opening a pull request, build and test the extension, document setup and privacy behavior,
-and add focused tests. Add a `STORE.md` with the store description, category, and the permissions
-the extension asks for (plus `requires_app: true` if it does nothing without its app), and keep
-`CHANGELOG.md` current; the
-[README](../README.md#store-listing-copy) describes both. Maintainers use the repository release tooling for packaging and publication;
-contributors should not upload extension packages directly.
+Before opening a pull request, run `make lint-extensions`, build the extension in Release, and run
+`make test`. Document setup in the extension README, with privacy in its "Privacy" section (no
+separate `PRIVACY.md` or `LICENSE`), and give the extension an offline XCTest target. Add a
+`STORE.md` with the store description, category, and the permissions the extension asks for (plus
+`requires_app: true` if it does nothing without its app), and keep `CHANGELOG.md` current: a new
+extension starts with a single section. The [README](../README.md#store-listing-copy) describes
+both files. Then self-review against every policy rule and fill in the pull request template's
+checklist; the authoring skill walks an agent through it. Maintainers use the repository release
+tooling for packaging and publication; contributors should not upload extension packages directly.
 
 ## Validation checklist
 
-Automated checks should cover declaration IDs and references, item identity/type/search fields,
-catalog shape and empty/error states, action subject/target grammar, provider parsing, and bundle IDs.
+Policy P11 sets the minimum test coverage. Automated checks should cover declaration IDs and
+references, item identity/type/search fields, catalog shape and empty/error states, action
+subject/target grammar, provider parsing, and bundle IDs.
 For manual validation, inspect Settings → Extensions and Sources, global scope defaults, direct and
 app-enriched browse, action and target panes, write confirmation, live refresh, previews, Quick Look,
 and logs. Restart Tuna after binary changes; a rescan only reloads catalog data.

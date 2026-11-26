@@ -16,9 +16,14 @@ Give your coding agent the pasteable
 inventory current examples, inspect the product being integrated, present a full design packet, and
 wait for your explicit approval before implementing anything.
 
+Extensions run inside Tuna and ship under its signature, so every one follows the
+[contribution policy](docs/extension-policy.md): rules P1–P14, a risk list, and how review works. A
+new extension gets one full admission review; after that, updates that stay inside its folder, pass
+CI and touch nothing on the risk list ship without detailed review.
+
 Extensions are developed together in this repository so they can follow current examples and ship
-through the same review and release process. Clone the repository, create your extension on a branch,
-and open a pull request when it is ready:
+through the same release process. Clone the repository, create your extension on a branch, and open
+a pull request when it is ready, filling in the template's policy checklist:
 
 ```bash
 git clone https://github.com/tunaformac/TunaExtensions.git
@@ -28,7 +33,7 @@ git switch -c add-example-extension
 
 Read the [extension authoring guide](docs/extension-authoring.md) for prerequisites, current extension
 shapes, recipe files, project conventions, and validation. Start from the closest real extension
-below rather than a generic template, and include the new project in `TunaExtensions.xcworkspace`.
+below rather than a generic template, and register it as policy rule P1 describes.
 
 ## Extensions
 
