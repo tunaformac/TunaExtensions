@@ -204,13 +204,13 @@ jobs:
 
       - name: Release
         env:
-          RELEASE_UPLOAD_TOKEN: ${{ secrets.RELEASE_UPLOAD_TOKEN }}
+          EXTENSIONS_UPLOAD_TOKEN: ${{ secrets.EXTENSIONS_UPLOAD_TOKEN }}
           TUNA_PACKAGE_STAGE_IN: ${{ runner.temp }}/stage
           TUNA_RELEASE_REQUIRE_UPLOAD: "1"
         run: |
           read -ra targets <<<"$TARGETS"
           if [[ "$DRY_RUN" == 1 ]]; then
-            unset RELEASE_UPLOAD_TOKEN
+            unset EXTENSIONS_UPLOAD_TOKEN
             TUNA_RELEASE_DRY_RUN=1 ./scripts/release-all-extensions.sh "${targets[@]}"
           else
             ./scripts/release-all-extensions.sh "${targets[@]}"

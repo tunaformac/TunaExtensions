@@ -202,9 +202,13 @@ listing refresh). CI builds are ad-hoc signed: Tuna checks a store bundle's sign
    ```bash
    op read op://Brainbow/Tuna/EXTENSIONS_STORE_SIGNING_PRIVATE_KEY \
      | gh secret set EXTENSIONS_STORE_SIGNING_PRIVATE_KEY --env store-release --repo tunaformac/TunaExtensions
-   op read op://Brainbow/Tuna/RELEASE_UPLOAD_TOKEN \
-     | gh secret set RELEASE_UPLOAD_TOKEN --env store-release --repo tunaformac/TunaExtensions
+   op read op://Brainbow/Tuna/EXTENSIONS_UPLOAD_TOKEN \
+     | gh secret set EXTENSIONS_UPLOAD_TOKEN --env store-release --repo tunaformac/TunaExtensions
    ```
+
+   `EXTENSIONS_UPLOAD_TOKEN` can upload store items only. Never give CI `RELEASE_UPLOAD_TOKEN`: it
+   can also publish Tuna app releases. Local releases accept either; `upload-extension.sh` prefers
+   `EXTENSIONS_UPLOAD_TOKEN` when both are set.
 
    Keep them out of repository-level secrets: only the environment's branch rule keeps them away
    from workflows run on other branches.

@@ -3,9 +3,11 @@ set -euo pipefail
 umask 077
 
 unset TOKEN
-TOKEN="${RELEASE_UPLOAD_TOKEN:-}"
+# EXTENSIONS_UPLOAD_TOKEN can only upload store items (CI uses it); RELEASE_UPLOAD_TOKEN can also
+# publish Tuna app releases, so it stays on the maintainer's machine.
+TOKEN="${EXTENSIONS_UPLOAD_TOKEN:-${RELEASE_UPLOAD_TOKEN:-}}"
 export -n TOKEN
-unset RELEASE_UPLOAD_TOKEN
+unset EXTENSIONS_UPLOAD_TOKEN RELEASE_UPLOAD_TOKEN
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TARGET="${1:?Usage: upload-extension.sh TARGET}"
@@ -61,12 +63,12 @@ resolve_upload_token() {
         TOKEN=""
       fi
     else
-      echo "1Password CLI (op) not found; set RELEASE_UPLOAD_TOKEN directly." >&2
+      echo "1Password CLI (op) not found; set EXTENSIONS_UPLOAD_TOKEN or RELEASE_UPLOAD_TOKEN directly." >&2
     fi
   fi
 
   if [[ -z "$TOKEN" ]]; then
-    echo "Set RELEASE_UPLOAD_TOKEN or provide RELEASE_UPLOAD_TOKEN_OP." >&2
+    echo "Set EXTENSIONS_UPLOAD_TOKEN or RELEASE_UPLOAD_TOKEN, or provide RELEASE_UPLOAD_TOKEN_OP." >&2
     return 1
   fi
 }
@@ -880,7 +882,7 @@ write_upload_auth_config() {
   resolve_upload_token
   case "$TOKEN" in
     *$'\n'*|*$'\r'*)
-      echo "RELEASE_UPLOAD_TOKEN must not contain a newline." >&2
+      echo "The upload token must not contain a newline." >&2
       return 1
       ;;
   esac
