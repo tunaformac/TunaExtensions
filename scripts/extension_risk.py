@@ -536,21 +536,19 @@ class Extension:
     dir: str
     bundle_id: "str | None" = None
     version: "str | None" = None
+    has_tests: bool = False  # the project has an XCTest target (P11)
 
     @property
-    def media_keys(self) -> set[str]:
-        """Names the uploader may look up the extension's media by (see upload-extension.sh)."""
-        bare = self.dir[: -len("Extension")] if self.dir.endswith("Extension") else self.dir
-        # The policy's slug (P12): HueExtension → hue, OpenTerminalHereExtension → open-terminal-here.
-        policy_slug = slugify(re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "-", bare))
-        keys = {self.dir, bare, slugify(self.dir), slugify(bare), bare.lower(), policy_slug}
-        if self.bundle_id:
-            keys |= {self.bundle_id, self.bundle_id.rsplit(".", 1)[-1]}
-        return {key for key in keys if key}
+    def slug(self) -> str:
+        return policy_slug(self.dir)
 
 
-def slugify(value: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
+def policy_slug(folder: str) -> str:
+    """The policy's <slug> (P12): the folder name without `Extension`, lowercased and hyphenated
+    (`HueExtension` -> `hue`, `OpenTerminalHereExtension` -> `open-terminal-here`). Same as
+    scripts/lint-extensions."""
+    name = re.sub(r"Extension$", "", folder)
+    return re.sub(r"(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])", "-", name).lower()
 
 
 def read_extension(repo: str, rev: str, directory: str) -> Extension:
@@ -566,6 +564,7 @@ def read_extension(repo: str, rev: str, directory: str) -> Extension:
             if "test" not in value.lower()
         ]
         extension.bundle_id = ids[0] if ids else None
+        extension.has_tests = "com.apple.product-type.bundle.unit-test" in pbxproj
     plist = read_file(repo, rev, f"{directory}/Info.plist")
     if plist:
         match = re.search(r"<key>CFBundleShortVersionString</key>\s*<string>([^<]+)</string>", plist)
@@ -577,23 +576,22 @@ def read_extension(repo: str, rev: str, directory: str) -> Extension:
     return extension
 
 
-MEDIA_SCREENSHOT = re.compile(r"^media/screenshots/([^/]+)(?:/|\.[A-Za-z0-9]+$)")
+MEDIA_SCREENSHOT_DIR = re.compile(r"^media/screenshots/([^/]+)/")
 MEDIA_ICON = re.compile(r"^media/icons/([^/]+)\.[A-Za-z0-9]+$")
 
 
 def path_owner(path: str, extensions: "Iterable[Extension]") -> "str | None":
     """The extension folder that owns path, or None when the path is shared.
 
-    An extension owns its folder and its own store media. Media whose key matches no extension, or
-    more than one, is shared."""
+    An extension owns its folder and its own store media, `media/screenshots/<slug>/` and
+    `media/icons/<slug>.*`. Media under any other name is shared."""
     extensions = list(extensions)
     for extension in extensions:
         if path.startswith(extension.dir + "/"):
             return extension.dir
-    match = MEDIA_SCREENSHOT.match(path) or MEDIA_ICON.match(path)
+    match = MEDIA_SCREENSHOT_DIR.match(path) or MEDIA_ICON.match(path)
     if match:
-        key = match.group(1)
-        owners = [e.dir for e in extensions if key in e.media_keys]
+        owners = [e.dir for e in extensions if e.slug == match.group(1)]
         if len(owners) == 1:
             return owners[0]
     return None
@@ -698,12 +696,15 @@ def classify(repo: str, base: str, head: str, only: "Iterable[str] | None" = Non
         extensions[directory] = read_extension(repo, rev, directory)
 
     changes = changed_files(repo, effective_base, head_sha)
-    shared = []
+    admitted = sorted(head_dirs - base_dirs)
+    shared, registration = [], []
     touched: dict[str, list[Change]] = collections.defaultdict(list)
     for change in changes:
         owner = path_owner(change.path, extensions.values())
         if owner is None:
-            shared.append({"path": change.path, "status": change.status, "reason": _shared_reason(change.path)})
+            flag = shared_flag(change.path, path_patch(repo, effective_base, head_sha, change.path), admitted)
+            item = {"path": change.path, "status": change.status, "flag": flag, "reason": FLAG_REASONS[flag]}
+            (registration if flag == "reg" else shared).append(item)
         else:
             touched[owner].append(change)
 
@@ -751,6 +752,7 @@ def classify(repo: str, base: str, head: str, only: "Iterable[str] | None" = Non
         "merge_base": effective_base,
         "extensions": reports,
         "shared": shared,
+        "registration": registration,
         "summary": {
             "extensions": len(reports),
             "admissions": [r["dir"] for r in reports if r["kind"] == "admission"],
@@ -773,14 +775,55 @@ def _path_hit(rule: str, category: str, change: Change, message: str) -> dict:
     }
 
 
-def _shared_reason(path: str) -> str:
-    if path.startswith("media/"):
-        return "store media that belongs to no single extension"
-    if path.startswith((".github/", "scripts/", "tests/", "Makefile")):
-        return "shared tooling"
-    if path.endswith(".xcworkspace") or ".xcworkspace/" in path:
-        return "workspace"
-    return "outside every extension folder"
+CI_PATHS = (".github/", "scripts/", "tests/")
+WORKSPACE = "TunaExtensions.xcworkspace/contents.xcworkspacedata"
+FLAG_REASONS = {
+    "ci": "something CI executes",
+    "shared": "outside every extension and its own media",
+    "reg": "registers the new extension (expected at admission)",
+}
+
+
+def path_patch(repo: str, base: str, head: str, path: str) -> str:
+    return git(repo, "diff", "--no-color", "--no-ext-diff", "-U0", base, head, "--", path)
+
+
+def shared_flag(path: str, patch: str, admitted: "Iterable[str]") -> str:
+    """`reg`, `ci` or `shared`, as scripts/review-queue flags paths outside an extension:
+    `reg` is only the P1 registration of extensions this range adds (Makefile scheme list,
+    workspace FileRef, README table row), expected at admission and not a risk; `ci` is
+    anything CI executes; `shared` is the rest."""
+    if is_registration(path, patch, admitted):
+        return "reg"
+    if path == "Makefile" or path.startswith(CI_PATHS):
+        return "ci"
+    return "shared"
+
+
+def is_registration(path: str, patch: str, admitted: "Iterable[str]") -> bool:
+    admitted = set(admitted)
+    body = [l for l in (patch or "").splitlines() if l[:1] in "+-" and not l.startswith(("+++", "---"))]
+    if not body or not admitted:
+        return False
+    added = [l[1:] for l in body if l[0] == "+"]
+    removed = [l[1:] for l in body if l[0] == "-"]
+    if path == "Makefile":
+        # Every scheme name the line adds must be a new extension (or its TunaX scheme).
+        if not all(re.match(r"^EXTENSION_SCHEMES\s*:?=", l) for l in added + removed):
+            return False
+        before = {w for l in removed for w in l.split("=", 1)[1].split()}
+        after = {w for l in added for w in l.split("=", 1)[1].split()}
+        allowed = admitted | {"Tuna" + d[: -len("Extension")] for d in admitted if d.endswith("Extension")}
+        return before <= after and after - before <= allowed
+    if path == WORKSPACE:
+        if removed:
+            return False
+        refs = re.findall(r'location\s*=\s*"group:([^/"]+)/', "\n".join(added))
+        shape = all(re.match(r"^\s*(<FileRef|</FileRef>|location\s*=)", l) for l in added)
+        return shape and bool(refs) and set(refs) <= admitted
+    if path == "README.md":
+        return not removed and all(any(l.startswith(f"| {d} |") for d in admitted) for l in added)
+    return False
 
 
 # --------------------------------------------------------------------------------------------
@@ -790,7 +833,7 @@ def _shared_reason(path: str) -> str:
 
 def summary_text(report: dict) -> str:
     lines = [f"extension-risk {report['base'][:10]}...{report['head'][:10]} (merge base {report['merge_base'][:10]})"]
-    if not report["extensions"] and not report["shared"]:
+    if not report["extensions"] and not report["shared"] and not report.get("registration"):
         lines.append("No changes.")
     for ext in report["extensions"]:
         version = ""
@@ -815,7 +858,11 @@ def summary_text(report: dict) -> str:
     if report["shared"]:
         lines.append(f"\nShared changes ({len(report['shared'])}): need the maintainer")
         for item in report["shared"]:
-            lines.append(f"  {item['status']} {item['path']}  ({item['reason']})")
+            lines.append(f"  {item['flag']}: {item['status']} {item['path']}  ({item['reason']})")
+    if report.get("registration"):
+        lines.append(f"\nRegistration of the new extension ({len(report['registration'])}): expected")
+        for item in report["registration"]:
+            lines.append(f"  reg: {item['status']} {item['path']}")
     return "\n".join(lines)
 
 

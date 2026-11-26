@@ -1,3 +1,13 @@
+diff --git a/Makefile b/Makefile
+index 73e5646..1cb8e71 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,4 +1,4 @@
+-EXTENSION_SCHEMES := AcmeExtension OtherExtension
++EXTENSION_SCHEMES := AcmeExtension NewExtension OtherExtension
+ 
+ all:
+ 	true
 diff --git a/NewExtension/Info.plist b/NewExtension/Info.plist
 new file mode 100644
 index 0000000..89bb79c
@@ -27,13 +37,17 @@ index 0000000..5d3dba3
 +}
 diff --git a/NewExtension/New.xcodeproj/project.pbxproj b/NewExtension/New.xcodeproj/project.pbxproj
 new file mode 100644
-index 0000000..f4d77a8
+index 0000000..b3f4865
 --- /dev/null
 +++ b/NewExtension/New.xcodeproj/project.pbxproj
-@@ -0,0 +1,18 @@
+@@ -0,0 +1,22 @@
 +// !$*UTF8*$!
 +{
 +	objects = {
++		T1 /* NewExtensionTests */ = {
++			isa = PBXNativeTarget;
++			productType = "com.apple.product-type.bundle.unit-test";
++		};
 +		A1 /* Release */ = {
 +			isa = XCBuildConfiguration;
 +			buildSettings = {
@@ -49,13 +63,28 @@ index 0000000..f4d77a8
 +		};
 +	};
 +}
+diff --git a/README.md b/README.md
+index f62bf0e..7f83537 100644
+--- a/README.md
++++ b/README.md
+@@ -3,4 +3,5 @@
+ | Extension | What it does |
+ | --- | --- |
+ | AcmeExtension | Acme items |
++| NewExtension | New things |
+ | OtherExtension | Other things |
 diff --git a/TunaExtensions.xcworkspace/contents.xcworkspacedata b/TunaExtensions.xcworkspace/contents.xcworkspacedata
-index 9ff6cbd..7c5bac6 100644
+index 8114f67..ceb4b6f 100644
 --- a/TunaExtensions.xcworkspace/contents.xcworkspacedata
 +++ b/TunaExtensions.xcworkspace/contents.xcworkspacedata
-@@ -1 +1 @@
--<Workspace version = "1.0"></Workspace>
-+<Workspace version = "1.0"><FileRef location = "group:NewExtension/New.xcodeproj"/></Workspace>
+@@ -4,4 +4,7 @@
+    <FileRef
+       location = "group:AcmeExtension/Acme.xcodeproj">
+    </FileRef>
++   <FileRef
++      location = "group:NewExtension/New.xcodeproj">
++   </FileRef>
+ </Workspace>
 diff --git a/media/screenshots/new/1.svg b/media/screenshots/new/1.svg
 new file mode 100644
 index 0000000..0c7be4e

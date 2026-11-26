@@ -37,7 +37,7 @@ sandbox, scripts = sys.argv[1:]
 sys.path.insert(0, scripts)
 import extension_risk  # noqa: E402  (importable for other tools)
 
-# case: (extension -> (kind, {(category, token) expected}), exact?), shared paths
+# case: ({extension: (kind, {(category, token)})}, [(flag, shared path)]); registration paths below
 EXPECTED = {
     "clean-update": ({"AcmeExtension": ("update", set())}, []),
     "moved-code": ({"AcmeExtension": ("update", set())}, []),
@@ -79,15 +79,23 @@ EXPECTED = {
     })}, []),
     "shared": (
         {"AcmeExtension": ("update", set()), "OtherExtension": ("update", set())},
-        ["Makefile", "README.md", "media/screenshots/somebody-else/1.svg"],
+        [("ci", "Makefile"), ("shared", "README.md"), ("shared", "media/screenshots/somebody-else/1.svg")],
     ),
     "admission": (
         {"NewExtension": ("admission", {("network", "https://api.new.example.com")})},
-        ["TunaExtensions.xcworkspace/contents.xcworkspacedata"],
+        [],
+    ),
+    # Registration that also drops another extension or edits other rows isn't registration.
+    "admission-overreach": (
+        {"NewExtension": ("admission", set())},
+        [("ci", "Makefile"), ("shared", "README.md"), ("ci", "scripts/release.sh")],
     ),
 }
 # Cases whose hits must be exactly the expected set; the rest must include it.
 EXACT = {"clean-update", "moved-code", "shared", "destructive", "build-script"}
+REGISTRATION = {
+    "admission": ["Makefile", "README.md", "TunaExtensions.xcworkspace/contents.xcworkspacedata"],
+}
 
 failures = []
 cases = {name[:-5] for name in os.listdir(sandbox) if name.endswith(".json")}
@@ -118,18 +126,22 @@ for case in sorted(cases & set(EXPECTED)):
             if (hit["category"], hit["token"]) in hits and hit["rule"] not in ("entitlements", "binary"):
                 if not hit["evidence"]:
                     failures.append(f"{case}: {directory} hit {hit['token']} has no evidence")
-    shared = sorted(item["path"] for item in report["shared"])
+    shared = sorted((item["flag"], item["path"]) for item in report["shared"])
     if shared != sorted(expected_shared):
         failures.append(f"{case}: shared {shared}, expected {sorted(expected_shared)}")
+    registration = sorted(item["path"] for item in report["registration"])
+    if registration != sorted(REGISTRATION.get(case, [])):
+        failures.append(f"{case}: registration {registration}, expected {REGISTRATION.get(case, [])}")
 
-# Media ownership follows the policy's slug and the uploader's keys.
+# Media ownership follows the policy's slug only.
 acme = extension_risk.Extension("AcmeExtension", "com.brnbw.tuna.plugins.acme")
 terminal = extension_risk.Extension("OpenTerminalHereExtension", "com.brnbw.tuna.plugins.open-terminal-here")
 for path, owner in [
     ("AcmeExtension/Info.plist", "AcmeExtension"),
     ("media/screenshots/acme/1.png", "AcmeExtension"),
     ("media/icons/acme.png", "AcmeExtension"),
-    ("media/screenshots/com.brnbw.tuna.plugins.acme/1.png", "AcmeExtension"),
+    ("media/screenshots/com.brnbw.tuna.plugins.acme/1.png", None),
+    ("media/screenshots/acme.png", None),
     ("media/screenshots/open-terminal-here/1.png", "OpenTerminalHereExtension"),
     ("media/screenshots/tuna-acme/1.png", None),
     ("media/icons/README.md", None),

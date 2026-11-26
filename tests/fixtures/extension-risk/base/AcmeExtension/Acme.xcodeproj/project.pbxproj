@@ -1,6 +1,10 @@
 // !$*UTF8*$!
 {
 	objects = {
+		T1 /* AcmeExtensionTests */ = {
+			isa = PBXNativeTarget;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		A1 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
