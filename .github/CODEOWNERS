@@ -1,0 +1,20 @@
+# Code owners. The last matching line wins, so every line below repeats @mikker.
+#
+# The maintainer owns everything: shared tooling, docs, CI, the workspace, the Makefile, the README
+# and every first-party extension. First-party extensions have no line of their own.
+* @mikker
+
+# Contributed extensions: the folder and the extension's own store media are co-owned by the
+# original author, so updates confined to them can be approved by either owner.
+# When admitting a new extension, add its three lines here, in alphabetical order:
+#
+#   /<Name>Extension/              @mikker @<author>
+#   /media/screenshots/<slug>/     @mikker @<author>
+#   /media/icons/<slug>.*          @mikker @<author>
+#
+# The author must have write access to the repository, or GitHub ignores their entry.
+
+# Strongbox — Denis Maier (#8)
+/StrongboxExtension/ @mikker @denMaier
+/media/screenshots/strongbox/ @mikker @denMaier
+/media/icons/strongbox.* @mikker @denMaier
