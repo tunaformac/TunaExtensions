@@ -13,6 +13,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint:
+    name: lint extensions
+    # macOS like the test job: scripts/verify-test-scheme.sh relies on the system awk and xmllint.
+    runs-on: macos-26
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Pull requests lint only the extensions they touch and warn (P14) about shared files;
+      # pushes lint every extension. Findings also go to the job summary for reviewers.
+      - name: Lint extensions
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if [ -n "$BASE_REF" ]; then
+            ./scripts/lint-extensions --changed-since "origin/$BASE_REF" --summary "$GITHUB_STEP_SUMMARY"
+          else
+            ./scripts/lint-extensions --summary "$GITHUB_STEP_SUMMARY"
+          fi
+
   test:
     name: test (${{ matrix.arch }})
     strategy:
