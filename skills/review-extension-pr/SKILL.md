@@ -23,8 +23,8 @@ Start from its line for your PR.
 ## Ground rules
 
 - **Never** approve a PR, merge, push, or close anything. The only GitHub writes this skill allows
-  are a PR comment and approving a pending CI run, and each needs permission (see
-  [Posting](#posting) and [Fork CI](#fork-ci)).
+  are a PR comment and approving a pending CI run, under the standing permission in
+  [Posting](#posting) and [Fork CI](#fork-ci). Merging stays with the maintainer.
 - **Never** use real credentials, accounts or API keys, not even ones lying around in the
   environment, `~/.netrc` or the Keychain. Probes use synthetic secrets.
 - **Never** contact third-party services beyond a couple of read-only requests that check a
@@ -209,13 +209,14 @@ Add the gate log (commands and one-line results) and the paths of any probes bel
 
 ## Posting
 
-Default: **draft**. Write the files, then report to the maintainer: the PR, the recommendation,
-the must-fixes in one line each, and the decisions. Post only after the maintainer OKs it, and
-fold their answers to the decisions into the comment first.
+Standing permission (maintainer, Nov 2026): **post clean reviews without asking.** A review is
+clean when `pr-N.maintainer.md` has no open decisions and no risk-list items. Post it, then report
+the PR, the recommendation and the must-fixes in one line each.
 
-**`--post`**: only when the maintainer's instructions for this run say to auto-post (for example
-"review #14 --post", or a standing instruction to auto-post updates with no decisions). Even then,
-don't post a review that has open decisions for the maintainer; draft it and escalate.
+A review with open decisions or risk-list items is a **draft**: write the files, report to the
+maintainer with the decisions and your recommended answers, and post only after they answer, with
+their answers folded into the comment. `--draft` forces draft mode for a run (for example when the
+maintainer asks to see a review first).
 
 To post:
 
@@ -248,8 +249,8 @@ git -C "$REVIEW" grep -n 'shellScript' -- '*.pbxproj'
 - Anything else under `.github/`, `scripts/`, `tests/`, the `Makefile` or other shared tooling:
   **don't approve**. Escalate it as a decision, quoting the change.
 
-Approving is a GitHub write, so it follows the same permission as posting: in draft mode, put the
-command in your report for the maintainer; with `--post` or an explicit "approve CI", run it:
+Standing permission: when the diff check passes, approve the run without asking and mention it in
+your report. When it doesn't, don't approve; escalate. To approve:
 
 ```sh
 gh api -X POST repos/tunaformac/TunaExtensions/actions/runs/RUN_ID/approve

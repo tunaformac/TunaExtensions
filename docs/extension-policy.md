@@ -25,9 +25,11 @@ written for contributors and for their coding agents. The rule IDs (P1–P14) ar
 
 Each open pull request has a standing review agent that follows the
 [review skill](../skills/review-extension-pr/SKILL.md). It classifies the pull request,
-runs the gates, checks every rule and reproduces what it finds. It writes the review as a PR
-comment starting with "(Agent) ", and it doesn't approve or merge. It brings the maintainer
-only the questions this policy doesn't answer, and every risk-list item. `scripts/review-queue`
+runs the gates, checks every rule and reproduces what it finds. It approves fork CI runs whose
+diff leaves shared tooling alone, and posts its review as a PR comment starting with "(Agent) "
+on its own when the policy answers everything. It never approves or merges a pull request: the
+maintainer merges. It brings the maintainer only the questions this policy doesn't answer, and
+every risk-list item, holding that review as a draft until they answer. `scripts/review-queue`
 lists open pull requests with their kind (admission, update or tooling), whether they need a
 review or are waiting on the contributor, their CI state, and the paths that put them on the risk
 list. Ownership of extension folders is being set up separately.
