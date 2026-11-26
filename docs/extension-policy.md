@@ -32,6 +32,9 @@ lists open pull requests with their kind (admission, update or tooling), whether
 review or are waiting on the contributor, their CI state, and the paths that put them on the risk
 list. Ownership of extension folders is being set up separately.
 
+A pull request waiting on its contributor gets a friendly nudge after 30 days without activity
+and is closed after 60, with a note that it can be reopened any time.
+
 Every pull request, admission or update, carries the self-review checklist from the
 [pull request template](../.github/pull_request_template.md): each rule ticked, or marked "n/a
 because…". The authoring skill makes the contributor's agent run it.
@@ -153,7 +156,9 @@ everywhere, including CI.
 
 - A new extension debuts with a single `CHANGELOG.md` section for the version it ships.
 - Screenshots sit flat in `media/screenshots/<slug>/` (the uploader ignores subfolders), one
-  appearance, a handful of shots.
+  appearance, a handful of shots. `<slug>` is the folder name without `Extension`, lowercased
+  and hyphenated (`HueExtension` → `hue`, `OpenTerminalHereExtension` → `open-terminal-here`);
+  use the same slug for `media/icons/<slug>.*`.
 - `STORE.md` links (`developer_url`, `support_url`, `privacy_url`) and README media point at the
   tunaformac repository or tunaformac.com, not a personal repository.
 - `icon.png` is 1024×1024.
