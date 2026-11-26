@@ -38,6 +38,9 @@ env:
 jobs:
   plan:
     name: Plan
+    # Off until the one-time setup is done: set the repository variable AUTO_RELEASE to "1".
+    # Manual runs (workflow_dispatch) work regardless, defaulting to a dry run.
+    if: github.event_name == 'workflow_dispatch' || vars.AUTO_RELEASE == '1'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:

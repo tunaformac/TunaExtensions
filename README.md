@@ -221,6 +221,8 @@ listing refresh). CI builds are ad-hoc signed: Tuna checks a store bundle's sign
 4. Every extension in the store needs the annotated tag of its current version. Strongbox 0.1 and
    Cloud Share 0.1 were published without one: tag the commits they were released from, or release
    their next versions by hand.
+5. Turn it on: `gh variable set AUTO_RELEASE --body 1 --repo tunaformac/TunaExtensions`. Until
+   then a push to main releases nothing; manual dry runs from the Actions tab still work.
 
 ### Store listing copy
 
