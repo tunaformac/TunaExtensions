@@ -40,6 +40,7 @@ test-release-scripts:
 	@./tests/local-tunakit-rewrite-test.sh
 	@./tests/local-extension-tooling-test.sh
 	@./tests/lint-extensions-test.sh
+	@./tests/review-queue-test.sh
 	@./tests/macos-test-skip-test.sh
 
 test-local-tunakit-rewrite:
