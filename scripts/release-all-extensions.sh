@@ -83,6 +83,11 @@ done
 ensure_paths_committed "$ROOT" "${RELEASE_INPUTS[@]}"
 ensure_head_unchanged "$ROOT" "$RELEASE_COMMIT"
 
+if [[ "${TUNA_RELEASE_DRY_RUN:-0}" == "1" ]]; then
+  echo "Dry run: prepared and preflighted ${TARGETS[*]}; nothing published."
+  exit 0
+fi
+
 for TARGET in "${TARGETS[@]}"; do
   echo "=== Publishing $TARGET ==="
   TUNA_RELEASE_PACKAGE_METADATA="$(metadata_path_for_target "$TARGET")" \

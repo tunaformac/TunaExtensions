@@ -93,6 +93,14 @@ if [[ "$(cat "$SANDBOX/order.log")" != "$EXPECTED_ORDER" ]]; then
   exit 1
 fi
 
+# A dry run prepares and preflights everything, then publishes nothing.
+rm -f "$SANDBOX/order.log"
+TUNA_RELEASE_DRY_RUN=1 "$SANDBOX/scripts/release-all-extensions.sh" AExtension BExtension >/dev/null
+if [[ "$(cat "$SANDBOX/order.log")" != "$(printf '%s\n' "$EXPECTED_ORDER" | grep -v '^publish')" ]]; then
+  echo "release-all published during a dry run." >&2
+  exit 1
+fi
+
 git -C "$SANDBOX" checkout -q -- .
 rm -f "$SANDBOX/order.log"
 if MUTATE_PACKAGE_RESOLVED=1 \
@@ -228,6 +236,12 @@ upload_preflight() {
 upload_preflight
 grep -q 'unchanged tagged source' "$SANDBOX/stdout"
 grep -q 'is current; skipping PUT' "$SANDBOX/stdout"
+# Auto-release only publishes new versions: an equal store release fails closed.
+if TUNA_RELEASE_REQUIRE_UPLOAD=1 upload_preflight; then
+  echo "upload accepted an equal version when a new one was required." >&2
+  exit 1
+fi
+grep -q 'is not newer than the store' "$SANDBOX/stderr"
 # Listing copy is not built into the bundle, so editing it keeps the tagged source unchanged.
 printf 'Listing copy.\n' >"$SANDBOX/AExtension/STORE.md"
 git -C "$SANDBOX" add AExtension/STORE.md

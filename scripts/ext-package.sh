@@ -10,6 +10,16 @@ TEMP_SIGNING_KEY=""
 TEMP_DECLARATION_JSON=""
 SIGNING_KEY_PATH=""
 SIGNING_KEY_OP_REF="${EXTENSIONS_STORE_SIGNING_PRIVATE_KEY_OP:-}"
+# CI splits packaging in two so extension code never runs where the signing key is:
+# TUNA_PACKAGE_STAGE_OUT=<dir> builds the bundle and dumps its declaration into <dir>/<TARGET>/,
+# then stops; TUNA_PACKAGE_STAGE_IN=<dir> packages and signs that staged bundle without building
+# or loading it.
+STAGE_OUT="${TUNA_PACKAGE_STAGE_OUT:-}"
+STAGE_IN="${TUNA_PACKAGE_STAGE_IN:-}"
+if [[ -n "$STAGE_OUT" && -n "$STAGE_IN" ]]; then
+  echo "Set TUNA_PACKAGE_STAGE_OUT or TUNA_PACKAGE_STAGE_IN, not both." >&2
+  exit 64
+fi
 
 secure_remove() {
   local path="$1"
@@ -61,7 +71,25 @@ resolve_signing_key() {
   SIGNING_KEY_PATH="$TEMP_SIGNING_KEY"
 }
 
-SRC="$("$ROOT/scripts/build-extension-product.sh" "$TARGET" Release "$DESTINATION" "$DERIVED_DATA")"
+staged_bundle() {
+  local dir="$STAGE_IN/$TARGET"
+  local bundles=()
+  local candidate
+  for candidate in "$dir"/*.framework "$dir"/*.bundle; do
+    [[ -d "$candidate" && ! -L "$candidate" ]] && bundles+=("$candidate")
+  done
+  if [[ ${#bundles[@]} -ne 1 ]]; then
+    echo "Expected one staged bundle in $dir, found ${#bundles[@]}." >&2
+    exit 1
+  fi
+  printf '%s\n' "${bundles[0]}"
+}
+
+if [[ -n "$STAGE_IN" ]]; then
+  SRC="$(staged_bundle)"
+else
+  SRC="$("$ROOT/scripts/build-extension-product.sh" "$TARGET" Release "$DESTINATION" "$DERIVED_DATA")"
+fi
 mkdir -p "$OUTDIR"
 
 if ! /usr/bin/codesign --verify --strict "$SRC" >/dev/null 2>&1; then
@@ -165,10 +193,29 @@ fi
 DECLARATION_JSON=""
 if plist_has_key "$INFO_PLIST" "TKTheme"; then
   :
+elif [[ -n "$STAGE_IN" ]]; then
+  DECLARATION_JSON="$STAGE_IN/$TARGET/declaration.json"
+  if [[ ! -f "$DECLARATION_JSON" || -L "$DECLARATION_JSON" ]]; then
+    echo "Staged declaration not found: $DECLARATION_JSON" >&2
+    exit 1
+  fi
+  ARGS+=(--declaration-json "$DECLARATION_JSON")
 else
   dump_extension_declaration
   DECLARATION_JSON="$TEMP_DECLARATION_JSON"
   ARGS+=(--declaration-json "$DECLARATION_JSON")
+fi
+
+if [[ -n "$STAGE_OUT" ]]; then
+  STAGED="$STAGE_OUT/$TARGET"
+  /bin/rm -rf "$STAGED"
+  mkdir -p "$STAGED"
+  /usr/bin/ditto "$SRC" "$STAGED/$(basename "$SRC")"
+  if [[ -n "$DECLARATION_JSON" ]]; then
+    /bin/cp "$DECLARATION_JSON" "$STAGED/declaration.json"
+  fi
+  echo "Staged $TARGET in $STAGED" >&2
+  exit 0
 fi
 
 MIN_TUNA_VALUE="${MIN_TUNA:-}"

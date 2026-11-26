@@ -14,6 +14,8 @@ TOKEN_OP_REF="${RELEASE_UPLOAD_TOKEN_OP:-op://Brainbow/Tuna/RELEASE_UPLOAD_TOKEN
 CREATE_GIT_TAG="${CREATE_GIT_TAG:-0}"
 PACKAGE_METADATA_PATH="${TUNA_RELEASE_PACKAGE_METADATA:-}"
 PREFLIGHT_ONLY="${TUNA_RELEASE_PREFLIGHT_ONLY:-0}"
+# Auto-release only ever publishes a new version: no same-version recovery or listing refresh.
+REQUIRE_UPLOAD="${TUNA_RELEASE_REQUIRE_UPLOAD:-0}"
 RESPONSE_BODY=""
 UPLOAD_SNAPSHOT_DIR=""
 
@@ -980,6 +982,11 @@ case "$PREFLIGHT_HTTP_CODE" in
     exit 1
     ;;
 esac
+
+if [[ "$REQUIRE_UPLOAD" == "1" && "$RELEASE_ACTION" != "upload" ]]; then
+  echo "Refusing release: $ID $VERSION is not newer than the store's release (action: $RELEASE_ACTION)." >&2
+  exit 1
+fi
 
 # Only a new version takes its notes from `## Unreleased`. A published version keeps the notes
 # of its own section (or none), so a listing refresh never rewrites them with unreleased changes.
