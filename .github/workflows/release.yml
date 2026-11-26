@@ -1,0 +1,211 @@
+# Auto-release: after a push to main, publish extension updates that need no maintainer review.
+#
+# plan     (no secrets) decides what may ship: scripts/auto-release plan. Anything else is listed
+#          in the job summary as needing a manual `make release`.
+# build    (no secrets) runs the tests, builds each candidate ad-hoc signed, and dumps its
+#          declaration with the published Tuna. All extension code runs here.
+# publish  (store-release environment) signs, uploads, verifies and tags the staged bundles with
+#          the existing release path. It never builds or loads extension code.
+#
+# This workflow must never run on pull_request or pull_request_target.
+name: Release extensions
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build, package and preflight only; upload and tag nothing
+        type: boolean
+        default: true
+      before:
+        description: Commit to check for shared changes from (default HEAD~1)
+        type: string
+        required: false
+
+permissions: {}
+
+concurrency:
+  group: extension-store-release
+  cancel-in-progress: false
+
+env:
+  DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '0' }}
+
+jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    outputs:
+      targets: ${{ steps.plan.outputs.targets }}
+      release: ${{ steps.plan.outputs.release }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Test the planner
+        run: |
+          tests/extension-risk-test.sh
+          tests/auto-release-test.sh
+
+      - name: Plan
+        id: plan
+        env:
+          BEFORE: ${{ github.event_name == 'push' && github.event.before || inputs.before }}
+        run: |
+          before="${BEFORE:-$(git rev-parse HEAD~1)}"
+          args=()
+          [[ "$DRY_RUN" == 1 ]] && args+=(--dry-run)
+          scripts/auto-release plan --before "$before" --head "$GITHUB_SHA" "${args[@]}" \
+            --json-out "$RUNNER_TEMP/plan.json" \
+            --summary-out "$GITHUB_STEP_SUMMARY" \
+            --github-output "$GITHUB_OUTPUT"
+
+  build:
+    name: Test and build
+    needs: plan
+    if: needs.plan.outputs.release == 'true'
+    runs-on: macos-26
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      TARGETS: ${{ needs.plan.outputs.targets }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install build tools
+        run: brew install openssl@3 ripgrep
+
+      - name: Run extension tests
+        run: |
+          make test-extensions
+          make lint-extensions
+
+      - name: Download the published Tuna
+        run: |
+          tuna="$(scripts/auto-release fetch-tuna --dest "$RUNNER_TEMP/tuna")"
+          printf 'TUNA_BINARY=%s\n' "$tuna" >>"$GITHUB_ENV"
+
+      # The store doesn't need an Apple identity: Tuna checks the bundle's signature integrity
+      # (codesign --verify --deep --strict, which an ad-hoc signature passes) and the store's
+      # Ed25519 signature, and loads extensions with library validation disabled.
+      - name: Build and stage, ad-hoc signed
+        run: |
+          printf '%s\n' 'CODE_SIGN_STYLE = Manual' 'CODE_SIGN_IDENTITY = -' 'DEVELOPMENT_TEAM =' \
+            'PROVISIONING_PROFILE_SPECIFIER =' >"$RUNNER_TEMP/adhoc-signing.xcconfig"
+          read -ra targets <<<"$TARGETS"
+          for target in "${targets[@]}"; do
+            XCODE_XCCONFIG_FILE="$RUNNER_TEMP/adhoc-signing.xcconfig" \
+            TUNA_PACKAGE_STAGE_OUT="$RUNNER_TEMP/stage" \
+              ./scripts/tuna-extension package --scheme "$target"
+          done
+          tar -C "$RUNNER_TEMP/stage" -cf "$RUNNER_TEMP/staged-extensions.tar" .
+
+      - name: Upload staged bundles
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: staged-extensions
+          path: ${{ runner.temp }}/staged-extensions.tar
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload xcodebuild logs
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: xcodebuild-release
+          path: build/xcodebuild
+          if-no-files-found: warn
+          retention-days: 7
+
+  publish:
+    name: Publish
+    needs: [plan, build]
+    runs-on: macos-26
+    timeout-minutes: 30
+    environment: store-release
+    permissions:
+      contents: write # push release tags
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      TARGETS: ${{ needs.plan.outputs.targets }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Install build tools
+        run: brew install openssl@3 ripgrep
+
+      - name: Download staged bundles
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: staged-extensions
+          path: ${{ runner.temp }}
+
+      - name: Unpack staged bundles
+        run: |
+          mkdir "$RUNNER_TEMP/stage"
+          tar -C "$RUNNER_TEMP/stage" -xf "$RUNNER_TEMP/staged-extensions.tar"
+
+      - name: Write the store signing key
+        env:
+          EXTENSIONS_STORE_SIGNING_PRIVATE_KEY: ${{ secrets.EXTENSIONS_STORE_SIGNING_PRIVATE_KEY }}
+        run: |
+          umask 077
+          key="$RUNNER_TEMP/store-signing-key.pem"
+          printf '%s\n' "$EXTENSIONS_STORE_SIGNING_PRIVATE_KEY" >"$key"
+          printf 'SIGNING_KEY=%s\n' "$key" >>"$GITHUB_ENV"
+
+      - name: Configure the tagger
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Release
+        env:
+          RELEASE_UPLOAD_TOKEN: ${{ secrets.RELEASE_UPLOAD_TOKEN }}
+          TUNA_PACKAGE_STAGE_IN: ${{ runner.temp }}/stage
+          TUNA_RELEASE_REQUIRE_UPLOAD: "1"
+        run: |
+          read -ra targets <<<"$TARGETS"
+          if [[ "$DRY_RUN" == 1 ]]; then
+            unset RELEASE_UPLOAD_TOKEN
+            TUNA_RELEASE_DRY_RUN=1 ./scripts/release-all-extensions.sh "${targets[@]}"
+          else
+            ./scripts/release-all-extensions.sh "${targets[@]}"
+          fi
+
+      - name: Summarize
+        if: always()
+        run: |
+          {
+            echo "### Publish"
+            echo
+            if [[ "$DRY_RUN" == 1 ]]; then
+              echo "Dry run: packaged and preflighted \`$TARGETS\`; nothing uploaded or tagged."
+            else
+              git tag --points-at HEAD 'extensions/*' | while read -r tag; do
+                echo "- Tagged \`$tag\`"
+              done
+            fi
+          } >>"$GITHUB_STEP_SUMMARY"
+
+      - name: Remove the signing key
+        if: always()
+        run: rm -P -f "$RUNNER_TEMP/store-signing-key.pem" 2>/dev/null || rm -f "$RUNNER_TEMP/store-signing-key.pem"

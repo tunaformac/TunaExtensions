@@ -1,0 +1,373 @@
+#!/usr/bin/env python3
+"""Plan and support the store auto-release that runs on every push to main.
+
+    auto-release plan --before SHA --head SHA [--json-out F] [--summary-out F] [--github-output F]
+    auto-release fetch-tuna --dest DIR
+
+`plan` decides which extensions CI may release without the maintainer. An extension is released
+only when all of these hold:
+
+* its source version (`<Dir>/Info.plist`) is newer than the store's current version;
+* it is already in the store, and the annotated tag of that store version
+  (`extensions/<bundle id>/v<version>`) is an ancestor of HEAD;
+* `extension-risk` from that tag to HEAD finds no risk hits: everything since the last release,
+  not just this push, so an unreleased risky change can't ride along with a later clean one;
+* no change on main since that tag (a squash commit or a whole merged pull request) touched the
+  extension together with anything outside it;
+* this push changed no shared files.
+
+Everything else is listed as needing a manual release. `plan` only reads git and the public store
+API; it never builds, signs or uploads.
+
+`fetch-tuna` downloads the published Tuna app for `--dump-extension-declaration`, checks the
+release's SHA-256 from the store's release readback and its Developer ID signature, and prints
+the path of the Tuna binary.
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import re
+import subprocess
+import sys
+import tempfile
+import urllib.error
+import urllib.request
+import xml.etree.ElementTree as ET
+
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+
+import extension_risk  # noqa: E402
+from extension_risk import git  # noqa: E402
+
+STORE_API = os.environ.get("STORE_API_URL", "https://tunaformac.com/api/v1/items")
+SITE = "https://tunaformac.com"
+TUNA_TEAM_ID = "DDB8SQMXS9"
+ZERO_SHA = "0" * 40
+USER_AGENT = "TunaExtensions-auto-release"
+
+
+# --------------------------------------------------------------------------------------------
+# Versions and the store
+# --------------------------------------------------------------------------------------------
+
+
+def version_key(value: str) -> tuple[int, ...]:
+    if not re.fullmatch(r"[0-9]+(?:\.[0-9]+)*", value or ""):
+        raise ValueError(f"not a numeric version: {value!r}")
+    parts = [int(part) for part in value.split(".")]
+    while len(parts) > 1 and parts[-1] == 0:
+        parts.pop()
+    return tuple(parts)
+
+
+def is_newer(candidate: str, current: str) -> bool:
+    return version_key(candidate) > version_key(current)
+
+
+def http_get(url: str, timeout: int = 30) -> tuple[int, bytes]:
+    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Cache-Control": "no-cache"})
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            return response.status, response.read()
+    except urllib.error.HTTPError as error:
+        return error.code, error.read()
+
+
+class StoreError(RuntimeError):
+    pass
+
+
+def store_version(bundle_id: str, overrides: "dict | None") -> "str | None":
+    """The store's current version of bundle_id, or None when it isn't in the store."""
+    if overrides is not None:
+        return overrides.get(bundle_id)
+    status, body = http_get(f"{STORE_API}/{bundle_id}")
+    if status == 404:
+        return None
+    if status != 200:
+        raise StoreError(f"store returned HTTP {status} for {bundle_id}")
+    try:
+        version = json.loads(body)["data"]["item"]["version"]
+    except (ValueError, KeyError, TypeError) as error:
+        raise StoreError(f"store response for {bundle_id} has no version") from error
+    if not isinstance(version, str):
+        raise StoreError(f"store response for {bundle_id} has no version")
+    return version
+
+
+# --------------------------------------------------------------------------------------------
+# Planning
+# --------------------------------------------------------------------------------------------
+
+
+def resolve(repo: str, ref: str) -> "str | None":
+    out = git(repo, "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}", check=False).strip()
+    return out or None
+
+
+def is_ancestor(repo: str, ancestor: str, descendant: str) -> bool:
+    return subprocess.run(
+        ["git", "-C", repo, "merge-base", "--is-ancestor", ancestor, descendant],
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+    ).returncode == 0
+
+
+def mixed_changes(repo: str, tag: str, head: str, extension: "extension_risk.Extension",
+                  extensions: list) -> list[str]:
+    """First-parent changes since tag (a direct commit, or a whole merged pull request) that
+    touched the extension and anything outside it."""
+    log = git(
+        repo, "-c", "core.quotePath=false", "log", "--first-parent", "-m", "--no-renames",
+        "--name-only", "--format=%x01%H %s", f"{tag}..{head}",
+    )
+    reasons = []
+    for chunk in log.split("\x01")[1:]:
+        header, *paths = [line for line in chunk.splitlines() if line]
+        commit, _, subject = header.partition(" ")
+        owners = {extension_risk.path_owner(path, extensions) for path in paths}
+        if extension.dir in owners and owners != {extension.dir}:
+            outside = sorted(p for p in paths if extension_risk.path_owner(p, extensions) != extension.dir)
+            shown = ", ".join(outside[:4]) + (f" and {len(outside) - 4} more" if len(outside) > 4 else "")
+            reasons.append(f"{commit[:10]} ({subject}) also changed {shown}")
+    return reasons
+
+
+def hit_reason(hit: dict) -> str:
+    where = ""
+    if hit["evidence"]:
+        ev = hit["evidence"][0]
+        where = f" at {ev['path']}:{ev['line']}" if ev["line"] else f" at {ev['path']}"
+    return f"[{hit['category']}] {hit['message']}: {hit['token']}{where}"
+
+
+def plan(repo: str, before: "str | None", head: str, store_overrides: "dict | None" = None) -> dict:
+    repo = git(repo, "rev-parse", "--show-toplevel").strip()
+    head_sha = resolve(repo, head)
+    if not head_sha:
+        raise extension_risk.GitError(f"unknown revision {head}")
+
+    pushed = None
+    pushed_note = None
+    before_sha = resolve(repo, before) if before and before != ZERO_SHA else None
+    if before_sha:
+        pushed = extension_risk.classify(repo, before_sha, head_sha)
+    else:
+        pushed_note = "no previous commit for this push; shared changes weren't checked"
+
+    extensions = [
+        extension_risk.read_extension(repo, head_sha, directory)
+        for directory in sorted(extension_risk.top_level_extension_dirs(repo, head_sha))
+    ]
+    shared_in_push = pushed["shared"] if pushed else []
+
+    release, manual, current = [], [], []
+    for extension in extensions:
+        entry = {"dir": extension.dir, "bundle_id": extension.bundle_id, "version": extension.version}
+        if not extension.bundle_id or not extension.version:
+            manual.append({**entry, "store_version": None,
+                           "reasons": ["couldn't read the bundle ID or version from the project"]})
+            continue
+        published = store_version(extension.bundle_id, store_overrides)
+        entry["store_version"] = published
+        if published is None:
+            manual.append({**entry, "reasons": ["admission: not in the store yet"]})
+            continue
+        try:
+            newer = is_newer(extension.version, published)
+        except ValueError as error:
+            manual.append({**entry, "reasons": [str(error)]})
+            continue
+        if not newer:
+            current.append(entry)
+            continue
+
+        reasons = []
+        tag = f"extensions/{extension.bundle_id}/v{published}"
+        entry["tag"] = tag
+        tag_ok = (
+            resolve(repo, f"refs/tags/{tag}") is not None
+            and git(repo, "cat-file", "-t", f"refs/tags/{tag}", check=False).strip() == "tag"
+            and is_ancestor(repo, f"refs/tags/{tag}", head_sha)
+        )
+        if not tag_ok:
+            reasons.append(f"no annotated release tag {tag} on main's history to diff from")
+        else:
+            report = extension_risk.classify(repo, f"refs/tags/{tag}", head_sha, only={extension.dir})
+            own = next((e for e in report["extensions"] if e["dir"] == extension.dir), None)
+            if own is not None:
+                if own["kind"] != "update":
+                    reasons.append(f"{own['kind']} since {tag}")
+                reasons.extend(hit_reason(hit) for hit in own["hits"])
+            reasons.extend(mixed_changes(repo, f"refs/tags/{tag}", head_sha, extension, extensions))
+        if shared_in_push:
+            paths = ", ".join(item["path"] for item in shared_in_push[:4])
+            more = f" and {len(shared_in_push) - 4} more" if len(shared_in_push) > 4 else ""
+            reasons.append(f"this push changed shared files ({paths}{more})")
+        if reasons:
+            manual.append({**entry, "reasons": reasons})
+        else:
+            release.append(entry)
+
+    return {
+        "head": head_sha,
+        "before": before_sha,
+        "pushed_range": pushed,
+        "pushed_note": pushed_note,
+        "release": release,
+        "manual": manual,
+        "current": [e["dir"] for e in current],
+    }
+
+
+def summary_markdown(result: dict, dry_run: bool = False) -> str:
+    lines = ["## Extension store auto-release", ""]
+    head = result["head"][:10]
+    if result["before"]:
+        lines.append(f"Pushed range `{result['before'][:10]}..{head}`.")
+    else:
+        lines.append(f"HEAD `{head}`. {result['pushed_note'] or ''}".rstrip())
+    lines.append("")
+    if result["release"]:
+        verb = "Would release (dry run)" if dry_run else "Releasing"
+        lines.append(f"### {verb}")
+        lines.append("")
+        lines.append("| Extension | Store | New | Diffed from |")
+        lines.append("| --- | --- | --- | --- |")
+        for e in result["release"]:
+            lines.append(f"| {e['dir']} | {e['store_version']} | {e['version']} | `{e['tag']}` |")
+        lines.append("")
+    else:
+        lines.append("Nothing to release automatically.")
+        lines.append("")
+    if result["manual"]:
+        lines.append("### Needs manual release")
+        lines.append("")
+        lines.append("Review these, then run `make release TARGET=<Extension>` locally.")
+        lines.append("")
+        for e in result["manual"]:
+            versions = f"{e.get('store_version') or 'not in store'} → {e['version']}"
+            lines.append(f"- **{e['dir']}** ({versions})")
+            for reason in e["reasons"][:12]:
+                lines.append(f"  - {reason}")
+            if len(e["reasons"]) > 12:
+                lines.append(f"  - …and {len(e['reasons']) - 12} more")
+        lines.append("")
+    pushed = result["pushed_range"]
+    if pushed and (pushed["extensions"] or pushed["shared"]):
+        lines.append("<details><summary>extension-risk on the pushed range</summary>")
+        lines.append("")
+        lines.append("```text")
+        lines.append(extension_risk.summary_text(pushed))
+        lines.append("```")
+        lines.append("</details>")
+    return "\n".join(lines) + "\n"
+
+
+# --------------------------------------------------------------------------------------------
+# Published Tuna
+# --------------------------------------------------------------------------------------------
+
+
+def fetch_tuna(dest: str) -> str:
+    status, body = http_get(f"{SITE}/appcast.xml")
+    if status != 200:
+        raise StoreError(f"appcast returned HTTP {status}")
+    namespace = "{http://www.andymatuschak.org/xml-namespaces/sparkle}"
+    item = ET.fromstring(body).find("channel/item")
+    build = item.findtext(f"{namespace}version") if item is not None else None
+    if not build or not build.isdigit():
+        raise StoreError("appcast has no build number")
+
+    status, body = http_get(f"{SITE}/api/v1/releases/{build}")
+    if status != 200:
+        raise StoreError(f"release readback for build {build} returned HTTP {status}")
+    release = json.loads(body)["data"]
+    expected_sha = release["asset"]["sha256"].lower()
+    url = release["asset"]["download_url"]
+
+    os.makedirs(dest, exist_ok=True)
+    archive = os.path.join(dest, f"Tuna-{release['version']}-{build}.zip")
+    status, data = http_get(url, timeout=300)
+    if status != 200:
+        raise StoreError(f"Tuna download returned HTTP {status}")
+    if hashlib.sha256(data).hexdigest() != expected_sha:
+        raise StoreError("Tuna download doesn't match the release's SHA-256")
+    with open(archive, "wb") as fh:
+        fh.write(data)
+
+    unpacked = tempfile.mkdtemp(prefix="tuna-", dir=dest)
+    subprocess.run(["/usr/bin/ditto", "-x", "-k", archive, unpacked], check=True)
+    app = os.path.join(unpacked, "Tuna.app")
+    subprocess.run(["/usr/bin/codesign", "--verify", "--deep", "--strict", app], check=True)
+    details = subprocess.run(
+        ["/usr/bin/codesign", "-dv", "--verbose=2", app], stderr=subprocess.PIPE, text=True, check=True
+    ).stderr
+    if f"TeamIdentifier={TUNA_TEAM_ID}" not in details or "Authority=Developer ID Application" not in details:
+        raise StoreError("downloaded Tuna isn't signed with Brainbow's Developer ID")
+    print(f"Tuna {release['version']} ({build}) verified", file=sys.stderr)
+    return os.path.join(app, "Contents", "MacOS", "Tuna")
+
+
+# --------------------------------------------------------------------------------------------
+# CLI
+# --------------------------------------------------------------------------------------------
+
+
+def main(argv: "list[str] | None" = None) -> int:
+    parser = argparse.ArgumentParser(prog="auto-release", description=__doc__.split("\n\n")[0])
+    commands = parser.add_subparsers(dest="command", required=True)
+
+    plan_parser = commands.add_parser("plan", help="decide what CI may release")
+    plan_parser.add_argument("--repo", default=os.getcwd())
+    plan_parser.add_argument("--before", help="the commit before the push (github.event.before)")
+    plan_parser.add_argument("--head", default="HEAD")
+    plan_parser.add_argument("--dry-run", action="store_true", help="word the summary as a dry run")
+    plan_parser.add_argument("--json-out")
+    plan_parser.add_argument("--summary-out", help="append the Markdown summary here")
+    plan_parser.add_argument("--github-output", help="append targets= and release= here")
+    plan_parser.add_argument(
+        "--store-versions",
+        help="JSON file of {bundle id: version or null} to use instead of the store (for testing)",
+    )
+
+    tuna_parser = commands.add_parser("fetch-tuna", help="download and verify the published Tuna")
+    tuna_parser.add_argument("--dest", required=True)
+
+    args = parser.parse_args(argv)
+    try:
+        if args.command == "fetch-tuna":
+            print(fetch_tuna(args.dest))
+            return 0
+
+        overrides = None
+        if args.store_versions:
+            with open(args.store_versions, encoding="utf-8") as fh:
+                overrides = json.load(fh)
+        result = plan(args.repo, args.before, args.head, overrides)
+    except (extension_risk.GitError, StoreError, OSError, ValueError, KeyError) as error:
+        print(f"auto-release: {error}", file=sys.stderr)
+        return 1
+
+    markdown = summary_markdown(result, dry_run=args.dry_run)
+    if args.json_out:
+        with open(args.json_out, "w", encoding="utf-8") as fh:
+            json.dump(result, fh, indent=2, sort_keys=True)
+            fh.write("\n")
+    if args.summary_out:
+        with open(args.summary_out, "a", encoding="utf-8") as fh:
+            fh.write(markdown)
+    if args.github_output:
+        targets = " ".join(e["dir"] for e in result["release"])
+        with open(args.github_output, "a", encoding="utf-8") as fh:
+            fh.write(f"targets={targets}\n")
+            fh.write(f"release={'true' if targets else 'false'}\n")
+    print(markdown)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
