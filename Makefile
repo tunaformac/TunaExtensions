@@ -10,7 +10,7 @@ LOCAL_DERIVED_DATA := ./build/dd-local
 CONFIGURATION ?= Debug
 
 .DEFAULT_GOAL := build-all
-.PHONY: build-all test test-release-scripts test-local-tunakit-rewrite test-chromium-support test-extensions ext ext-all ext-local ext-all-local ext-package ext-upload release release-all clean
+.PHONY: build-all lint-extensions test test-release-scripts test-local-tunakit-rewrite test-chromium-support test-extensions ext ext-all ext-local ext-all-local ext-package ext-upload release release-all clean
 
 define require_target
 	@test -n "$(TARGET)" || { echo "usage: make $@ TARGET=<Scheme>" >&2; exit 64; }
@@ -24,6 +24,10 @@ endef
 build-all:
 	@set -e; for SCHEME in $(EXTENSION_SCHEMES); do echo "=== $$SCHEME ==="; ./scripts/tuna-extension build --scheme "$$SCHEME" --release >/dev/null; done; echo "All extensions build."
 
+# Check every extension against the contribution policy's mechanical rules (P1-P14).
+lint-extensions:
+	@./scripts/lint-extensions
+
 # Run release tooling regressions and every extension unit-test target.
 test: test-release-scripts test-chromium-support test-extensions
 
@@ -35,6 +39,7 @@ test-release-scripts:
 	@./tests/run-xcodebuild-test.sh
 	@./tests/local-tunakit-rewrite-test.sh
 	@./tests/local-extension-tooling-test.sh
+	@./tests/lint-extensions-test.sh
 
 test-local-tunakit-rewrite:
 	@./tests/local-tunakit-rewrite-test.sh

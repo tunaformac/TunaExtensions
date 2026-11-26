@@ -25,6 +25,7 @@ caller's current directory.
 
 ## Tooling gates
 
+- Policy lint (rules P1–P14; `scripts/lint-extensions --help`): `make -C "$EXTENSIONS_ROOT" lint-extensions`
 - Release/path tooling only: `make -C "$EXTENSIONS_ROOT" test-release-scripts`
 - All extension unit tests: `make -C "$EXTENSIONS_ROOT" test-extensions`
 - Full test gate: `make -C "$EXTENSIONS_ROOT" test`

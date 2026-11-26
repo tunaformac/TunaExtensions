@@ -1,0 +1,832 @@
+#!/usr/bin/env python3
+"""Lint Tuna extensions against the mechanical half of the contribution policy (rules P1-P14).
+
+Every finding cites its policy rule and a check ID, for example
+`P12: screenshots must sit flat in media/screenshots/<slug>/ [P12-screenshots-flat]`.
+Errors fail the run (exit 1); warnings are printed for the reviewer and never fail it.
+
+Checks (severity):
+  P1-folder-name        error    folder and project are <Name>Extension/<Name>Extension.xcodeproj
+  P1-bundle-id          error    PRODUCT_BUNDLE_IDENTIFIER is com.brnbw.tuna.plugins.<name>
+  P1-scheme-name        error    the build scheme is named like the folder
+  P1-workspace          error    registered in TunaExtensions.xcworkspace
+  P1-makefile           error    scheme listed in Makefile EXTENSION_SCHEMES (orphans too)
+  P1-readme             error    row in the README extension table
+  P2-license            error    no per-extension LICENSE
+  P2-privacy            error    no per-extension PRIVACY.md
+  P3-global-scope       warning  heuristic: an `initialGlobalScope: .all` catalog that seems to
+                                 list commands
+  P5-app-support        warning  writes under Application Support instead of the caches directory
+  P5-test-defaults      warning  tests create UserDefaults suites without removing them
+  P6-http               error    a non-loopback http:// literal in Swift source
+  P6-http-dynamic       warning  an http:// URL with an interpolated host
+  P6-shared-session-auth warning URLSession.shared in a file that sends auth headers
+  P7-modal              warning  runModal() in an extension (never while holding the queue)
+  P8-preferred-actions  warning  preferredActions changes what Enter does
+  P11-test-target       error    an XCTest target exists
+  P11-test-scheme       error    every test target is in the shared scheme
+                                 (scripts/verify-test-scheme.sh)
+  P12-changelog-single  error    a new extension debuts with one CHANGELOG version section
+                                 (--changed-since only)
+  P12-changelog-version warning  CHANGELOG has a section for the Info.plist version or Unreleased
+  P12-screenshots-flat  error    screenshots sit flat in media/screenshots/<slug>/
+  P12-screenshots-orphan error   media that belongs to no extension, or that the uploader can't
+                                 find (`tuna-hue` for HueExtension)
+  P12-media-slug        warning  an extension's media sits under a name other than <slug>: the
+                                 folder name without `Extension`, lowercased and hyphenated
+                                 (HueExtension -> hue), for screenshots and media/icons
+  P12-screenshots-count warning  more than 10 screenshots, or light and dark pairs (one
+                                 appearance, a handful of shots)
+  P12-store-links       error    STORE.md *_url fields point at tunaformac GitHub or tunaformac.com
+  P12-store-github      warning  STORE.md links to a GitHub repo outside tunaformac
+  P12-remote-images     error    README/STORE images are in-repo, not hotlinked
+  P12-icon              error    icon.png exists and is 1024×1024 (or a vector icon.svg)
+  P12-min-macos         error    Info.plist LSMinimumSystemVersion is $(MACOSX_DEPLOYMENT_TARGET)
+  P14-outside           warning  the diff touches paths outside the extension's folder and its
+                                 own store media, or several extensions (--changed-since only;
+                                 a new extension's own registration lines are expected)
+  P14-special-case      warning  shared tooling in the diff names one extension
+
+Known, accepted violations live in scripts/lint-allowlist.txt, one `<Folder> <check-id> <reason>`
+per line. Allowlisted findings are not reported; unused entries are warned about.
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import plistlib
+import re
+import struct
+import subprocess
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+
+BUNDLE_ID = re.compile(r"^com\.brnbw\.tuna\.plugins\.[a-z0-9][a-z0-9-]*$")
+LOOPBACK_HOSTS = {"localhost", "[::1]", "::1"}
+TEST_FILE = re.compile(r"(Tests?|TestSupport)\.swift$")
+ALLOWED_LINK = re.compile(
+    r"^https://(github\.com/tunaformac(/|$)|(www\.)?tunaformac\.com(/|$))", re.IGNORECASE
+)
+WORKSPACE = "TunaExtensions.xcworkspace/contents.xcworkspacedata"
+SHARED_TOOLING = ("scripts/", "tests/", ".github/", "Makefile")
+MAX_SCREENSHOTS = 10
+
+
+@dataclass
+class Finding:
+    severity: str  # "error" | "warning"
+    check: str  # e.g. "P12-icon"
+    message: str
+    extension: str | None = None
+    path: str | None = None
+    line: int | None = None
+
+    @property
+    def rule(self) -> str:
+        return self.check.split("-", 1)[0]
+
+    def location(self) -> str:
+        if self.path:
+            return f"{self.path}:{self.line}" if self.line else self.path
+        return self.extension or "repo"
+
+    def render(self) -> str:
+        return f"{self.severity}: {self.location()}: {self.rule}: {self.message} [{self.check}]"
+
+
+class Linter:
+    def __init__(self, root: Path, allowlist: Path | None):
+        self.root = root
+        self.findings: list[Finding] = []
+        self.allow = self._load_allowlist(allowlist)
+        self.allow_used: set[tuple[str, str]] = set()
+        self.makefile = self._read("Makefile")
+        self.readme = self._read("README.md")
+        self.workspace = self._read("TunaExtensions.xcworkspace/contents.xcworkspacedata")
+        match = re.search(r"^EXTENSION_SCHEMES\s*:?=\s*(.*)$", self.makefile, re.MULTILINE)
+        self.makefile_schemes = match.group(1).split() if match else []
+
+    # --- plumbing ------------------------------------------------------------------------------
+
+    def _read(self, relative: str) -> str:
+        path = self.root / relative
+        return path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""
+
+    def _load_allowlist(self, path: Path | None) -> dict[tuple[str, str], str]:
+        entries: dict[tuple[str, str], str] = {}
+        if not path or not path.is_file():
+            return entries
+        for number, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split(None, 2)
+            if len(parts) < 3:
+                sys.exit(f"lint-extensions: {path}:{number}: expected `<Folder> <check-id> <reason>`")
+            entries[(parts[0], parts[1])] = parts[2]
+        return entries
+
+    def report(self, severity: str, check: str, message: str, extension: str | None = None,
+               path: str | None = None, line: int | None = None) -> None:
+        key = (extension or "repo", check)
+        if key in self.allow:
+            self.allow_used.add(key)
+            return
+        self.findings.append(Finding(severity, check, message, extension, path, line))
+
+    def error(self, *args, **kwargs) -> None:
+        self.report("error", *args, **kwargs)
+
+    def warn(self, *args, **kwargs) -> None:
+        self.report("warning", *args, **kwargs)
+
+    # --- discovery -----------------------------------------------------------------------------
+
+    def extension_folders(self) -> list[str]:
+        """Top-level folders holding an Xcode project. ChromiumExtensionSupport is a package."""
+        return sorted(
+            p.parent.name
+            for p in self.root.glob("*/*.xcodeproj")
+            if not p.parent.name.startswith((".", "build"))
+        )
+
+    def project(self, folder: str) -> Path | None:
+        projects = sorted((self.root / folder).glob("*.xcodeproj"))
+        return projects[0] if projects else None
+
+    def pbxproj(self, folder: str) -> str:
+        project = self.project(folder)
+        if not project:
+            return ""
+        path = project / "project.pbxproj"
+        return path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""
+
+    def info_plist(self, folder: str) -> dict:
+        path = self.root / folder / "Info.plist"
+        try:
+            with path.open("rb") as fh:
+                return plistlib.load(fh)
+        except Exception:
+            return {}
+
+    def bundle_ids(self, folder: str) -> list[str]:
+        ids = re.findall(r"PRODUCT_BUNDLE_IDENTIFIER = \"?([^;\"]+)\"?;", self.pbxproj(folder))
+        return sorted({i for i in ids if not i.lower().endswith("tests")})
+
+    def native_targets(self, folder: str) -> list[tuple[str, str]]:
+        """(name, productType) for each PBXNativeTarget."""
+        text = self.pbxproj(folder)
+        targets = []
+        for match in re.finditer(r"[0-9A-Fa-f]{24} /\* ([^\n]*?) \*/ = \{", text):
+            body = balanced(text, match.end() - 1, "{", "}")
+            if not re.match(r"\{\s*isa = PBXNativeTarget;", body):
+                continue
+            product = re.search(r'productType = "([^"]+)";', body)
+            targets.append((match.group(1), product.group(1) if product else ""))
+        return targets
+
+    def scheme(self, folder: str) -> str:
+        """The build scheme: a shared scheme or a framework target named like the folder,
+        otherwise the framework target's name (the scheme Xcode generates for it)."""
+        project = self.project(folder)
+        if project and (project / "xcshareddata/xcschemes" / f"{folder}.xcscheme").is_file():
+            return folder
+        frameworks = [n for n, t in self.native_targets(folder) if t.endswith(".framework")]
+        if folder in frameworks or not frameworks:
+            return folder
+        return frameworks[0]
+
+    def deployment_target(self, folder: str) -> str | None:
+        versions = re.findall(r"MACOSX_DEPLOYMENT_TARGET = ([0-9.]+);", self.pbxproj(folder))
+        return max(versions, key=version_key) if versions else None
+
+    def media_keys(self, folder: str) -> set[str]:
+        """The keys scripts/upload-extension.sh tries for media/screenshots/<key>/."""
+        keys = {folder, slugify(folder)}
+        scheme = self.scheme(folder)
+        keys |= {scheme, slugify(scheme)}
+        if scheme.startswith("Tuna"):
+            keys |= {scheme[4:], slugify(scheme[4:])}
+        for bundle_id in self.bundle_ids(folder):
+            keys |= {bundle_id, bundle_id.rsplit(".", 1)[-1]}
+        name = self.info_plist(folder).get("CFBundleName")
+        if isinstance(name, str) and not name.startswith("$("):
+            keys |= {name, slugify(name)}
+        display = re.search(r'displayName:\s*"([^"]+)"', self.swift_text(folder))
+        if display:
+            keys |= {display.group(1), slugify(display.group(1))}
+        return keys
+
+    def owns_media(self, folder: str, name: str) -> bool:
+        """Whether media named `name` (a screenshots folder or icon stem) is this extension's:
+        its slug, loosely as scripts/review-queue matches it (so `tuna-hue` is Hue's), or any key
+        the uploader tries (matched without case, as on a Mac)."""
+        return (slug_key(name) == slug_key(folder)
+                or name.lower() in {k.lower() for k in self.media_keys(folder)})
+
+    def media_owner(self, path: str, folders: list[str]) -> str | None:
+        """The extension whose store media `path` is (media/screenshots/<slug>/…,
+        media/screenshots/<slug>.*, media/icons/<slug>.*), if any."""
+        name = media_name(path)
+        if name is None:
+            return None
+        return next((f for f in folders if self.owns_media(f, name)), None)
+
+    def swift_files(self, folder: str) -> list[Path]:
+        return sorted(p for p in (self.root / folder).rglob("*.swift") if "/build/" not in str(p))
+
+    def swift_text(self, folder: str) -> str:
+        return "\n".join(read(p) for p in self.swift_files(folder) if not is_test_file(p))
+
+    def rel(self, path: Path) -> str:
+        return str(path.relative_to(self.root))
+
+    # --- per-extension checks ------------------------------------------------------------------
+
+    def lint_extension(self, folder: str) -> None:
+        self.check_identity(folder)
+        self.check_licence(folder)
+        self.check_sources(folder)
+        self.check_tests(folder)
+        self.check_release_files(folder)
+
+    def check_identity(self, folder: str) -> None:
+        project = self.project(folder)
+        if not re.fullmatch(r"[A-Z][A-Za-z0-9]*Extension", folder):
+            self.error("P1-folder-name", f"the folder is `<Name>Extension` (is `{folder}`)",
+                       folder)
+        elif project and project.name != f"{folder}.xcodeproj":
+            self.error("P1-folder-name",
+                       f"the project is named like the folder: `{folder}.xcodeproj`"
+                       f" (is `{project.name}`)", folder)
+
+        bundle_ids = self.bundle_ids(folder)
+        plist_id = self.info_plist(folder).get("CFBundleIdentifier", "")
+        if isinstance(plist_id, str) and plist_id and not plist_id.startswith("$("):
+            bundle_ids = sorted(set(bundle_ids) | {plist_id})
+        if not bundle_ids:
+            self.error("P1-bundle-id", "the bundle ID is `com.brnbw.tuna.plugins.<name>` (no"
+                       " PRODUCT_BUNDLE_IDENTIFIER found)", folder)
+        for bundle_id in bundle_ids:
+            if not BUNDLE_ID.match(bundle_id):
+                self.error("P1-bundle-id",
+                           f"the bundle ID is `com.brnbw.tuna.plugins.<name>` (is `{bundle_id}`);"
+                           " credit the author in the declaration's `metadata.author`", folder)
+
+        scheme = self.scheme(folder)
+        if scheme != folder:
+            self.error("P1-scheme-name", f"the scheme is named like the folder: `{folder}`"
+                       f" (is `{scheme}`)", folder)
+        if project and f"group:{folder}/{project.name}" not in self.workspace:
+            self.error("P1-workspace",
+                       f"the extension is registered in `TunaExtensions.xcworkspace` (no"
+                       f" `{folder}/{project.name}` entry)", folder)
+        if scheme not in self.makefile_schemes:
+            self.error("P1-makefile", f"the extension is registered in `EXTENSION_SCHEMES` in the"
+                       f" `Makefile` (`{scheme}` is missing)", folder)
+        if not re.search(rf"^\|\s*{re.escape(folder)}\s*\|", self.readme, re.MULTILINE):
+            self.error("P1-readme", f"the extension is registered in the README's extension table"
+                       f" (no `| {folder} |` row)", folder)
+
+    def check_licence(self, folder: str) -> None:
+        for path in sorted((self.root / folder).iterdir()):
+            name = path.name.lower()
+            if name.startswith(("license", "licence", "copying")):
+                self.error("P2-license", "the repository LICENSE covers every extension: no"
+                           " per-extension `LICENSE`", folder, self.rel(path))
+            elif name.startswith("privacy"):
+                self.error("P2-privacy", "no per-extension `PRIVACY.md`; privacy notes live in the"
+                           " extension README's \"Privacy\" section and in `STORE.md`", folder, self.rel(path))
+
+    def check_sources(self, folder: str) -> None:
+        # String constants, so `http://\(redirectHost)` resolves to a literal loopback host.
+        constants = dict(re.findall(r'\blet\s+(\w+)\s*(?::\s*String\s*)?=\s*"([^"\\]*)"',
+                                    self.swift_text(folder)))
+        for path in self.swift_files(folder):
+            text = read(path)
+            rel = self.rel(path)
+            if is_test_file(path):
+                if "UserDefaults(suiteName" in text and "removePersistentDomain" not in text:
+                    self.warn("P5-test-defaults", "tests don't write to the real user defaults or"
+                              " `~/Library/Preferences` (remove any test suite domain in teardown:"
+                              " `removePersistentDomain(forName:)` is never called)", folder, rel,
+                              line_of(text, "UserDefaults(suiteName"))
+                continue
+            self.check_http(folder, rel, text, constants)
+            own = re.search(r"appSupportDirectory\(\)|ExtensionData", text)
+            if own or (re.search(r"applicationSupportDirectory|Application Support", text)
+                       and re.search(r"createDirectory|\.write\(to|createFile\(", text)):
+                needle = own.group(0) if own else ("Application Support" if "Application Support"
+                                                   in text else "applicationSupportDirectory")
+                self.warn("P5-app-support", "regenerable caches go in TunaKit's"
+                          " `RuntimeEnvironment.cachesDirectory()`, not Application Support"
+                          " (this file stores data there)", folder, rel,
+                          line_of(text, needle))
+            if "URLSession.shared" in text and re.search(
+                    r'"(Authorization|x-api-key)"|"Bearer ', text, re.IGNORECASE):
+                self.warn("P6-shared-session-auth", "credentials go only to the configured origin:"
+                          " refuse cross-origin and HTTPS-to-HTTP redirects (`URLSession.shared`"
+                          " in a file that sends auth headers; with TunaKit 1.24+ use"
+                          " `CredentialedHTTPClient`)", folder, rel,
+                          line_of(text, "URLSession.shared"))
+            if "runModal()" in text:
+                self.warn("P7-modal", "long work returns a background task"
+                          " (`CommandBackgroundTask`) and never shows modal UI while holding the"
+                          " queue (`runModal()` here)",
+                          folder, rel, line_of(text, "runModal()"))
+            if re.search(r"\bpreferredActions\s*:", text):
+                self.warn("P8-preferred-actions", "Enter on an app item opens the app: don't use"
+                          " `preferredActions` to put a target-requiring action first on app"
+                          " items",
+                          folder, rel, line_of(text, "preferredActions"))
+        self.check_global_scope(folder)
+
+    def check_http(self, folder: str, rel: str, text: str, constants: dict[str, str]) -> None:
+        for number, line in enumerate(text.splitlines(), 1):
+            for match in re.finditer(r"http://(\\\([\w.]+\)|[^\s\"'/)\\]*)", line):
+                if re.search(r"(?<!:)//", line[: match.start()]):
+                    break  # the rest of the line is a comment
+                host = match.group(1)
+                if host.startswith("\\("):
+                    host = constants.get(host[2:-1].rsplit(".", 1)[-1], host)
+                if host.startswith("\\("):
+                    self.warn("P6-http-dynamic", "HTTPS only, except literal loopback addresses"
+                              " and `localhost` (an `http://` URL with an interpolated host)", folder, rel, number)
+                elif not is_loopback(host):
+                    self.error("P6-http", f"HTTPS only, except literal loopback addresses and"
+                               f" `localhost` (`http://{host}`)",
+                               folder, rel, number)
+
+    def check_global_scope(self, folder: str) -> None:
+        sources = {p: read(p) for p in self.swift_files(folder) if not is_test_file(p)}
+        for path, text in sources.items():
+            for block, offset in call_blocks(text, "CatalogDeclaration("):
+                if not re.search(r"initialGlobalScope:\s*\.all\b", block):
+                    continue
+                type_match = re.search(r"type:\s*(\w+)\.self", block)
+                type_name = type_match.group(1) if type_match else ""
+                name_match = re.search(r'name:\s*"([^"]*)"', block)
+                body = type_body(sources, type_name)
+                if (re.search(r"Command|Plugin", type_name + (name_match.group(1) if name_match
+                                                             else ""))
+                        or re.search(r"\b\w*(Command|Plugin)\w*Item\b", body)):
+                    self.warn("P3-global-scope", "catalogs whose items do something when run"
+                              " declare `initialGlobalScope: .none` (`"
+                              f"{type_name or 'catalog'}` is `.all` and seems to list commands)",
+                              folder, self.rel(path), text.count("\n", 0, offset) + 1)
+
+    def check_tests(self, folder: str) -> None:
+        project = self.project(folder)
+        if not project:
+            return
+        tests = [n for n, t in self.native_targets(folder) if t.endswith(".unit-test")]
+        if not tests:
+            self.error("P11-test-target", "every extension has an XCTest target in its scheme"
+                       " (none found)", folder)
+            return
+        scheme_file = project / "xcshareddata/xcschemes" / f"{self.scheme(folder)}.xcscheme"
+        verify = Path(__file__).resolve().parent / "verify-test-scheme.sh"
+        result = subprocess.run([str(verify), str(project / "project.pbxproj"), str(scheme_file)],
+                                capture_output=True, text=True)
+        if result.returncode != 0:
+            detail = (result.stderr.strip().splitlines() or ["verify-test-scheme.sh failed"])[0]
+            detail = detail.removeprefix("error: ").replace(f"{self.root}/", "")
+            self.error("P11-test-scheme", "every extension has an XCTest target in its scheme"
+                       f" ({', '.join(tests)}; {detail})", folder)
+
+    def check_release_files(self, folder: str) -> None:
+        base = self.root / folder
+        plist = self.info_plist(folder)
+        minimum = plist.get("LSMinimumSystemVersion")
+        if minimum != "$(MACOSX_DEPLOYMENT_TARGET)":
+            self.error("P12-min-macos", "the minimum macOS comes from the deployment target"
+                       f" (`LSMinimumSystemVersion = $(MACOSX_DEPLOYMENT_TARGET)`; is `{minimum}`)", folder,
+                       f"{folder}/Info.plist")
+
+        icon = base / "icon.png"
+        size = png_size(icon)
+        if size is None and not icon.exists() and (base / "icon.svg").is_file():
+            pass  # a vector icon has no pixel size to check
+        elif size is None:
+            self.error("P12-icon", "`icon.png` is 1024×1024 (missing or not a PNG)", folder, f"{folder}/icon.png")
+        elif size != (1024, 1024):
+            self.error("P12-icon", f"`icon.png` is 1024×1024 (is {size[0]}×{size[1]})",
+                       folder, f"{folder}/icon.png")
+
+        changelog = read(base / "CHANGELOG.md")
+        sections = changelog_sections(changelog)
+        version = plist.get("CFBundleShortVersionString")
+        if version and version not in sections and "Unreleased" not in sections:
+            self.warn("P12-changelog-version", f"CHANGELOG.md has no `## {version}` (Info.plist"
+                      " version) or `## Unreleased` section for the store release notes",
+                      folder, f"{folder}/CHANGELOG.md")
+
+        self.check_links(folder)
+        self.check_screenshots(folder)
+
+    def check_links(self, folder: str) -> None:
+        store = read(self.root / folder / "STORE.md")
+        front, body = split_front_matter(store)
+        rel = f"{folder}/STORE.md"
+        for number, line in enumerate(front.splitlines(), 2):
+            match = re.match(r"\s*(\w+_url)\s*:\s*(\S+)", line)
+            if match and not ALLOWED_LINK.match(match.group(2).strip("\"'")):
+                self.error("P12-store-links", "`STORE.md` links point at the tunaformac"
+                           " repository or tunaformac.com, not a personal repository"
+                           f" (`{match.group(1)}` is {match.group(2)})", folder, rel, number)
+        body_offset = store.count("\n", 0, len(store) - len(body))
+        for number, line in enumerate(body.splitlines(), body_offset + 1):
+            for url in re.findall(r"https?://github\.com/[^\s)>\]]+", line):
+                if not ALLOWED_LINK.match(url):
+                    self.warn("P12-store-github", "`STORE.md` links point at the tunaformac"
+                              f" repository or tunaformac.com (body links to {url})", folder, rel, number)
+        for name in ("README.md", "STORE.md"):
+            text = read(self.root / folder / name)
+            for number, line in enumerate(text.splitlines(), 1):
+                images = re.findall(r"!\[[^\]]*\]\((https?://[^)\s]+)", line)
+                images += re.findall(r"<img[^>]+src=[\"'](https?://[^\"']+)", line)
+                for url in images:
+                    self.error("P12-remote-images", "README media point at the tunaformac repository,"
+                               f" not a personal repository (hotlinked {url})", folder, f"{folder}/{name}", number)
+
+    def check_screenshots(self, folder: str) -> None:
+        slug = policy_slug(folder)
+        media = [p for d in ("media/screenshots", "media/icons") if (self.root / d).is_dir()
+                 for p in sorted((self.root / d).iterdir()) if not p.name.startswith(".")]
+        for entry in media:
+            name = media_name(self.rel(entry) + ("/x" if entry.is_dir() else ""))
+            if not name or not self.owns_media(folder, name):
+                continue
+            if name.lower().replace("-", "") == slug.replace("-", ""):
+                continue
+            kind = "screenshots" if entry.parent.name == "screenshots" else "icons"
+            wanted = f"media/screenshots/{slug}/" if kind == "screenshots" else \
+                f"media/icons/{slug}{entry.suffix}"
+            if name.lower() not in {k.lower() for k in self.media_keys(folder)}:
+                self.error("P12-screenshots-orphan", f"{self.rel(entry)} is named so the uploader"
+                           f" never finds it; store media uses the extension's slug: {wanted}",
+                           folder, self.rel(entry))
+            else:
+                self.warn("P12-media-slug", f"store media sits at {self.rel(entry)}; use the"
+                          f" extension's slug: {wanted}", folder, self.rel(entry))
+        for directory in (p for p in media if p.is_dir() and p.parent.name == "screenshots"
+                          and self.owns_media(folder, p.name)):
+            rel = self.rel(directory)
+            for sub in sorted(p for p in directory.iterdir() if p.is_dir()):
+                self.error("P12-screenshots-flat", f"screenshots sit flat in {rel}/ (the uploader"
+                           f" ignores subfolders such as {self.rel(sub)}/)", folder, self.rel(sub))
+            images = [p for p in directory.iterdir()
+                      if p.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"}]
+            if len(images) > MAX_SCREENSHOTS:
+                self.warn("P12-screenshots-count", f"{len(images)} screenshots in {rel}/ all become"
+                          " store screenshots; use one appearance, a handful of shots", folder, rel)
+            stems = {p.stem.lower() for p in images}
+            pairs = sorted(s[:-5] for s in stems if s.endswith("-dark") and s[:-5] + "-light"
+                           in stems)
+            if pairs:
+                self.warn("P12-screenshots-count", f"{rel}/ has light and dark versions of"
+                          f" {len(pairs)} shot(s); the store has no appearance pairing, so use"
+                          " one appearance", folder, rel)
+
+    # --- repo-level checks ---------------------------------------------------------------------
+
+    def lint_repo(self, folders: list[str]) -> None:
+        schemes = {self.scheme(f) for f in folders}
+        for scheme in self.makefile_schemes:
+            if scheme not in schemes:
+                self.error("P1-makefile", f"EXTENSION_SCHEMES lists `{scheme}`, which matches no"
+                           " extension folder", path="Makefile")
+        self.check_screenshot_owners(folders, None)
+
+    def check_screenshot_owners(self, folders: list[str], only: set[str] | None) -> None:
+        root = self.root / "media/screenshots"
+        if not root.is_dir():
+            return
+        for entry in sorted(root.iterdir()):
+            if entry.name.startswith(".") or (only is not None and entry.name not in only):
+                continue
+            name = entry.name if entry.is_dir() else entry.stem
+            if not any(self.owns_media(f, name) for f in folders):
+                self.error("P12-screenshots-orphan", f"media/screenshots/{entry.name} belongs to no"
+                           " extension, so the uploader never finds it; screenshots sit in"
+                           " media/screenshots/<slug>/, where <slug> is the folder name without"
+                           " `Extension`, lowercased and hyphenated", path=self.rel(entry))
+
+    # --- changed-since mode --------------------------------------------------------------------
+
+    def git(self, *args: str) -> str:
+        result = subprocess.run(["git", "-C", str(self.root), *args], capture_output=True,
+                                text=True)
+        if result.returncode != 0:
+            sys.exit(f"lint-extensions: git {' '.join(args)} failed: {result.stderr.strip()}")
+        return result.stdout
+
+    def lint_changed(self, ref: str) -> list[str]:
+        base = self.git("merge-base", ref, "HEAD").strip()
+        changed = [p for p in self.git("diff", "--name-only", "--no-renames", base).splitlines()
+                   if p]
+        folders = self.extension_folders()
+        in_folders = sorted({p.split("/", 1)[0] for p in changed if "/" in p} & set(folders))
+        touched = in_folders or sorted(  # a media-only change belongs to the media's extension
+            {o for p in changed if (o := self.media_owner(p, folders))})
+        added = [f for f in touched if subprocess.run(
+            ["git", "-C", str(self.root), "cat-file", "-e", f"{base}:{f}"],
+            capture_output=True).returncode != 0]
+
+        for folder in touched:
+            self.lint_extension(folder)
+            if folder in added:
+                sections = [s for s in changelog_sections(read(self.root / folder /
+                                                               "CHANGELOG.md"))
+                            if s != "Unreleased"]
+                if len(sections) > 1:
+                    self.error("P12-changelog-single", "a new extension debuts with a single"
+                               " CHANGELOG.md section for the version it ships (found"
+                               f" {', '.join(sections)})", folder, f"{folder}/CHANGELOG.md")
+        media_dirs = {p.split("/")[2] for p in changed
+                      if p.startswith("media/screenshots/") and p.count("/") >= 2}
+        self.check_screenshot_owners(folders, media_dirs)
+        self.check_outside(base, changed, folders, touched, added)
+        return touched
+
+    def check_outside(self, base: str, changed: list[str], folders: list[str],
+                      touched: list[str], added: list[str]) -> None:
+        """P14: everything but the touched extension's folder, its own store media and, for a
+        new extension, its own registration lines."""
+        if len(touched) > 1:
+            self.warn("P14-outside", f"the diff touches {len(touched)} extensions"
+                      f" ({', '.join(touched)}); changes outside an extension's folder, including"
+                      " other extensions, are separate pull requests or explicitly called out")
+        names = {f: self.bundle_ids(f) + [f] for f in touched}
+        for path in changed:
+            if path.split("/", 1)[0] in folders and "/" in path:
+                continue
+            owner = self.media_owner(path, folders)
+            if owner in touched:
+                continue  # its own store media
+            if media_name(path) is not None and owner is None:
+                continue  # misnamed own media: P12-screenshots-orphan says where it goes
+            diff = self.git("diff", "-U0", "--no-renames", base, "--", path)
+            if is_registration(path, diff, added):
+                continue
+            self.warn("P14-outside", f"{path} is outside the extension's folder; shared changes"
+                      " are separate pull requests, or explicitly called out", path=path)
+            if path.startswith(SHARED_TOOLING):
+                added_lines = diff_lines(diff)[0]
+                for folder, words in names.items():
+                    hits = [w for w in words if any(w in l for l in added_lines)]
+                    if hits:
+                        self.warn("P14-special-case", f"{path} adds lines naming {hits[0]};"
+                                  " shared scripts never special-case one extension (fix the"
+                                  " extension's data to fit the script instead)", folder, path)
+
+    # --- output --------------------------------------------------------------------------------
+
+    def unused_allowlist(self) -> list[tuple[str, str]]:
+        return sorted(set(self.allow) - self.allow_used)
+
+
+# --- helpers -------------------------------------------------------------------------------------
+
+def read(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return ""
+
+
+def is_test_file(path: Path) -> bool:
+    return bool(TEST_FILE.search(path.name)) or any(p.endswith("Tests") for p in path.parts[:-1])
+
+
+def is_loopback(host: str) -> bool:
+    if host.startswith("["):
+        name = host.split("]", 1)[0] + "]"
+    else:
+        name = host.split(":", 1)[0]
+    return name.lower() in LOOPBACK_HOSTS or name.startswith("127.")
+
+
+def line_of(text: str, needle: str) -> int | None:
+    index = text.find(needle)
+    return text.count("\n", 0, index) + 1 if index >= 0 else None
+
+
+def policy_slug(folder: str) -> str:
+    """The policy's <slug>: folder name without `Extension`, lowercased and hyphenated
+    (`OpenTerminalHereExtension` -> `open-terminal-here`)."""
+    name = re.sub(r"Extension$", "", folder)
+    return re.sub(r"(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])", "-", name).lower()
+
+
+def slug_key(text: str) -> str:
+    """Loose slug comparison, as scripts/review-queue matches media to extensions."""
+    key = re.sub(r"[^a-z0-9]", "", text.lower())
+    key = key.removesuffix("extension")
+    return key[4:] if key.startswith("tuna") and len(key) > 4 else key
+
+
+def media_name(path: str) -> str | None:
+    """`<slug>` of media/screenshots/<slug>/…, media/screenshots/<slug>.*, media/icons/<slug>.*."""
+    parts = path.split("/")
+    if len(parts) < 3 or parts[0] != "media":
+        return None
+    if parts[1] == "screenshots":
+        return parts[2] if len(parts) >= 4 else parts[2].rsplit(".", 1)[0]
+    if parts[1] == "icons" and len(parts) == 3:
+        return parts[2].split(".")[0]
+    return None
+
+
+def is_registration(path: str, diff: str, added: list[str]) -> bool:
+    """Whether a Makefile, workspace or README change only registers the new extensions
+    `added` (P1): expected at admission. Mirrors scripts/review-queue."""
+    plus, minus = diff_lines(diff)
+    if not added or not plus + minus:
+        return False
+    if path == "Makefile":
+        if not all(re.match(r"EXTENSION_SCHEMES\s*:?=", l) for l in plus + minus):
+            return False
+        before = {w for l in minus for w in l.split("=", 1)[1].split()}
+        after = {w for l in plus for w in l.split("=", 1)[1].split()}
+        return before <= after and after - before <= set(added)
+    if path == WORKSPACE:
+        refs = re.findall(r'location\s*=\s*"group:([^/"]+)/', "\n".join(plus))
+        shape = all(re.match(r"\s*(<FileRef|</FileRef>|location\s*=)", l) for l in plus)
+        return not minus and shape and bool(refs) and set(refs) <= set(added)
+    if path == "README.md":
+        return not minus and all(any(re.match(rf"\|\s*{re.escape(f)}\s*\|", l) for f in added)
+                                 for l in plus)
+    return False
+
+
+def slugify(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
+
+
+def version_key(version: str) -> tuple[int, ...]:
+    return tuple(int(p) for p in version.split(".") if p.isdigit())
+
+
+def png_size(path: Path) -> tuple[int, int] | None:
+    try:
+        with path.open("rb") as fh:
+            header = fh.read(24)
+    except OSError:
+        return None
+    if len(header) < 24 or header[:8] != b"\x89PNG\r\n\x1a\n" or header[12:16] != b"IHDR":
+        return None
+    return struct.unpack(">II", header[16:24])
+
+
+def changelog_sections(text: str) -> list[str]:
+    """Version headings, parsed like package-tunaextension.py's changelog_release_notes."""
+    sections = []
+    for line in text.splitlines():
+        if line.startswith("## ") and line[3:].split():
+            sections.append(line[3:].split()[0].lstrip("v"))
+    return sections
+
+
+def split_front_matter(text: str) -> tuple[str, str]:
+    match = re.match(r"---\n(.*?)\n---\n?", text, re.DOTALL)
+    return (match.group(1), text[match.end():]) if match else ("", text)
+
+
+def balanced(text: str, start: int, opener: str, closer: str) -> str:
+    """text[start:] up to the closer that balances the opener at `start`."""
+    depth = 0
+    for index in range(start, len(text)):
+        if text[index] == opener:
+            depth += 1
+        elif text[index] == closer:
+            depth -= 1
+            if depth == 0:
+                return text[start:index + 1]
+    return text[start:]
+
+
+def call_blocks(text: str, opener: str):
+    """(contents, offset) of each balanced `opener ... )` call."""
+    start = text.find(opener)
+    while start >= 0:
+        block = balanced(text, start + len(opener) - 1, "(", ")")
+        yield opener[:-1] + block, start
+        start = text.find(opener, start + len(opener) - 1 + len(block))
+
+
+def type_body(sources: dict[Path, str], type_name: str) -> str:
+    if not type_name:
+        return ""
+    for text in sources.values():
+        match = re.search(rf"\b(class|struct|actor)\s+{re.escape(type_name)}\b[^{{]*\{{", text)
+        if match:
+            return text[match.start():match.end() - 1] + balanced(text, match.end() - 1, "{", "}")
+    return ""
+
+
+def diff_lines(diff: str) -> tuple[list[str], list[str]]:
+    added, removed = [], []
+    for line in diff.splitlines():
+        if line.startswith(("+++", "---")):
+            continue
+        if line.startswith("+"):
+            added.append(line[1:])
+        elif line.startswith("-"):
+            removed.append(line[1:])
+    return added, removed
+
+
+def write_summary(path: str, findings: list[Finding], scope: str) -> None:
+    errors = [f for f in findings if f.severity == "error"]
+    warnings = [f for f in findings if f.severity == "warning"]
+    lines = ["## Extension lint", "", f"Scope: {scope}. "
+             f"{len(errors)} error(s), {len(warnings)} warning(s).", ""]
+    for title, group in (("Errors", errors), ("Warnings", warnings)):
+        if group:
+            lines += [f"### {title}", ""]
+            lines += [f"- `{f.location()}` **{f.rule}**: {f.message} `[{f.check}]`" for f in group]
+            lines.append("")
+    if not findings:
+        lines.append("No findings.")
+    with open(path, "a", encoding="utf-8") as fh:
+        fh.write("\n".join(lines) + "\n")
+
+
+def annotate(finding: Finding) -> str:
+    level = "error" if finding.severity == "error" else "warning"
+    props = []
+    if finding.path:
+        props.append(f"file={finding.path}")
+        if finding.line:
+            props.append(f"line={finding.line}")
+    props.append(f"title={finding.check}")
+    message = f"{finding.rule}: {finding.message}".replace("%", "%25").replace("\n", "%0A")
+    return f"::{level} {','.join(props)}::{message}"
+
+
+def main() -> int:
+    script_root = Path(__file__).resolve().parent.parent
+    parser = argparse.ArgumentParser(
+        prog="lint-extensions", description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--extension", metavar="FOLDER", action="append",
+                        help="lint only this extension folder (repeatable)")
+    parser.add_argument("--changed-since", metavar="REF",
+                        help="lint only extensions touched since the merge base with REF, and warn"
+                             " (P14) about files changed outside extension folders")
+    parser.add_argument("--root", type=Path, default=script_root,
+                        help="TunaExtensions checkout to lint (default: this script's checkout)")
+    parser.add_argument("--allowlist", type=Path,
+                        help="allowlist file (default: <root>/scripts/lint-allowlist.txt)")
+    parser.add_argument("--summary", metavar="PATH",
+                        help="append a Markdown report to PATH, e.g. $GITHUB_STEP_SUMMARY")
+    args = parser.parse_args()
+
+    root = args.root.resolve()
+    allowlist = args.allowlist or root / "scripts/lint-allowlist.txt"
+    linter = Linter(root, allowlist)
+    folders = linter.extension_folders()
+
+    if args.changed_since:
+        touched = linter.lint_changed(args.changed_since)
+        scope = (f"changes since {args.changed_since}: " + (", ".join(touched) or "no extensions"))
+    elif args.extension:
+        for folder in args.extension:
+            if folder not in folders:
+                print(f"lint-extensions: unknown extension folder `{folder}`", file=sys.stderr)
+                return 64
+            linter.lint_extension(folder)
+        scope = ", ".join(args.extension)
+    else:
+        for folder in folders:
+            linter.lint_extension(folder)
+        linter.lint_repo(folders)
+        for folder, check in linter.unused_allowlist():
+            linter.findings.append(Finding("warning", check, "allowlist entry matches nothing;"
+                                           " remove it", folder, self_rel(allowlist, root)))
+        scope = f"all {len(folders)} extensions"
+
+    findings = sorted(linter.findings, key=lambda f: (f.severity != "error", f.location(),
+                                                      f.check))
+    github = os.environ.get("GITHUB_ACTIONS") == "true"
+    for finding in findings:
+        print(annotate(finding) if github else finding.render())
+    errors = sum(f.severity == "error" for f in findings)
+    print(f"lint-extensions: {scope}: {errors} error(s), {len(findings) - errors} warning(s)")
+    if args.summary:
+        write_summary(args.summary, findings, scope)
+    return 1 if errors else 0
+
+
+def self_rel(path: Path, root: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(root))
+    except ValueError:
+        return str(path)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

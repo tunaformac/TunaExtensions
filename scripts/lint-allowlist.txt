@@ -1,0 +1,25 @@
+# Accepted policy violations for scripts/lint-extensions, one per line:
+#   <Folder> <check-id> <reason>
+# Keep entries for extensions that predate a rule; fix the extension and delete its line rather
+# than adding new entries for new work. The lint warns about entries that no longer match.
+
+# P1: the TunaGitHub target and scheme name is load-bearing (resolve-extension-scheme maps it).
+GitHubExtension P1-scheme-name Scheme kept its load-bearing TunaGitHub name; renaming breaks installs and tooling.
+
+# P11: first-party extensions that shipped before every extension needed a test target.
+ArenaExtension P11-test-target Predates the test-target rule; no XCTest target yet.
+BrewExtension P11-test-target Predates the test-target rule; no XCTest target yet.
+GitHubExtension P11-test-target Predates the test-target rule; no XCTest target yet.
+NotesExtension P11-test-target Predates the test-target rule; no XCTest target yet.
+NotionExtension P11-test-target Predates the test-target rule; no XCTest target yet.
+ThingsExtension P11-test-target Predates the test-target rule; no XCTest target yet.
+
+# P12: published icons below 1024x1024; replacing them is an extension change, not a lint fix.
+FancyTextExtension P12-icon Published with a 512x512 icon.
+GiphyExtension P12-icon Published with GIPHY's 640x916 brand artwork.
+MyMindExtension P12-icon Published with a 512x512 icon.
+PoofExtension P12-icon Published with a 512x512 icon.
+
+# P5: Poof's Application Support folder is Poof's own snippet library, which the extension edits
+# on purpose; it is not a cache.
+PoofExtension P5-app-support Edits Poof's snippet library in ~/Library/Application Support/Poof, not a cache.
