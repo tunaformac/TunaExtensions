@@ -1,0 +1,57 @@
+diff --git a/AcmeExtension/AcmeClient.swift b/AcmeExtension/AcmeClient.swift
+index c7e0c3c..40b245c 100644
+--- a/AcmeExtension/AcmeClient.swift
++++ b/AcmeExtension/AcmeClient.swift
+@@ -5,7 +5,11 @@ struct AcmeClient {
+   static let baseURL = URL(string: "https://api.acme.com/v1")!
+   let session = URLSession(configuration: .ephemeral)
+ 
+-  func itemsURL() -> URL {
+-    Self.baseURL.appending(path: "items")
++  func itemsURL(page: Int = 1) -> URL {
++    Self.baseURL.appending(path: "items").appending(queryItems: [URLQueryItem(name: "page", value: String(page))])
++  }
++
++  func searchURL(query: String) -> URL {
++    Self.baseURL.appending(path: "search").appending(queryItems: [URLQueryItem(name: "q", value: query)])
+   }
+ }
+diff --git a/AcmeExtension/CHANGELOG.md b/AcmeExtension/CHANGELOG.md
+index 40e73af..d9d152d 100644
+--- a/AcmeExtension/CHANGELOG.md
++++ b/AcmeExtension/CHANGELOG.md
+@@ -1,3 +1,7 @@
++## 0.2
++
++- Search.
++
+ ## 0.1
+ 
+ - First release.
+diff --git a/AcmeExtension/Info.plist b/AcmeExtension/Info.plist
+index 3952cfc..c84c9ab 100644
+--- a/AcmeExtension/Info.plist
++++ b/AcmeExtension/Info.plist
+@@ -3,7 +3,7 @@
+ <plist version="1.0">
+ <dict>
+ 	<key>CFBundleShortVersionString</key>
+-	<string>0.1</string>
++	<string>0.2</string>
+ 	<key>NSPrincipalClass</key>
+ 	<string>AcmeExtension</string>
+ </dict>
+diff --git a/media/icons/acme.svg b/media/icons/acme.svg
+new file mode 100644
+index 0000000..0c7be4e
+--- /dev/null
++++ b/media/icons/acme.svg
+@@ -0,0 +1 @@
++<svg xmlns="http://www.w3.org/2000/svg"/>
+diff --git a/media/screenshots/acme/2.svg b/media/screenshots/acme/2.svg
+new file mode 100644
+index 0000000..0c7be4e
+--- /dev/null
++++ b/media/screenshots/acme/2.svg
+@@ -0,0 +1 @@
++<svg xmlns="http://www.w3.org/2000/svg"/>

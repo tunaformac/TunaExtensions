@@ -1,0 +1,19 @@
+diff --git a/AcmeExtension/AcmeAuth.swift b/AcmeExtension/AcmeAuth.swift
+new file mode 100644
+index 0000000..37841ea
+--- /dev/null
++++ b/AcmeExtension/AcmeAuth.swift
+@@ -0,0 +1,13 @@
++import TunaKit
++
++enum AcmeAuth {
++  static let connection = ExtensionConnectionDefinition(
++    providerID: "acme",
++    name: "Acme",
++    kind: .secret
++  )
++
++  static func save(_ token: String) {
++    KeychainStore.setString(token, service: "acme", account: "default")
++  }
++}

@@ -1,0 +1,65 @@
+diff --git a/NewExtension/Info.plist b/NewExtension/Info.plist
+new file mode 100644
+index 0000000..89bb79c
+--- /dev/null
++++ b/NewExtension/Info.plist
+@@ -0,0 +1,10 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
++<plist version="1.0">
++<dict>
++	<key>CFBundleShortVersionString</key>
++	<string>0.1</string>
++	<key>NSPrincipalClass</key>
++	<string>NewExtension</string>
++</dict>
++</plist>
+diff --git a/NewExtension/New.swift b/NewExtension/New.swift
+new file mode 100644
+index 0000000..5d3dba3
+--- /dev/null
++++ b/NewExtension/New.swift
+@@ -0,0 +1,5 @@
++import TunaKit
++
++enum New {
++  static let url = URL(string: "https://api.new.example.com")!
++}
+diff --git a/NewExtension/New.xcodeproj/project.pbxproj b/NewExtension/New.xcodeproj/project.pbxproj
+new file mode 100644
+index 0000000..f4d77a8
+--- /dev/null
++++ b/NewExtension/New.xcodeproj/project.pbxproj
+@@ -0,0 +1,18 @@
++// !$*UTF8*$!
++{
++	objects = {
++		A1 /* Release */ = {
++			isa = XCBuildConfiguration;
++			buildSettings = {
++				INFOPLIST_FILE = Info.plist;
++				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.new;
++			};
++		};
++		A2 /* Tests Release */ = {
++			isa = XCBuildConfiguration;
++			buildSettings = {
++				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.NewExtensionTests;
++			};
++		};
++	};
++}
+diff --git a/TunaExtensions.xcworkspace/contents.xcworkspacedata b/TunaExtensions.xcworkspace/contents.xcworkspacedata
+index 9ff6cbd..7c5bac6 100644
+--- a/TunaExtensions.xcworkspace/contents.xcworkspacedata
++++ b/TunaExtensions.xcworkspace/contents.xcworkspacedata
+@@ -1 +1 @@
+-<Workspace version = "1.0"></Workspace>
++<Workspace version = "1.0"><FileRef location = "group:NewExtension/New.xcodeproj"/></Workspace>
+diff --git a/media/screenshots/new/1.svg b/media/screenshots/new/1.svg
+new file mode 100644
+index 0000000..0c7be4e
+--- /dev/null
++++ b/media/screenshots/new/1.svg
+@@ -0,0 +1 @@
++<svg xmlns="http://www.w3.org/2000/svg"/>

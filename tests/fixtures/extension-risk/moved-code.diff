@@ -1,0 +1,23 @@
+diff --git a/AcmeExtension/AcmeClient.swift b/AcmeExtension/AcmeClient.swift
+index c7e0c3c..01e8185 100644
+--- a/AcmeExtension/AcmeClient.swift
++++ b/AcmeExtension/AcmeClient.swift
+@@ -2,7 +2,6 @@ import Foundation
+ import TunaKit
+ 
+ struct AcmeClient {
+-  static let baseURL = URL(string: "https://api.acme.com/v1")!
+   let session = URLSession(configuration: .ephemeral)
+ 
+   func itemsURL() -> URL {
+diff --git a/AcmeExtension/AcmeEndpoints.swift b/AcmeExtension/AcmeEndpoints.swift
+new file mode 100644
+index 0000000..902c39c
+--- /dev/null
++++ b/AcmeExtension/AcmeEndpoints.swift
+@@ -0,0 +1,5 @@
++import Foundation
++
++extension AcmeClient {
++  static let baseURL = URL(string: "https://api.acme.com/v1")!
++}

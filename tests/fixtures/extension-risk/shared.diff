@@ -1,0 +1,53 @@
+diff --git a/AcmeExtension/Info.plist b/AcmeExtension/Info.plist
+index 3952cfc..c84c9ab 100644
+--- a/AcmeExtension/Info.plist
++++ b/AcmeExtension/Info.plist
+@@ -3,7 +3,7 @@
+ <plist version="1.0">
+ <dict>
+ 	<key>CFBundleShortVersionString</key>
+-	<string>0.1</string>
++	<string>0.2</string>
+ 	<key>NSPrincipalClass</key>
+ 	<string>AcmeExtension</string>
+ </dict>
+diff --git a/Makefile b/Makefile
+index 8a7cbb7..a20a19a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,2 +1,2 @@
+-all:
++all: acme
+ 	true
+diff --git a/OtherExtension/Other.swift b/OtherExtension/Other.swift
+index ca8a1fb..776999b 100644
+--- a/OtherExtension/Other.swift
++++ b/OtherExtension/Other.swift
+@@ -1,3 +1,3 @@
+ import TunaKit
+ 
+-enum Other {}
++enum Other { static let version = 2 }
+diff --git a/README.md b/README.md
+index 5d186b9..47ec5da 100644
+--- a/README.md
++++ b/README.md
+@@ -1,3 +1,3 @@
+ # Fixture
+ 
+-| Acme | Other |
++| Acme | Other | New |
+diff --git a/media/screenshots/acme/2.svg b/media/screenshots/acme/2.svg
+new file mode 100644
+index 0000000..0c7be4e
+--- /dev/null
++++ b/media/screenshots/acme/2.svg
+@@ -0,0 +1 @@
++<svg xmlns="http://www.w3.org/2000/svg"/>
+diff --git a/media/screenshots/somebody-else/1.svg b/media/screenshots/somebody-else/1.svg
+new file mode 100644
+index 0000000..0c7be4e
+--- /dev/null
++++ b/media/screenshots/somebody-else/1.svg
+@@ -0,0 +1 @@
++<svg xmlns="http://www.w3.org/2000/svg"/>

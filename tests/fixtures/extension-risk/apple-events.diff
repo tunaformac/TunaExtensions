@@ -1,0 +1,16 @@
+diff --git a/AcmeExtension/AcmeScript.swift b/AcmeExtension/AcmeScript.swift
+new file mode 100644
+index 0000000..76bda4a
+--- /dev/null
++++ b/AcmeExtension/AcmeScript.swift
+@@ -0,0 +1,10 @@
++import Foundation
++
++enum AcmeScript {
++  static func reveal() {
++    let source = """
++    tell application "Finder" to activate
++    """
++    NSAppleScript(source: source)?.executeAndReturnError(nil)
++  }
++}

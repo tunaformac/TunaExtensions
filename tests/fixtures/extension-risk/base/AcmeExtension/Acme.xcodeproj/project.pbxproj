@@ -1,0 +1,18 @@
+// !$*UTF8*$!
+{
+	objects = {
+		A1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.tuna.plugins.acme;
+			};
+		};
+		A2 /* Tests Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_BUNDLE_IDENTIFIER = com.brnbw.AcmeExtensionTests;
+			};
+		};
+	};
+}

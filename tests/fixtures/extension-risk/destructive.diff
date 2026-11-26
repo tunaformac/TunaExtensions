@@ -1,0 +1,16 @@
+diff --git a/AcmeExtension/AcmeActions.swift b/AcmeExtension/AcmeActions.swift
+index 8dd3e6d..c263400 100644
+--- a/AcmeExtension/AcmeActions.swift
++++ b/AcmeExtension/AcmeActions.swift
+@@ -7,4 +7,11 @@ enum AcmeActions {
+     confirmButtonTitle: "Archive",
+     isDestructive: true
+   )
++
++  static let purge = ActionReviewPresentation(
++    title: "Purge items?",
++    sections: [],
++    confirmButtonTitle: "Purge",
++    isDestructive: true
++  )
+ }

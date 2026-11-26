@@ -1,0 +1,12 @@
+diff --git a/AcmeExtension/AcmeDatabase.swift b/AcmeExtension/AcmeDatabase.swift
+new file mode 100644
+index 0000000..1712801
+--- /dev/null
++++ b/AcmeExtension/AcmeDatabase.swift
+@@ -0,0 +1,6 @@
++import Foundation
++
++enum AcmeDatabase {
++  static let url = FileManager.default.homeDirectoryForCurrentUser
++    .appending(path: "Library/Group Containers/group.com.example.notes/Notes.sqlite")
++}

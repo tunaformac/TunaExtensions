@@ -1,0 +1,14 @@
+diff --git a/AcmeExtension/AcmeOpen.swift b/AcmeExtension/AcmeOpen.swift
+new file mode 100644
+index 0000000..59a1256
+--- /dev/null
++++ b/AcmeExtension/AcmeOpen.swift
+@@ -0,0 +1,8 @@
++import AppKit
++
++enum AcmeOpen {
++  static func add(_ title: String) {
++    let url = URL(string: "things:///add?title=\(title)")!
++    NSWorkspace.shared.open(url)
++  }
++}

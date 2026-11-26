@@ -1,0 +1,35 @@
+diff --git a/AcmeExtension/AcmeReminders.swift b/AcmeExtension/AcmeReminders.swift
+new file mode 100644
+index 0000000..6066598
+--- /dev/null
++++ b/AcmeExtension/AcmeReminders.swift
+@@ -0,0 +1,5 @@
++import EventKit
++
++enum AcmeReminders {
++  static let store = EKEventStore()
++}
+diff --git a/AcmeExtension/Info.plist b/AcmeExtension/Info.plist
+index 3952cfc..0c08658 100644
+--- a/AcmeExtension/Info.plist
++++ b/AcmeExtension/Info.plist
+@@ -4,6 +4,8 @@
+ <dict>
+ 	<key>CFBundleShortVersionString</key>
+ 	<string>0.1</string>
++	<key>NSRemindersFullAccessUsageDescription</key>
++	<string>Acme adds reminders.</string>
+ 	<key>NSPrincipalClass</key>
+ 	<string>AcmeExtension</string>
+ </dict>
+diff --git a/AcmeExtension/STORE.md b/AcmeExtension/STORE.md
+index 0483044..4e07c2e 100644
+--- a/AcmeExtension/STORE.md
++++ b/AcmeExtension/STORE.md
+@@ -1,5 +1,5 @@
+ ---
+ categories: [productivity]
+-warnings: [network]
++warnings: [network, reminders]
+ ---
+ Find Acme items from Tuna.
