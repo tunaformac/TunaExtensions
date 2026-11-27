@@ -45,8 +45,15 @@ enum StrongboxRuntime {
   }
 
   private static func failed(_ text: String) -> ActionResult {
-    CopyNotice.show(text, for: .seconds(5))
+    notice(text, for: .seconds(5))
     return .failure(text)
+  }
+
+  /// Where notices go. Tests replace it, so no notice appears on screen while they run.
+  static var showNotice: (String, Duration) -> Void = { CopyNotice.show($0, for: $1) }
+
+  private static func notice(_ text: String, for duration: Duration = .seconds(2)) {
+    showNotice(text, duration)
   }
 
   static func message(_ title: String, _ text: String) -> CatalogItem {
@@ -76,7 +83,7 @@ enum StrongboxRuntime {
         executionPolicy: .keepVisible
       ) {
         remember(database)
-        CopyNotice.show("Searching \(database.name) from now on.")
+        notice("Searching \(database.name) from now on.")
         await onChoose()
         return .success
       }
@@ -90,7 +97,7 @@ enum StrongboxRuntime {
     Task { @MainActor in
       try? await Task.sleep(for: .milliseconds(300))
       if let url = URL(string: "tuna://search") { await URIOpener.openOnMainActor(url) }
-      CopyNotice.show("\(matches) matches. Press Down to see them.", for: .seconds(4))
+      notice("\(matches) matches. Press Down to see them.", for: .seconds(4))
     }
   }
 
@@ -143,7 +150,7 @@ enum StrongboxRuntime {
       guard ConcealedClipboard().write(value, clearAfter: StrongboxClient.pasteWindow) else {
         return failed(safeError(StrongboxError.clipboardWriteFailed))
       }
-      CopyNotice.show("Copied \(field.label) for \(entry.title)")
+      notice("Copied \(field.label) for \(entry.title)")
       return .success
     } catch {
       return failed(error)

@@ -145,8 +145,14 @@ final class StrongboxExtensionTests: XCTestCase {
 
   @MainActor
   func testShortQueriesContactNothing() async {
+    var notices: [String] = []
+    let showNotice = StrongboxRuntime.showNotice
+    StrongboxRuntime.showNotice = { text, _ in notices.append(text) }
+    defer { StrongboxRuntime.showNotice = showNotice }
+
     let result = await StrongboxRuntime.find(" g ", field: .password)
     guard case .failure = result else { return XCTFail("\(result)") }
+    XCTAssertEqual(notices, ["Type at least two characters of an entry name."])
   }
 
   func testVaultInUseIsListedFirst() throws {
