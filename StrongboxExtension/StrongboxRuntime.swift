@@ -96,8 +96,9 @@ enum StrongboxRuntime {
 
   /// Typed text from any of the three flows. Nothing reaches Strongbox before Enter.
   static func find(_ query: String?, field: StrongboxField) async -> ActionResult {
-    let query = query?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-    guard query.count >= 2 else { return failed("Type at least two characters of an entry name.") }
+    guard let query = StrongboxClient.entryName(query) else {
+      return failed("Type at least two characters of an entry name.")
+    }
     guard !busy else { return failed(safeError(StrongboxError.busy)) }
     busy = true
     defer { busy = false }

@@ -52,7 +52,7 @@ public final class StrongboxActionsCatalog: ActionCatalog {
     action.subjectPredicate = { isSubject($0, for: field) }
     action.targetRequirement = .required
     action.allowedTargetTypes = [.textSnippet]
-    action.targetPredicate = hasText
+    action.targetPredicate = hasEntryName
     action.systemSymbolName = field.symbolName
     action.recordsCommandHistory = false
     return action
@@ -66,7 +66,7 @@ public final class StrongboxActionsCatalog: ActionCatalog {
       await StrongboxRuntime.find(subject.textInputValue(), field: field)
     }
     action.supportedSubjectTypes = [.textSnippet]
-    action.subjectPredicate = hasText
+    action.subjectPredicate = hasEntryName
     action.targetRequirement = .none
     action.systemSymbolName = field.symbolName
     action.recordsCommandHistory = false
@@ -86,7 +86,9 @@ public final class StrongboxActionsCatalog: ActionCatalog {
     return identifier.map(StrongboxExtension.appBundleIdentifiers.contains) ?? false
   }
 
-  nonisolated static func hasText(_ item: CatalogItem?) -> Bool {
-    item?.textInputValue()?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
+  /// At least two characters, as `find` needs. Shorter text isn't offered the action, so Tuna beeps
+  /// and keeps the pane open instead of closing the launcher with a notice.
+  nonisolated static func hasEntryName(_ item: CatalogItem?) -> Bool {
+    StrongboxClient.entryName(item?.textInputValue()) != nil
   }
 }

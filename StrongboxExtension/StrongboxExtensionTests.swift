@@ -101,6 +101,8 @@ final class StrongboxExtensionTests: XCTestCase {
     XCTAssertEqual(copyOTP.subjectPredicate?(StrongboxFieldCommandItem(.password)), false)
     XCTAssertEqual(copyOTP.targetPredicate?(TextSnippetItem(text: "github")), true)
     XCTAssertEqual(copyOTP.targetPredicate?(TextSnippetItem(text: " \n ")), false)
+    XCTAssertEqual(copyOTP.targetPredicate?(TextSnippetItem(text: " g ")), false)
+    XCTAssertEqual(copyOTP.targetPredicate?(TextSnippetItem(text: "gh")), true)
   }
 
   @MainActor
@@ -110,6 +112,7 @@ final class StrongboxExtensionTests: XCTestCase {
     let search = try XCTUnwrap(catalog.actions.first { $0.id == "search-password" } as? PredicateAwareAction)
     XCTAssertEqual(search.subjectPredicate?(TextSnippetItem(text: "  github \n")), true)
     XCTAssertEqual(search.subjectPredicate?(TextSnippetItem(text: " \n ")), false)
+    XCTAssertEqual(search.subjectPredicate?(TextSnippetItem(text: " g ")), false)
   }
 
   /// Synthetic bundles in a temporary folder, so this runs without Strongbox installed (P11).
