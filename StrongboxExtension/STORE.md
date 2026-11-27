@@ -1,8 +1,9 @@
 ---
 categories: [security]
 support_url: https://github.com/tunaformac/TunaExtensions/tree/main/StrongboxExtension
+requires_app: true
 ---
-Select the Strongbox app in Tuna and press Tab for **Copy Password…**, **Copy Username…**, or **Copy OTP…**. Type an entry name in the third pane and press Enter. You can also start with an entry name in Text Mode and choose **Search Password in Strongbox**, **Search Username in Strongbox**, or **Search OTP in Strongbox**. If one entry clearly matches, it's copied, and a notice tells you which one. If several match, you choose. Press Right Arrow on the Strongbox app to choose a vault.
+Select the Strongbox app in Tuna, press Tab, and choose **Copy Password…**, **Copy Username…**, or **Copy OTP…**. Type an entry name in the third pane and press Enter. You can also start with an entry name in Text Mode and choose **Search Password in Strongbox**, **Search Username in Strongbox**, or **Search OTP in Strongbox**. If one entry clearly matches, it's copied, and a notice tells you which one. If several match, you choose. Press Right Arrow on the Strongbox app to choose a vault.
 
 To start with `pass`, `user`, or `otp` in the first pane, include **Strongbox Commands** in global search under **Tuna Settings → Sources**.
 

@@ -6,7 +6,8 @@ or cloud service is involved. Not affiliated with or endorsed by Strongbox.
 
 ## Use it
 
-Select the Strongbox app in Tuna to copy a field or choose a vault. You can also start with an entry name in Text Mode.
+Select the Strongbox app in Tuna and press Tab to copy a field, or Right Arrow to choose a vault.
+Enter still opens Strongbox. You can also start with an entry name in Text Mode.
 
 | Subject | Action | Target |
 | --- | --- | --- |
@@ -14,11 +15,13 @@ Select the Strongbox app in Tuna to copy a field or choose a vault. You can also
 | An entry name in Text Mode, such as `github` | **Search Password in Strongbox**, **Search Username in Strongbox**, or **Search OTP in Strongbox** | — |
 | **Password from Strongbox**, **Username from Strongbox**, or **OTP from Strongbox** (optional) | The corresponding **Copy** action | Entry name |
 
-Use Tab to move between panes. Press Enter and approve in Strongbox if it asks. A single clear match is copied, and a notice names
+Use Tab to move between panes. Type at least two characters of the entry name, press Enter, and
+approve in Strongbox if it asks. A single clear match is copied, and a notice names
 the entry. Several matches are listed to choose from. If nothing can be copied, the notice says why.
 
 - **Typing contacts nothing.** Entries are requested only when you press Enter, and no entry is
-  ever indexed. Opening the vault list reads vault names only.
+  ever indexed. Opening the vault list reads vault names only. If that fails, for example before
+  Tuna is paired, the next visit asks Strongbox again.
 - **Enter never guesses.** It copies the only entry whose title exactly matches, or the only
   result. Otherwise it lists up to 20 matches. When there are 20, the list may be cut off, so you
   always choose.
