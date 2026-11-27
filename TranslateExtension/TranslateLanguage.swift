@@ -40,17 +40,25 @@ struct TranslateLanguage: Hashable, Sendable {
   /// The Mac's preferred languages from System Settings → General → Language & Region.
   static var preferred: [TranslateLanguage] { list(Locale.preferredLanguages.joined(separator: ",")) }
 
-  /// Detects the language of `text`. Single words are often ambiguous ("squirrel" alone reads as
-  /// Catalan), so the user's own languages are given as hints.
+  /// Detects the language of `text`. A confident guess stands on its own, so text in a language
+  /// you don't know is recognised as such. Only a short, ambiguous text ("squirrel" alone reads as
+  /// Catalan) leans towards your own languages, which count `hintBoost` times as likely.
   static func detect(in text: String, hints: [TranslateLanguage]) -> TranslateLanguage? {
     let recognizer = NLLanguageRecognizer()
-    if !hints.isEmpty {
-      let weight = 1.0 / Double(hints.count)
-      recognizer.languageHints = Dictionary(
-        hints.map { (NLLanguage(rawValue: $0.identifier), weight) }, uniquingKeysWith: { a, _ in a })
-    }
     recognizer.processString(text)
-    guard let language = recognizer.dominantLanguage, language != .undetermined else { return nil }
-    return TranslateLanguage(language.rawValue)
+    let hypotheses = recognizer.languageHypotheses(withMaximum: 100)
+      .filter { $0.key != .undetermined }
+      .compactMap { key, value in TranslateLanguage(key.rawValue).map { ($0, value) } }
+    guard let top = hypotheses.max(by: { $0.1 < $1.1 }) else { return nil }
+    if top.1 >= confidentDetection { return top.0 }
+
+    let hinted = Set(hints)
+    func score(_ hypothesis: (TranslateLanguage, Double)) -> Double {
+      hypothesis.1 * (hinted.contains(hypothesis.0) ? hintBoost : 1)
+    }
+    return hypotheses.max { score($0) < score($1) }?.0
   }
+
+  static let confidentDetection = 0.9
+  static let hintBoost = 10.0
 }

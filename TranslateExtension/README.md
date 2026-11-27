@@ -20,8 +20,8 @@ and set **In global search** to **All**. Browse into **Translate** to find every
 When you start with the command, the text box starts with the clipboard, unless a password
 manager marked it concealed.
 
-The source language is detected automatically, using your languages as hints so single words
-work. Each translation is a normal text result: copy it, paste it, show it in Large Type, or
+The source language is detected automatically. When the text is too short to tell for sure,
+such as a single word, detection leans towards your own languages. Each translation is a normal text result: copy it, paste it, show it in Large Type, or
 translate it again.
 
 If you only need a hotkey for one language or want to add translation to an existing shortcut,

@@ -73,6 +73,26 @@ final class TranslateExtensionTests: XCTestCase {
     XCTAssertNil(TranslateLanguage.detect(in: "1234", hints: hints))
   }
 
+  /// Full sentences in a language you don't have are detected as that language, not forced into
+  /// one of your own.
+  func testDetectionDoesNotForceSentencesIntoHintLanguages() {
+    let sentences = [
+      "fr": "Bonjour, je voudrais un café s'il vous plaît.",
+      "es": "¿Dónde está la estación de tren?",
+      "it": "Vorrei prenotare un tavolo per due persone stasera.",
+      "nl": "Ik wil graag een kopje koffie bestellen, alstublieft.",
+      "sv": "Jag skulle vilja beställa en kopp kaffe, tack.",
+      "pt": "Eu gostaria de pedir um café, por favor.",
+    ]
+    for hints in [[english], [english, german]] {
+      for (expected, sentence) in sentences {
+        XCTAssertEqual(
+          TranslateLanguage.detect(in: sentence, hints: hints)?.identifier, expected,
+          "\(sentence) with hints \(hints.map(\.identifier))")
+      }
+    }
+  }
+
   func testTranslateGivesOneResultPerDefaultLanguageExceptTheSource() async throws {
     let translate = try action(TranslateActionsCatalog.translate, in: catalog())
     XCTAssertEqual(translate.supportedSubjectTypes, [.textSnippet])
@@ -84,6 +104,15 @@ final class TranslateExtensionTests: XCTestCase {
     XCTAssertEqual(item.textValue, "[de] squirrel")
     XCTAssertEqual(item.detail, "German · from English")
     XCTAssertEqual(item.typeID, .textSnippet)
+  }
+
+  func testTranslateDetectsAForeignSentenceAndTranslatesIntoEveryDefault() async throws {
+    let translate = try action(TranslateActionsCatalog.translate, in: catalog())
+    let items = try results(
+      await translate.callback(
+        TextSnippetItem(text: "Bonjour, je voudrais un café s'il vous plaît."), nil))
+    XCTAssertEqual(
+      items.map(\.detail), ["English · from French", "German · from French"])
   }
 
   func testTranslateToTakesARequiredLanguageFromTheLanguagesCatalog() async throws {
