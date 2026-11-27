@@ -113,6 +113,13 @@ final class StrongboxExtensionTests: XCTestCase {
     XCTAssertEqual(search.subjectPredicate?(TextSnippetItem(text: "  github \n")), true)
     XCTAssertEqual(search.subjectPredicate?(TextSnippetItem(text: " \n ")), false)
     XCTAssertEqual(search.subjectPredicate?(TextSnippetItem(text: " g ")), false)
+
+    // Types that inherit from text, such as a URL, aren't entry names.
+    let url = TextSnippetItem(text: "https://github.com")
+    url.typeID = .url
+    XCTAssertTrue(TypeRegistry.shared.inherits(.url, from: .textSnippet))
+    XCTAssertTrue(StrongboxActionsCatalog.hasEntryName(url))
+    XCTAssertEqual(search.subjectPredicate?(url), false)
   }
 
   /// Synthetic bundles in a temporary folder, so this runs without Strongbox installed (P11).

@@ -58,7 +58,8 @@ public final class StrongboxActionsCatalog: ActionCatalog {
     return action
   }
 
-  /// "Search Password in Strongbox": typed or selected text is the entry name.
+  /// "Search Password in Strongbox": typed or selected text is the entry name. Only plain text, as
+  /// Notes' "Create Note": URLs, emails, colours and other text-derived types aren't entry names.
   private static func makeSearchText(_ field: StrongboxField) -> CatalogAction {
     let action = PredicateAwareAction(
       id: searchTextID(field), title: "Search \(field.name) in Strongbox", executionPolicy: .resultDriven
@@ -66,7 +67,7 @@ public final class StrongboxActionsCatalog: ActionCatalog {
       await StrongboxRuntime.find(subject.textInputValue(), field: field)
     }
     action.supportedSubjectTypes = [.textSnippet]
-    action.subjectPredicate = hasEntryName
+    action.subjectPredicate = { $0?.typeID == .textSnippet && hasEntryName($0) }
     action.targetRequirement = .none
     action.systemSymbolName = field.symbolName
     action.recordsCommandHistory = false
