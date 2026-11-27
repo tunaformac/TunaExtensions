@@ -45,8 +45,15 @@ enum StrongboxRuntime {
   }
 
   private static func failed(_ text: String) -> ActionResult {
-    CopyNotice.show(text, for: .seconds(5))
+    notice(text, for: .seconds(5))
     return .failure(text)
+  }
+
+  /// Where notices go. Tests replace it, so no notice appears on screen while they run.
+  static var showNotice: (String, Duration) -> Void = { CopyNotice.show($0, for: $1) }
+
+  private static func notice(_ text: String, for duration: Duration = .seconds(2)) {
+    showNotice(text, duration)
   }
 
   static func message(_ title: String, _ text: String) -> CatalogItem {
@@ -59,20 +66,25 @@ enum StrongboxRuntime {
       ?? "The Strongbox request could not be completed. No response contents were logged."
   }
 
-  /// Vault names only, and only with several vaults. Failures stay quiet here, because a search reports them.
-  /// The vault in use comes first, because Tuna selects the first row and Enter shouldn't switch vaults by accident.
-  static func vaultRows() async -> [CatalogItem] {
-    guard let databases = try? await client.databases(), databases.count > 1 else { return [] }
+  /// Strongbox → Right Arrow: every MCP vault, the one in use first, because Tuna selects the first
+  /// row and Enter shouldn't switch vaults by accident. Reads vault names only. A failure is thrown,
+  /// so the browse list shows why.
+  static func vaultRows(onChoose: @escaping @Sendable () async -> Void) async throws -> [CatalogItem] {
+    let databases = try await client.databases()
+    guard !databases.isEmpty else {
+      return [message("No opted-in vaults", "Enable a vault for MCP in Strongbox → Settings → Extensions.")]
+    }
     let current = preferredDatabase(in: databases)?.id
-    return (databases.filter { $0.id == current } + databases.filter { $0.id != current }).map {
-      database in
-      StrongboxCommand(
-        id: "strongbox.select." + database.id, title: "Use \(database.name)",
-        detail: database.id == current ? "The vault searched now." : "Search this vault from now on.",
+    return StrongboxDatabase.inChoiceOrder(databases, current: current).map { database in
+      let inUse = database.id == current
+      return StrongboxCommand(
+        id: "strongbox.select." + database.id, title: inUse ? database.name : "Use \(database.name)",
+        detail: inUse ? "The vault searched now." : "Search this vault from now on.",
         executionPolicy: .keepVisible
       ) {
         remember(database)
-        CopyNotice.show("Searching \(database.name) from now on.")
+        notice("Searching \(database.name) from now on.")
+        await onChoose()
         return .success
       }
     }
@@ -85,23 +97,15 @@ enum StrongboxRuntime {
     Task { @MainActor in
       try? await Task.sleep(for: .milliseconds(300))
       if let url = URL(string: "tuna://search") { await URIOpener.openOnMainActor(url) }
-      CopyNotice.show("\(matches) matches. Press Down to see them.", for: .seconds(4))
+      notice("\(matches) matches. Press Down to see them.", for: .seconds(4))
     }
   }
 
-  /// Runs on every keystroke, so typing must not contact Strongbox. Only an empty query reads vault names.
-  static func queryItems(_ query: String, first: StrongboxField) async -> [CatalogItem] {
-    let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard query.count >= 2 else {
-      let hint = message("Keep typing", "Type at least two characters, then press Enter.")
-      return query.isEmpty ? [hint] + (await vaultRows()) : [hint]
+  /// Typed text from any of the three flows. Nothing reaches Strongbox before Enter.
+  static func find(_ query: String?, field: StrongboxField) async -> ActionResult {
+    guard let query = StrongboxClient.entryName(query) else {
+      return failed("Type at least two characters of an entry name.")
     }
-    return ([first] + StrongboxField.allCases.filter { $0 != first }).map {
-      StrongboxQueryItem(query, field: $0)
-    }
-  }
-
-  static func find(_ query: String, field: StrongboxField) async -> ActionResult {
     guard !busy else { return failed(safeError(StrongboxError.busy)) }
     busy = true
     defer { busy = false }
@@ -146,7 +150,7 @@ enum StrongboxRuntime {
       guard ConcealedClipboard().write(value, clearAfter: StrongboxClient.pasteWindow) else {
         return failed(safeError(StrongboxError.clipboardWriteFailed))
       }
-      CopyNotice.show("Copied \(field.label) for \(entry.title)")
+      notice("Copied \(field.label) for \(entry.title)")
       return .success
     } catch {
       return failed(error)

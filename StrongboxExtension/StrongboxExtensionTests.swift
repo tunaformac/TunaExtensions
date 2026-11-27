@@ -10,7 +10,7 @@ private let personal = "22222222-2222-2222-2222-222222222222"
 
 final class StrongboxExtensionTests: XCTestCase {
   @MainActor
-  func testDeclarationIndexesOnlyTheSearchRoots() throws {
+  func testDeclarationEnrichesTheStrongboxApp() throws {
     let instance = try StrongboxExtension(bundle: Bundle(for: StrongboxExtension.self))
     let declaration = try XCTUnwrap(instance.declaration)
     try declaration.validate()
@@ -18,44 +18,188 @@ final class StrongboxExtensionTests: XCTestCase {
     let compatibility = try XCTUnwrap(declaration.compatibility)
     XCTAssertEqual(compatibility.minTuna, "0.110")
     XCTAssertEqual(compatibility.minTunaKit, "1.22.0")
-    XCTAssertEqual(declaration.catalogs.map(\.id), ["strongbox.search"])
-    XCTAssertEqual(declaration.catalogs.first?.presentation, .source)
+    XCTAssertEqual(declaration.catalogs.map(\.id), ["strongbox.search", "strongbox.vaults"])
+    XCTAssertTrue(declaration.catalogs.allSatisfy { $0.presentation == .source })
+    XCTAssertTrue(declaration.catalogs.allSatisfy(\.enabledByDefault))
+    XCTAssertEqual(declaration.catalogs.map(\.initialGlobalScope), [.none, .none])
     XCTAssertEqual(declaration.actionCatalogs.map(\.id), ["strongbox.actions"])
-    XCTAssertEqual(declaration.typeRegistrations.map(\.typeID), [.strongboxEntry, .strongboxQuery])
+    XCTAssertEqual(declaration.typeRegistrations.map(\.typeID), [.strongboxEntry])
     XCTAssertTrue(declaration.typeRegistrations.allSatisfy { $0.inheritsFrom.isEmpty })
+    XCTAssertEqual(declaration.defaultActionRankings.map { $0.actions.map(\.actionID) }, [["copy"]])
+
+    let apps = ["com.markmcguill.strongbox.pro", "com.markmcguill.strongbox", "com.markmcguill.strongbox.business"]
+    XCTAssertEqual(declaration.appBrowseEnrichments.map(\.bundleIdentifiers), [apps])
     XCTAssertEqual(
-      declaration.defaultActionRankings.map { $0.actions.map(\.actionID) },
-      [["copy"], ["find-and-copy"]])
-    XCTAssertTrue(declaration.appBrowseEnrichments.isEmpty)
+      declaration.appBrowseEnrichments.first?.entries.map(\.catalogIdentifier), ["strongbox.vaults"])
+    XCTAssertEqual(declaration.appActionEnrichments.map(\.bundleIdentifiers), [apps])
+    XCTAssertEqual(declaration.appActionEnrichments.first?.catalogIdentifiers, ["strongbox.actions"])
   }
 
+  /// Enter on the Strongbox app opens it: a preferred copy would ask for an entry name instead (P8).
   @MainActor
-  func testCatalogOffersTwoScopedSearchRoots() {
+  func testTheAppEnrichmentPrefersNoAction() throws {
+    let declaration = try XCTUnwrap(try StrongboxExtension(bundle: Bundle(for: StrongboxExtension.self)).declaration)
+    XCTAssertFalse(declaration.appActionEnrichments.isEmpty)
+    XCTAssertTrue(declaration.appActionEnrichments.allSatisfy { $0.preferredActions.isEmpty })
+  }
+
+  /// The IDs are 0.1's search roots, so learned abbreviations keep finding them.
+  @MainActor
+  func testCatalogOffersOneCommandPerField() throws {
     let catalog = StrongboxCatalog(
       definition: CatalogDefinition(
-        identifier: "strongbox.search", name: "Strongbox", enabledByDefault: true, settings: []))
-    XCTAssertEqual(catalog.objects.map(\.id), ["strongbox.search.root", "strongbox.otp.root"])
-    XCTAssertTrue(catalog.objects.allSatisfy { $0 is ScopedSearchBrowseCatalogItem })
+        identifier: "strongbox.search", name: "Strongbox Commands", enabledByDefault: true, settings: []))
+    XCTAssertEqual(
+      catalog.objects.map(\.id),
+      ["strongbox.search.root", "strongbox.username.root", "strongbox.otp.root"])
+    XCTAssertEqual(
+      catalog.objects.map(\.title),
+      ["Password from Strongbox", "Username from Strongbox", "OTP from Strongbox"])
+    XCTAssertTrue(catalog.objects.allSatisfy { $0.typeID == .searchCatalogEntry })
   }
 
   @MainActor
-  func testActionsAcceptOnlyTheirOwnSubjectsAndNeedNoTarget() {
+  func testVaultsAreOneDeferredBrowseEntry() {
+    let catalog = StrongboxVaultsCatalog(
+      definition: CatalogDefinition(
+        identifier: "strongbox.vaults", name: "Strongbox Vaults", enabledByDefault: true, settings: []))
+    XCTAssertEqual(catalog.objects.map(\.id), ["strongbox.vaults.browse"])
+    XCTAssertTrue(catalog.objects.first is DeferredBrowseCatalogItem)
+  }
+
+  /// Right Arrow before pairing shows the failure; a later visit asks Strongbox again, and the
+  /// refresh that shows the failure doesn't start another load.
+  @MainActor
+  func testAFailedVaultListIsForgottenWithoutAReloadLoop() async throws {
+    final class Loads: @unchecked Sendable {
+      var count = 0
+      var fail = true
+    }
+    let loads = Loads()
+    let catalog = StrongboxVaultsCatalog(
+      definition: CatalogDefinition(
+        identifier: "strongbox.vaults", name: "Strongbox Vaults", enabledByDefault: true, settings: []),
+      failureLifetime: .milliseconds(300)
+    ) { _ in
+      loads.count += 1
+      if loads.fail { throw StrongboxError.notPaired }
+      return [StrongboxRuntime.message("Work", "")]
+    }
+    let item = try XCTUnwrap(catalog.objects.first as? DeferredBrowseCatalogItem)
+
+    XCTAssertEqual(item.hierarchyChildren().count, 1)
+    try await Task.sleep(for: .milliseconds(100))
+    for _ in 0..<3 {
+      XCTAssertEqual(item.hierarchyChildren().map(\.title), ["Strongbox Unavailable"])
+    }
+    XCTAssertEqual(loads.count, 1)
+
+    loads.fail = false
+    try await Task.sleep(for: .milliseconds(500))
+    XCTAssertEqual(loads.count, 1, "Forgetting the failure loads nothing by itself.")
+    _ = item.hierarchyChildren()
+    try await Task.sleep(for: .milliseconds(100))
+    XCTAssertEqual(item.hierarchyChildren().map(\.title), ["Work"])
+    XCTAssertEqual(loads.count, 2)
+
+    try await Task.sleep(for: .milliseconds(500))
+    XCTAssertEqual(item.hierarchyChildren().map(\.title), ["Work"])
+    XCTAssertEqual(loads.count, 2, "A successful list is kept.")
+  }
+
+  @MainActor
+  func testActionGrammar() {
     let catalog = StrongboxActionsCatalog(
       definition: ActionCatalogDefinition(identifier: "strongbox.actions", name: "Strongbox Actions"))
-    XCTAssertEqual(catalog.actions.map(\.id), ["copy", "find-and-copy"])
-    XCTAssertEqual(catalog.actions.map(\.supportedSubjectTypes), [[.strongboxEntry], [.strongboxQuery]])
-    XCTAssertTrue(catalog.actions.allSatisfy { $0.targetRequirement == .none })
+    XCTAssertEqual(
+      catalog.actions.map(\.id),
+      ["copy", "copy-password", "copy-username", "copy-totp", "search-password", "search-username", "search-totp"])
+    XCTAssertEqual(
+      catalog.actions.map(\.title),
+      [
+        "Copy from Strongbox", "Copy Password…", "Copy Username…", "Copy OTP…",
+        "Search Password in Strongbox", "Search Username in Strongbox", "Search OTP in Strongbox",
+      ])
+    XCTAssertEqual(
+      catalog.actions.map(\.targetRequirement), [.none, .required, .required, .required, .none, .none, .none])
+    XCTAssertEqual(catalog.actions[1].supportedSubjectTypes, [.searchCatalogEntry, .application])
+    XCTAssertEqual(catalog.actions[1].allowedTargetTypes, [.textSnippet])
+    XCTAssertEqual(catalog.actions[4].supportedSubjectTypes, [.textSnippet])
     XCTAssertTrue(catalog.actions.allSatisfy { !$0.recordsCommandHistory })
   }
 
   @MainActor
-  func testShortQueriesContactNothingAndLongQueriesOfferEveryField() async {
-    let short = await StrongboxRuntime.queryItems(" g ", first: .totp)
-    XCTAssertEqual(short.count, 1)
-    XCTAssertFalse(short.first is StrongboxQueryItem)
+  func testEachCommandOffersOnlyItsOwnCopy() throws {
+    let catalog = StrongboxActionsCatalog(
+      definition: ActionCatalogDefinition(identifier: "strongbox.actions", name: "Strongbox Actions"))
+    let otp = StrongboxFieldCommandItem(.totp)
+    let allowed = catalog.actions.filter { otp.allowsAction($0, catalogIdentifier: "strongbox.actions") }
+    XCTAssertEqual(allowed.map(\.id), ["copy-totp"])
 
-    let items = await StrongboxRuntime.queryItems("github", first: .totp)
-    XCTAssertEqual(items.compactMap { ($0 as? StrongboxQueryItem)?.field }, [.totp, .password, .username])
+    let copyOTP = try XCTUnwrap(catalog.actions.first { $0.id == "copy-totp" } as? PredicateAwareAction)
+    XCTAssertEqual(copyOTP.subjectPredicate?(otp), true)
+    XCTAssertEqual(copyOTP.subjectPredicate?(StrongboxFieldCommandItem(.password)), false)
+    XCTAssertEqual(copyOTP.targetPredicate?(TextSnippetItem(text: "github")), true)
+    XCTAssertEqual(copyOTP.targetPredicate?(TextSnippetItem(text: " \n ")), false)
+    XCTAssertEqual(copyOTP.targetPredicate?(TextSnippetItem(text: " g ")), false)
+    XCTAssertEqual(copyOTP.targetPredicate?(TextSnippetItem(text: "gh")), true)
+  }
+
+  @MainActor
+  func testTextSearchesNeedText() throws {
+    let catalog = StrongboxActionsCatalog(
+      definition: ActionCatalogDefinition(identifier: "strongbox.actions", name: "Strongbox Actions"))
+    let search = try XCTUnwrap(catalog.actions.first { $0.id == "search-password" } as? PredicateAwareAction)
+    XCTAssertEqual(search.subjectPredicate?(TextSnippetItem(text: "  github \n")), true)
+    XCTAssertEqual(search.subjectPredicate?(TextSnippetItem(text: " \n ")), false)
+    XCTAssertEqual(search.subjectPredicate?(TextSnippetItem(text: " g ")), false)
+
+    // Types that inherit from text, such as a URL, aren't entry names.
+    let url = TextSnippetItem(text: "https://github.com")
+    url.typeID = .url
+    XCTAssertTrue(TypeRegistry.shared.inherits(.url, from: .textSnippet))
+    XCTAssertTrue(StrongboxActionsCatalog.hasEntryName(url))
+    XCTAssertEqual(search.subjectPredicate?(url), false)
+  }
+
+  /// Synthetic bundles in a temporary folder, so this runs without Strongbox installed (P11).
+  @MainActor
+  func testOnlyTheStrongboxAppIsASubject() throws {
+    let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: folder) }
+    let matched = ["com.markmcguill.strongbox.pro", "com.markmcguill.strongbox", "com.markmcguill.strongbox.business"]
+    let unmatched = [
+      "com.markmcguill.strongbox.mac", "com.markmcguill.strongbox.mac.pro", "com.markmcguill.strongbox-setapp",
+      "com.apple.Notes",
+    ]
+    for identifier in matched {
+      let app = try syntheticApplication(identifier, in: folder)
+      XCTAssertTrue(StrongboxActionsCatalog.isSubject(app, for: .password), identifier)
+    }
+    for identifier in unmatched {
+      let app = try syntheticApplication(identifier, in: folder)
+      XCTAssertFalse(StrongboxActionsCatalog.isSubject(app, for: .password), identifier)
+    }
+    XCTAssertFalse(StrongboxActionsCatalog.isSubject(TextSnippetItem(text: "Strongbox"), for: .password))
+  }
+
+  @MainActor
+  func testShortQueriesContactNothing() async {
+    var notices: [String] = []
+    let showNotice = StrongboxRuntime.showNotice
+    StrongboxRuntime.showNotice = { text, _ in notices.append(text) }
+    defer { StrongboxRuntime.showNotice = showNotice }
+
+    let result = await StrongboxRuntime.find(" g ", field: .password)
+    guard case .failure = result else { return XCTFail("\(result)") }
+    XCTAssertEqual(notices, ["Type at least two characters of an entry name."])
+  }
+
+  func testVaultInUseIsListedFirst() throws {
+    let ordered = StrongboxDatabase.inChoiceOrder(try databases(work, personal), current: personal)
+    XCTAssertEqual(ordered.map(\.id), [personal, work])
+    XCTAssertEqual(
+      StrongboxDatabase.inChoiceOrder(try databases(work, personal), current: nil).map(\.id), [work, personal])
   }
 
   // MARK: Clipboard
@@ -183,6 +327,22 @@ final class StrongboxExtensionTests: XCTestCase {
           #"{"credential_id":"\#(UUID().uuidString)","database_id":"\#(work)","database_name":"Work","title":"\#(title)"}"#
             .utf8))
     }
+  }
+
+  private func syntheticApplication(_ identifier: String, in folder: URL) throws -> CatalogEntity {
+    let app = folder.appendingPathComponent("\(identifier).app")
+    let contents = app.appendingPathComponent("Contents")
+    try FileManager.default.createDirectory(at: contents, withIntermediateDirectories: true)
+    let info: [String: Any] = ["CFBundleIdentifier": identifier, "CFBundlePackageType": "APPL"]
+    try PropertyListSerialization.data(fromPropertyList: info, format: .xml, options: 0)
+      .write(to: contents.appendingPathComponent("Info.plist"))
+    return application(app)
+  }
+
+  private func application(_ url: URL) -> CatalogEntity {
+    let entity = CatalogEntity(id: url.path, title: url.deletingPathExtension().lastPathComponent, path: url.path)
+    entity.typeID = .application
+    return entity
   }
 
   private func json(_ text: String) throws -> JSONValue {

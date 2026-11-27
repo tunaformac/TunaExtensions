@@ -5,6 +5,14 @@ final class StrongboxClient: @unchecked Sendable {
   static let pasteWindow: TimeInterval = 30
   /// The most entries one search returns. A full list may have been cut off.
   static let searchLimit = 20
+  /// The shortest entry name searched. The actions aren't offered for less, and nothing shorter is sent.
+  static let minimumQueryLength = 2
+
+  /// The trimmed entry name, or nil when it's too short to search.
+  static func entryName(_ text: String?) -> String? {
+    let name = text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+    return name.count >= minimumQueryLength ? name : nil
+  }
 
   private let queue = DispatchQueue(label: "com.brnbw.tuna.plugins.strongbox.transport", qos: .userInitiated)
   private let worker: StrongboxWorker
@@ -97,8 +105,7 @@ private final class StrongboxWorker {
   }
 
   func search(_ query: String, databaseID: String) throws -> [StrongboxEntry] {
-    let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard query.count >= 2 else { return [] }
+    guard let query = StrongboxClient.entryName(query) else { return [] }
     let result = try withAccess(databaseID: databaseID) {
       try tool(.search, arguments: [
         "database_id": .string(databaseID), "query": .string(String(query.prefix(256))), "limit": .number(Double(StrongboxClient.searchLimit)),

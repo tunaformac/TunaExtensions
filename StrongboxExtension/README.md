@@ -6,15 +6,22 @@ or cloud service is involved. Not affiliated with or endorsed by Strongbox.
 
 ## Use it
 
-1. Type `pass` to find **Search Strongbox Passwords**, or `otp` to find **OTP from Strongbox**.
-2. Enter the root, type an entry name, and press Enter. Approve in Strongbox if it asks.
-3. A single clear match is copied, and a notice names the entry. Several matches are listed to
-   choose from. If nothing can be copied, the notice says why.
+Select the Strongbox app in Tuna and press Tab to copy a field, or Right Arrow to choose a vault.
+Enter still opens Strongbox. You can also start with an entry name in Text Mode.
 
-Each root offers all three copies, with its own first.
+| Subject | Action | Target |
+| --- | --- | --- |
+| The **Strongbox** app | **Copy Password…**, **Copy Username…**, or **Copy OTP…** | Entry name |
+| An entry name in Text Mode, such as `github` | **Search Password in Strongbox**, **Search Username in Strongbox**, or **Search OTP in Strongbox** | — |
+| **Password from Strongbox**, **Username from Strongbox**, or **OTP from Strongbox** (optional) | The corresponding **Copy** action | Entry name |
+
+Use Tab to move between panes. Type at least two characters of the entry name, press Enter, and
+approve in Strongbox if it asks. A single clear match is copied, and a notice names
+the entry. Several matches are listed to choose from. If nothing can be copied, the notice says why.
 
 - **Typing contacts nothing.** Entries are requested only when you press Enter, and no entry is
-  ever indexed. An empty query reads vault names.
+  ever indexed. Opening the vault list reads vault names only. If that fails, for example before
+  Tuna is paired, the next visit asks Strongbox again.
 - **Enter never guesses.** It copies the only entry whose title exactly matches, or the only
   result. Otherwise it lists up to 20 matches. When there are 20, the list may be cut off, so you
   always choose.
@@ -22,9 +29,13 @@ Each root offers all three copies, with its own first.
   `Email`.
 - **The clipboard is cleared after 30 seconds**, unless something newer replaced it.
 
-With several MCP-enabled vaults, the first search asks you to choose one. To switch, enter a root
-and pick **Use `<vault>`** before typing. If the remembered vault is no longer offered, the next
-search asks again instead of using another vault.
+With several MCP-enabled vaults, the first search asks you to choose one. To switch, select the
+Strongbox app, press Right Arrow, and pick **Use `<vault>`**. If the remembered vault is no longer
+offered, the next search asks again instead of using another vault.
+
+The optional first-pane commands start outside global search on a fresh install. To use them,
+open **Tuna Settings → Sources → Strongbox Commands** and set its global search scope to **All**.
+Then type `pass`, `user`, or `otp` in the first pane to find them.
 
 ## Setup
 
@@ -67,7 +78,8 @@ Turn off Strongbox's browser AutoFill proxy server unless you use its browser ex
 - Strongbox's MCP source isn't public. Error kinds are told apart by Strongbox's English error
   text, and a changed text falls back to a generic message. Nothing is copied in either case.
 - Field references aren't expanded and are refused.
-- `pass github` on one line isn't possible; the entry name is typed inside the root.
+- `pass github` on one line isn't possible; the entry name is typed in the third pane.
+- Opening a vault doesn't list its entries: Strongbox's MCP has no call for listing a whole vault.
 - TunaKit has no toast API, so the extension shows its own short notice after a copy or failure.
 - A fingerprint prompt hides the launcher. When matches arrive after one, the extension opens
   `tuna://search` to bring the list back, which collapses it to the first match; press Down.

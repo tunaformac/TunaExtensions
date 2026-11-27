@@ -47,6 +47,15 @@ enum StrongboxField: String, CaseIterable, Sendable {
     case .totp: return "one-time code"
     }
   }
+
+  /// The word in titles: "Password from Strongbox", "Copy OTP…", "Search Username in Strongbox".
+  var name: String {
+    switch self {
+    case .password: return "Password"
+    case .username: return "Username"
+    case .totp: return "OTP"
+    }
+  }
 }
 
 struct StrongboxDatabase: Decodable, Sendable, Identifiable {
@@ -64,6 +73,10 @@ struct StrongboxDatabase: Decodable, Sendable, Identifiable {
     guard let preferredID, !preferredID.isEmpty else { return databases.count == 1 ? databases[0] : nil }
     guard let identifier = UUID(uuidString: preferredID) else { return nil }
     return databases.first { UUID(uuidString: $0.id) == identifier }
+  }
+
+  static func inChoiceOrder(_ databases: [StrongboxDatabase], current: String?) -> [StrongboxDatabase] {
+    databases.filter { $0.id == current } + databases.filter { $0.id != current }
   }
 }
 
