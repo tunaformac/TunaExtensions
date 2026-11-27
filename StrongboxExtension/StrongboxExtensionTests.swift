@@ -33,9 +33,14 @@ final class StrongboxExtensionTests: XCTestCase {
       declaration.appBrowseEnrichments.first?.entries.map(\.catalogIdentifier), ["strongbox.vaults"])
     XCTAssertEqual(declaration.appActionEnrichments.map(\.bundleIdentifiers), [apps])
     XCTAssertEqual(declaration.appActionEnrichments.first?.catalogIdentifiers, ["strongbox.actions"])
-    XCTAssertEqual(
-      declaration.appActionEnrichments.first?.preferredActions.map(\.actionID),
-      ["copy-password", "copy-username", "copy-totp"])
+  }
+
+  /// Enter on the Strongbox app opens it: a preferred copy would ask for an entry name instead (P8).
+  @MainActor
+  func testTheAppEnrichmentPrefersNoAction() throws {
+    let declaration = try XCTUnwrap(try StrongboxExtension(bundle: Bundle(for: StrongboxExtension.self)).declaration)
+    XCTAssertFalse(declaration.appActionEnrichments.isEmpty)
+    XCTAssertTrue(declaration.appActionEnrichments.allSatisfy { $0.preferredActions.isEmpty })
   }
 
   /// The IDs are 0.1's search roots, so learned abbreviations keep finding them.

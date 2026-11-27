@@ -76,12 +76,8 @@ public final class StrongboxExtension: Extension {
       appActionEnrichments: [
         AppActionEnrichmentDefinition(
           bundleIdentifiers: Self.appBundleIdentifiers,
-          catalogIdentifiers: [Self.actionsCatalogIdentifier],
-          preferredActions: StrongboxField.allCases.map {
-            ActionReference(
-              catalogIdentifier: Self.actionsCatalogIdentifier,
-              actionID: StrongboxActionsCatalog.copyFieldID($0))
-          }
+          // No preferred actions, so Enter on the app opens Strongbox (P8). The copies follow Open.
+          catalogIdentifiers: [Self.actionsCatalogIdentifier]
         )
       ]
     )
