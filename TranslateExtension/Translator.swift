@@ -7,6 +7,13 @@ enum TranslationPairStatus: Sendable {
   case unsupported
 }
 
+/// A pair that turned out not to be usable only when translating, for example because its
+/// languages were removed after the status check.
+enum TranslatorError: Error {
+  case notDownloaded
+  case unsupported
+}
+
 /// The boundary to Apple's Translation framework, so tests can swap in a stub.
 protocol Translating: Sendable {
   func supportedLanguages() async -> [TranslateLanguage]
@@ -42,6 +49,16 @@ struct AppleTranslator: Translating {
   {
     let session = TranslationSession(
       installedSource: source.localeLanguage, target: target.localeLanguage)
-    return try await session.translate(text).targetText
+    do {
+      return try await withTaskCancellationHandler {
+        try await session.translate(text).targetText
+      } onCancel: {
+        session.cancel()
+      }
+    } catch TranslationError.notInstalled {
+      throw TranslatorError.notDownloaded
+    } catch TranslationError.unsupportedLanguagePairing {
+      throw TranslatorError.unsupported
+    }
   }
 }

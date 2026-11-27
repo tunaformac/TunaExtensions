@@ -9,6 +9,10 @@ import XCTest
 /// and a translation is the target code plus the text.
 private struct StubTranslator: Translating {
   var statuses: [String: TranslationPairStatus] = [:]
+  /// Pairs whose status says installed but whose translation fails, like a pack removed in between.
+  var failures: [String: TranslatorError] = [:]
+  /// Cancels the running task during the first translation, like Escape in Tuna.
+  var cancelsWhileTranslating = false
 
   func supportedLanguages() async -> [TranslateLanguage] { TranslateLanguage.list("en, de, fr") }
 
@@ -21,7 +25,9 @@ private struct StubTranslator: Translating {
   func translate(_ text: String, from source: TranslateLanguage, to target: TranslateLanguage)
     async throws -> String
   {
-    "[\(target.identifier)] \(text)"
+    if let failure = failures["\(source.identifier)>\(target.identifier)"] { throw failure }
+    if cancelsWhileTranslating { withUnsafeCurrentTask { $0?.cancel() } }
+    return "[\(target.identifier)] \(text)"
   }
 }
 
@@ -160,6 +166,30 @@ final class TranslateExtensionTests: XCTestCase {
     XCTAssertEqual(items[0].title, "English → German isn't downloaded")
     XCTAssertEqual(items[1].title, "Can't translate English to French")
     XCTAssertEqual((items[2] as? TranslationItem)?.textValue, "[es] the squirrel")
+  }
+
+  func testPairsThatFailWhileTranslatingAreExplainedLikeTheStatusCheck() async throws {
+    let translator = StubTranslator(failures: ["en>de": .notDownloaded, "en>fr": .unsupported])
+    let catalog = TranslateActionsCatalog(
+      definition: ActionCatalogDefinition(identifier: "test.translate.actions", name: "Actions"),
+      translator: translator, defaultLanguages: { TranslateLanguage.list("de, fr") })
+    let translate = try action(TranslateActionsCatalog.translate, in: catalog)
+
+    let items = try results(await translate.callback(TextSnippetItem(text: "the squirrel"), nil))
+    XCTAssertEqual(
+      items.map(\.title),
+      ["English → German isn't downloaded", "Can't translate English to French"])
+  }
+
+  func testCancellingStopsBeforeTheNextTarget() async throws {
+    let catalog = TranslateActionsCatalog(
+      definition: ActionCatalogDefinition(identifier: "test.translate.actions", name: "Actions"),
+      translator: StubTranslator(cancelsWhileTranslating: true),
+      defaultLanguages: { TranslateLanguage.list("de, fr") })
+    let translate = try action(TranslateActionsCatalog.translate, in: catalog)
+
+    guard case .cancelled = await translate.callback(TextSnippetItem(text: "the squirrel"), nil)
+    else { return XCTFail("Expected the cancelled translation to stop") }
   }
 
   func testTextAlreadyInTheOnlyTargetSaysSo() async throws {

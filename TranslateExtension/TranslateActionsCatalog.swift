@@ -118,19 +118,22 @@ public final class TranslateActionsCatalog: ActionCatalog {
 
     var items: [CatalogItem] = []
     for target in targets {
+      if Task.isCancelled { return .cancelled }
       switch await translator.status(from: source, to: target) {
       case .unsupported:
-        items.append(
-          TranslateMessages.item(
-            "Can't translate \(source.name) to \(target.name)",
-            "Apple's translation doesn't support this pair."))
+        items.append(TranslateMessages.unsupported(from: source, to: target))
       case .notDownloaded:
         items.append(TranslateMessages.notDownloaded(from: source, to: target))
       case .installed:
         do {
           let translated = try await translator.translate(text, from: source, to: target)
           items.append(TranslationItem(text: translated, source: source, target: target))
+        } catch TranslatorError.notDownloaded {
+          items.append(TranslateMessages.notDownloaded(from: source, to: target))
+        } catch TranslatorError.unsupported {
+          items.append(TranslateMessages.unsupported(from: source, to: target))
         } catch {
+          if Task.isCancelled { return .cancelled }
           items.append(
             TranslateMessages.item(
               "\(target.name) translation failed", error.localizedDescription))

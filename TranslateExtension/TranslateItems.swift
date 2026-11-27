@@ -102,6 +102,14 @@ enum TranslateMessages {
       tintColor: .systemOrange)
   }
 
+  static func unsupported(from source: TranslateLanguage, to target: TranslateLanguage)
+    -> CatalogItem
+  {
+    item(
+      "Can't translate \(source.name) to \(target.name)",
+      "Apple's translation doesn't support this pair.")
+  }
+
   /// Opens Language & Region, where Translation Languages are downloaded.
   static func notDownloaded(from source: TranslateLanguage, to target: TranslateLanguage)
     -> CatalogItem
