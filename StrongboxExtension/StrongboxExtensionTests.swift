@@ -67,6 +67,46 @@ final class StrongboxExtensionTests: XCTestCase {
     XCTAssertTrue(catalog.objects.first is DeferredBrowseCatalogItem)
   }
 
+  /// Right Arrow before pairing shows the failure; a later visit asks Strongbox again, and the
+  /// refresh that shows the failure doesn't start another load.
+  @MainActor
+  func testAFailedVaultListIsForgottenWithoutAReloadLoop() async throws {
+    final class Loads: @unchecked Sendable {
+      var count = 0
+      var fail = true
+    }
+    let loads = Loads()
+    let catalog = StrongboxVaultsCatalog(
+      definition: CatalogDefinition(
+        identifier: "strongbox.vaults", name: "Strongbox Vaults", enabledByDefault: true, settings: []),
+      failureLifetime: .milliseconds(300)
+    ) { _ in
+      loads.count += 1
+      if loads.fail { throw StrongboxError.notPaired }
+      return [StrongboxRuntime.message("Work", "")]
+    }
+    let item = try XCTUnwrap(catalog.objects.first as? DeferredBrowseCatalogItem)
+
+    XCTAssertEqual(item.hierarchyChildren().count, 1)
+    try await Task.sleep(for: .milliseconds(100))
+    for _ in 0..<3 {
+      XCTAssertEqual(item.hierarchyChildren().map(\.title), ["Strongbox Unavailable"])
+    }
+    XCTAssertEqual(loads.count, 1)
+
+    loads.fail = false
+    try await Task.sleep(for: .milliseconds(500))
+    XCTAssertEqual(loads.count, 1, "Forgetting the failure loads nothing by itself.")
+    _ = item.hierarchyChildren()
+    try await Task.sleep(for: .milliseconds(100))
+    XCTAssertEqual(item.hierarchyChildren().map(\.title), ["Work"])
+    XCTAssertEqual(loads.count, 2)
+
+    try await Task.sleep(for: .milliseconds(500))
+    XCTAssertEqual(item.hierarchyChildren().map(\.title), ["Work"])
+    XCTAssertEqual(loads.count, 2, "A successful list is kept.")
+  }
+
   @MainActor
   func testActionGrammar() {
     let catalog = StrongboxActionsCatalog(

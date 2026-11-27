@@ -23,18 +23,25 @@ public final class StrongboxCatalog: Catalog {
 /// only when this is entered; no vault is unlocked and no entry is read.
 @MainActor
 public final class StrongboxVaultsCatalog: Catalog {
+  typealias LoadRows = @MainActor @Sendable (_ onChoose: @escaping @Sendable () async -> Void) async throws
+    -> [CatalogItem]
+
   public let identifier: String
   public let name: String
   private let browseItem: DeferredBrowseCatalogItem
 
   public var objects: [CatalogItem] { [browseItem] }
 
-  public init(definition: CatalogDefinition) {
+  public convenience init(definition: CatalogDefinition) {
+    self.init(definition: definition, loadRows: StrongboxRuntime.vaultRows)
+  }
+
+  /// Tests pass their own `loadRows` and a short `failureLifetime`.
+  init(definition: CatalogDefinition, failureLifetime: Duration = .seconds(2), loadRows: @escaping LoadRows) {
     identifier = definition.identifier
     name = definition.name
     let identifier = definition.identifier
-    // Choosing a vault reloads the list on the next visit, so the vault in use moves to the top.
-    let reloader = Reloader()
+    let reloader = Reloader(failureLifetime: failureLifetime)
     browseItem = DeferredBrowseCatalogItem(
       title: "Strongbox Vaults",
       id: "strongbox.vaults.browse",
@@ -55,16 +62,46 @@ public final class StrongboxVaultsCatalog: Catalog {
         NotificationCenter.default.post(name: CatalogDidFinishScan, object: identifier)
       },
       loadChildren: {
-        try await StrongboxRuntime.vaultRows(onChoose: { await reloader.reset() })
+        let load = await reloader.started()
+        do {
+          return try await loadRows { await reloader.reset() }
+        } catch {
+          await reloader.failed(load)
+          throw error
+        }
       }
     )
     reloader.item = browseItem
   }
 
+  /// Choosing a vault reloads the list on the next visit, so the vault in use moves to the top.
+  ///
+  /// A failure (say, Right Arrow before approving the pairing) isn't kept for the session either.
+  /// It is forgotten after `failureLifetime`, without telling Tuna, so the next visit asks Strongbox
+  /// again. Forgetting it at once would loop: `didLoad`'s refresh would find the item reset, load
+  /// again, fail, and refresh again.
   @MainActor
   private final class Reloader {
     weak var item: DeferredBrowseCatalogItem?
+    private let failureLifetime: Duration
+    private var loads = 0
+
+    init(failureLifetime: Duration) { self.failureLifetime = failureLifetime }
+
     func reset() { item?.reset() }
+
+    func started() -> Int {
+      loads += 1
+      return loads
+    }
+
+    func failed(_ load: Int) {
+      Task { [failureLifetime] in
+        try? await Task.sleep(for: failureLifetime)
+        // A newer load (after a rescan or a vault choice) keeps its own result.
+        if load == self.loads { self.item?.reset() }
+      }
+    }
   }
 
   /// Refresh reads the vault names again.
