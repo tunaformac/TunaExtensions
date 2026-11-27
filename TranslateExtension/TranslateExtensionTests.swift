@@ -249,6 +249,21 @@ final class TranslateExtensionTests: XCTestCase {
     XCTAssertNil(TranslateActionsCatalog.clipboardText(from: pasteboard))
   }
 
+  func testCommandsFollowAChangeOfPreferredLanguages() {
+    var languages = TranslateLanguage.list("de")
+    let commands = TranslateCommandsCatalog(
+      definition: CatalogDefinition(
+        identifier: TranslateExtension.commandsCatalogID, name: "Translate",
+        enabledByDefault: true, initialGlobalScope: .all, settings: []),
+      defaultLanguages: { languages })
+    XCTAssertEqual(commands.objects.map(\.id), ["translate.command", "translate.to.de"])
+
+    languages = TranslateLanguage.list("de, fr")
+    NotificationCenter.default.post(name: NSLocale.currentLocaleDidChangeNotification, object: nil)
+    XCTAssertEqual(
+      commands.objects.map(\.id), ["translate.command", "translate.to.de", "translate.to.fr"])
+  }
+
   func testLanguagesCatalogListsSupportedLanguagesByName() async {
     let languages = TranslateLanguagesCatalog(
       definition: CatalogDefinition(
