@@ -27,7 +27,7 @@ final class StrongboxExtensionTests: XCTestCase {
     XCTAssertTrue(declaration.typeRegistrations.allSatisfy { $0.inheritsFrom.isEmpty })
     XCTAssertEqual(declaration.defaultActionRankings.map { $0.actions.map(\.actionID) }, [["copy"]])
 
-    let apps = ["com.markmcguill.strongbox.pro", "com.markmcguill.strongbox"]
+    let apps = ["com.markmcguill.strongbox.pro", "com.markmcguill.strongbox", "com.markmcguill.strongbox.business"]
     XCTAssertEqual(declaration.appBrowseEnrichments.map(\.bundleIdentifiers), [apps])
     XCTAssertEqual(
       declaration.appBrowseEnrichments.first?.entries.map(\.catalogIdentifier), ["strongbox.vaults"])
@@ -112,13 +112,24 @@ final class StrongboxExtensionTests: XCTestCase {
     XCTAssertEqual(search.subjectPredicate?(TextSnippetItem(text: " \n ")), false)
   }
 
+  /// Synthetic bundles in a temporary folder, so this runs without Strongbox installed (P11).
   @MainActor
   func testOnlyTheStrongboxAppIsASubject() throws {
-    let strongbox = URL(fileURLWithPath: "/Applications/Strongbox.app")
-    try XCTSkipUnless(FileManager.default.fileExists(atPath: strongbox.path), "Strongbox is not installed.")
-    XCTAssertTrue(StrongboxActionsCatalog.isSubject(application(strongbox), for: .password))
-    XCTAssertFalse(
-      StrongboxActionsCatalog.isSubject(application(URL(fileURLWithPath: "/System/Applications/Notes.app")), for: .password))
+    let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: folder) }
+    let matched = ["com.markmcguill.strongbox.pro", "com.markmcguill.strongbox", "com.markmcguill.strongbox.business"]
+    let unmatched = [
+      "com.markmcguill.strongbox.mac", "com.markmcguill.strongbox.mac.pro", "com.markmcguill.strongbox-setapp",
+      "com.apple.Notes",
+    ]
+    for identifier in matched {
+      let app = try syntheticApplication(identifier, in: folder)
+      XCTAssertTrue(StrongboxActionsCatalog.isSubject(app, for: .password), identifier)
+    }
+    for identifier in unmatched {
+      let app = try syntheticApplication(identifier, in: folder)
+      XCTAssertFalse(StrongboxActionsCatalog.isSubject(app, for: .password), identifier)
+    }
     XCTAssertFalse(StrongboxActionsCatalog.isSubject(TextSnippetItem(text: "Strongbox"), for: .password))
   }
 
@@ -260,6 +271,16 @@ final class StrongboxExtensionTests: XCTestCase {
           #"{"credential_id":"\#(UUID().uuidString)","database_id":"\#(work)","database_name":"Work","title":"\#(title)"}"#
             .utf8))
     }
+  }
+
+  private func syntheticApplication(_ identifier: String, in folder: URL) throws -> CatalogEntity {
+    let app = folder.appendingPathComponent("\(identifier).app")
+    let contents = app.appendingPathComponent("Contents")
+    try FileManager.default.createDirectory(at: contents, withIntermediateDirectories: true)
+    let info: [String: Any] = ["CFBundleIdentifier": identifier, "CFBundlePackageType": "APPL"]
+    try PropertyListSerialization.data(fromPropertyList: info, format: .xml, options: 0)
+      .write(to: contents.appendingPathComponent("Info.plist"))
+    return application(app)
   }
 
   private func application(_ url: URL) -> CatalogEntity {

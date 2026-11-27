@@ -6,10 +6,11 @@ public final class StrongboxExtension: Extension {
   nonisolated static let catalogIdentifier = "strongbox.search"
   nonisolated static let vaultsCatalogIdentifier = "strongbox.vaults"
   nonisolated static let actionsCatalogIdentifier = "strongbox.actions"
-  /// The App Store build is `.pro`; the plain identifier is Strongbox's older App Store app.
-  /// Setapp isn't listed, because its MCP helper hasn't been verified.
+  /// Strongbox's App Store builds, as its `StrongboxProductBundle.swift` lists them: Pro, the free
+  /// (unified freemium) app, and Business. The standalone `.mac` builds and Setapp aren't listed,
+  /// because their MCP helpers haven't been verified. The helper's signature is checked either way.
   nonisolated static let appBundleIdentifiers = [
-    "com.markmcguill.strongbox.pro", "com.markmcguill.strongbox",
+    "com.markmcguill.strongbox.pro", "com.markmcguill.strongbox", "com.markmcguill.strongbox.business",
   ]
 
   public override var declaration: ExtensionDeclaration? {
