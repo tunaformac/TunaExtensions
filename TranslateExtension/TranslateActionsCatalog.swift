@@ -111,7 +111,7 @@ public final class TranslateActionsCatalog: ActionCatalog {
     else {
       return .results([TranslateMessages.item("Unknown language", "Couldn't tell which language this is.")])
     }
-    let targets = targets.filter { $0 != source }
+    let targets = targets.filter { $0.withoutRegion != source }
     guard !targets.isEmpty else {
       return .results([TranslateMessages.item("Already \(source.name)", "Choose another language with Translate To….")])
     }

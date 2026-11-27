@@ -67,14 +67,15 @@ enum TranslateSettings {
     label: "Translate into",
     defaultValue: "",
     description:
-      "Language codes separated by commas, for example de, en, zh-Hant. Leave empty to use your Mac's preferred languages from Language & Region."
+      "Language codes separated by commas, for example de, en-GB, zh-Hant. Leave empty to use your Mac's preferred languages from Language & Region."
   )
 
   static let definitions = [translateInto]
 
   /// The languages Translate uses when you don't pick one.
   static var defaultLanguages: [TranslateLanguage] {
-    let chosen = TranslateLanguage.list(store.stringValue(for: translateInto))
+    let chosen = TranslateLanguage.list(
+      store.stringValue(for: translateInto), keepingRegions: true)
     return chosen.isEmpty ? TranslateLanguage.preferred : chosen
   }
 

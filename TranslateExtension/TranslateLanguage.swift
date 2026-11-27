@@ -2,22 +2,27 @@ import Foundation
 import NaturalLanguage
 
 /// A translation language reduced to its language code plus a script only where the script
-/// matters: `de`, `en`, `zh-Hant`. Regions are dropped, so `en-DE` and `en-US` are both `en`.
+/// matters: `de`, `en`, `zh-Hant`. Regions are dropped (`en-DE` and `en-US` are both `en`) unless
+/// kept on purpose for a language you typed into Translate into, such as `en-GB` or `pt-PT`.
 struct TranslateLanguage: Hashable, Sendable {
   let identifier: String
 
-  init?(_ raw: String) {
+  init?(_ raw: String, keepingRegion: Bool = false) {
     let language = Locale.Language(identifier: raw.trimmingCharacters(in: .whitespacesAndNewlines))
     guard let code = language.languageCode, code.isISOLanguage else { return nil }
     let defaultScript = Locale.Language(
       identifier: Locale.Language(identifier: code.identifier).maximalIdentifier
     ).script
-    if let script = language.script, script != defaultScript {
-      identifier = "\(code.identifier)-\(script.identifier)"
-    } else {
-      identifier = code.identifier
+    var parts = [code.identifier]
+    if let script = language.script, script != defaultScript { parts.append(script.identifier) }
+    if keepingRegion, let region = language.region, region.isISORegion {
+      parts.append(region.identifier)
     }
+    identifier = parts.joined(separator: "-")
   }
+
+  /// The language without its region, which is what detection finds: `en-GB` → `en`.
+  var withoutRegion: TranslateLanguage { TranslateLanguage(identifier) ?? self }
 
   var localeLanguage: Locale.Language { Locale.Language(identifier: identifier) }
 
@@ -30,10 +35,10 @@ struct TranslateLanguage: Hashable, Sendable {
   }
 
   /// Parses a list such as "de, en zh-Hant", skipping unknown codes and repeats.
-  static func list(_ text: String) -> [TranslateLanguage] {
+  static func list(_ text: String, keepingRegions: Bool = false) -> [TranslateLanguage] {
     var seen = Set<TranslateLanguage>()
     return text.split(whereSeparator: { $0 == "," || $0 == ";" || $0.isWhitespace })
-      .compactMap { TranslateLanguage(String($0)) }
+      .compactMap { TranslateLanguage(String($0), keepingRegion: keepingRegions) }
       .filter { seen.insert($0).inserted }
   }
 
@@ -52,7 +57,7 @@ struct TranslateLanguage: Hashable, Sendable {
     guard let top = hypotheses.max(by: { $0.1 < $1.1 }) else { return nil }
     if top.1 >= confidentDetection { return top.0 }
 
-    let hinted = Set(hints)
+    let hinted = Set(hints.map(\.withoutRegion))
     func score(_ hypothesis: (TranslateLanguage, Double)) -> Double {
       hypothesis.1 * (hinted.contains(hypothesis.0) ? hintBoost : 1)
     }

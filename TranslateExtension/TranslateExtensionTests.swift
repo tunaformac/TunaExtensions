@@ -72,6 +72,33 @@ final class TranslateExtensionTests: XCTestCase {
       ["en", "de", "zh-Hant", "zh"])
   }
 
+  func testTypedRegionsAreKeptSoVariantsStayApart() {
+    XCTAssertEqual(
+      TranslateLanguage.list("en-GB, en-US, pt-PT pt-BR, zh-Hant-TW, de", keepingRegions: true)
+        .map(\.identifier),
+      ["en-GB", "en-US", "pt-PT", "pt-BR", "zh-Hant-TW", "de"])
+    XCTAssertEqual(TranslateLanguage("en-GB", keepingRegion: true)?.withoutRegion, english)
+  }
+
+  func testRegionalTargetsTranslateButSkipTextAlreadyInThatLanguage() async throws {
+    let catalog = TranslateActionsCatalog(
+      definition: ActionCatalogDefinition(identifier: "test.translate.actions", name: "Actions"),
+      translator: StubTranslator(),
+      defaultLanguages: { TranslateLanguage.list("en-GB, de", keepingRegions: true) })
+    let translate = try action(TranslateActionsCatalog.translate, in: catalog)
+
+    let fromGerman = try results(
+      await translate.callback(TextSnippetItem(text: "Wie geht es dir heute?"), nil))
+    XCTAssertEqual(
+      fromGerman.compactMap { ($0 as? TranslationItem)?.textValue },
+      ["[en-GB] Wie geht es dir heute?"])
+
+    let fromEnglish = try results(
+      await translate.callback(TextSnippetItem(text: "How are you today?"), nil))
+    XCTAssertEqual(
+      fromEnglish.compactMap { ($0 as? TranslationItem)?.textValue }, ["[de] How are you today?"])
+  }
+
   func testDetectionUsesHintsForSingleWords() {
     let hints = [english, german]
     XCTAssertEqual(TranslateLanguage.detect(in: "squirrel", hints: hints), english)

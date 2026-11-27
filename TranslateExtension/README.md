@@ -29,8 +29,10 @@ use Apple's **Translate Text** action. You can pass text from Tuna using **Send 
 
 ## Settings
 
-**Translate into** takes language codes such as `de, en, zh-Hant`. Leave it empty to use your
-Mac's preferred languages from System Settings → General → Language & Region.
+**Translate into** takes language codes such as `de, en-GB, zh-Hant`. Add a region when the
+variant matters, for example `en-GB` for British spelling or `pt-PT` for European Portuguese.
+Leave it empty to use your Mac's preferred languages from System Settings → General → Language &
+Region; their regions are ignored and Apple picks the variant.
 
 ## Language downloads
 
